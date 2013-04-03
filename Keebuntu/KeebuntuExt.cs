@@ -7,26 +7,27 @@ using KeePass.Plugins;
 using System.IO;
 using System.ComponentModel;
 using KeePassLib;
+using System.Collections.Generic;
 
-namespace Keebuntu
+namespace Keebuntu 
 {
-  public class KeebuntuExt : Plugin
+  public class KeebuntuExt : Plugin, IKeePassWindow
   {
     private IPluginHost mPluginHost;
     private Thread mGtkThread;
     private ApplicationIndicator mIndicator;
-    private Gtk.Menu mMenu;
+    private Gtk.Menu mAppIndicatorMenu;
 
     public override bool Initialize(IPluginHost host)
     {
       mPluginHost = host;
       try {
-        mGtkThread = new Thread (RunGtkApp);
-        mGtkThread.SetApartmentState (ApartmentState.STA);
+        mGtkThread = new Thread(RunGtkApp);
+        mGtkThread.SetApartmentState(ApartmentState.STA);
         mGtkThread.Name = "GTK Thread";
-        mGtkThread.Start ();
+        mGtkThread.Start();
       } catch (Exception ex) {
-        Debug.Fail (ex.ToString ());
+        Debug.Fail(ex.ToString());
         return false;
       }
       return true;
@@ -35,20 +36,24 @@ namespace Keebuntu
     public override void Terminate()
     {
       try {
-        InvokeGtkThread (() => Gtk.Application.Quit ());
+        InvokeGtkThread(() => Gtk.Application.Quit());
       } catch (Exception ex) {
-        Debug.Fail (ex.ToString ());
+        Debug.Fail(ex.ToString());
       }
     }
 
-    private void OnMenuShown(object sender, EventArgs e)
+    public Dictionary<string, string> GetMenuForWindow(){
+      return new Dictionary<string, string>();
+    }
+
+    private void OnAppIndicatorMenuShown(object sender, EventArgs e)
     {
       try {
-        var mainWindowType = mPluginHost.MainWindow.GetType ();
+        var mainWindowType = mPluginHost.MainWindow.GetType();
         var onCtxTrayOpeningMethodInfo =
-          mainWindowType.GetMethod ("OnCtxTrayOpening",
-                                      System.Reflection.BindingFlags.Instance |
-                                    System.Reflection.BindingFlags.NonPublic,
+          mainWindowType.GetMethod("OnCtxTrayOpening",
+                                    System.Reflection.BindingFlags.Instance |
+          System.Reflection.BindingFlags.NonPublic,
                                     Type.DefaultBinder,
                                     new[] {
                                       typeof(object),
@@ -56,24 +61,40 @@ namespace Keebuntu
                                     },
                                       null);
         if (onCtxTrayOpeningMethodInfo != null) {
-          InvokeMainWindow (
-            () => onCtxTrayOpeningMethodInfo.Invoke (mPluginHost.MainWindow,
+          InvokeMainWindow(
+            () => onCtxTrayOpeningMethodInfo.Invoke(mPluginHost.MainWindow,
                                                      new[] {
                                                        sender,
-                                                       new CancelEventArgs ()
-                                                     })
-            );
+                                                       new CancelEventArgs()
+                                                     }
+          )
+          );
         }
       } catch (Exception ex) {
-        Debug.Fail (ex.ToString ());
+        Debug.Fail(ex.ToString());
       }
     }
 
     private void RunGtkApp()
     {
-      Gtk.Application.Init ();
+      DBus.BusG.Init();
+      Gtk.Application.Init();
 
-      mIndicator = new ApplicationIndicator ("keepass-appindicator-plugin",
+      var gtkWindow = new Gtk.Window(PwDefs.ProductName);
+      gtkWindow.Visible = true;
+
+      var gtkMainMenu = new Gtk.MenuBar();
+      gtkWindow.Add(gtkMainMenu);
+      gtkMainMenu.Show();
+
+      var mainWindowMenu = mPluginHost.MainWindow.MainMenu;
+      foreach (System.Windows.Forms.ToolStripMenuItem item in mainWindowMenu.Items) {
+        ConvertAndAddMenuItem (item, gtkMainMenu);
+      }
+      mainWindowMenu.ItemAdded += (sender, e) =>
+        InvokeMainWindow (() => ConvertAndAddMenuItem (e.Item, gtkMainMenu));
+
+      mIndicator = new ApplicationIndicator("keepass-appindicator-plugin",
                                              "keepass-locked",
                                              AppIndicator.Category.ApplicationStatus);
 #if DEBUG
@@ -82,82 +103,112 @@ namespace Keebuntu
 #endif
       mIndicator.Status = AppIndicator.Status.Active;
       mIndicator.Title = PwDefs.ProductName;
-      mMenu = new Gtk.Menu ();
+      mAppIndicatorMenu = new Gtk.Menu();
       var trayContextMenu = mPluginHost.MainWindow.TrayContextMenu;
       foreach (System.Windows.Forms.ToolStripItem item in trayContextMenu.Items) {
-        ConvertAndAddMenuItem (item);
+        ConvertAndAddMenuItem(item, mAppIndicatorMenu);
       }
       trayContextMenu.ItemAdded += (sender, e) =>
-        InvokeGtkThread (() => ConvertAndAddMenuItem (e.Item));
+        InvokeGtkThread(() => ConvertAndAddMenuItem(e.Item, mAppIndicatorMenu));
 
-      mMenu.Shown += OnMenuShown;
-      mMenu.ShowAll ();
-      mIndicator.Menu = mMenu;
+      mAppIndicatorMenu.Shown += OnAppIndicatorMenuShown;
+      mIndicator.Menu = mAppIndicatorMenu;
 
-      Gtk.Application.Run ();
+      if (Environment.GetEnvironmentVariable ("UBUNTU_MENUPROXY",
+                                              EnvironmentVariableTarget.Process) !=
+          "libappmenu.so")
+      {
+        Debug.Fail ("appmenu not supported");
+      }
 
-      mMenu.Shown -= OnMenuShown;
+      var sessionBus = DBus.Bus.Session;
+      var objectPath = new DBus.ObjectPath("/com/canonical/Unity/Panel/Service");
+      sessionBus.Register (objectPath, new Object());
+      Gtk.Application.Run();
+
+      mAppIndicatorMenu.Shown -= OnAppIndicatorMenuShown;
     }
 
     private void InvokeMainWindow(Action action)
     {
       var mainWindow = mPluginHost.MainWindow;
       if (mainWindow.InvokeRequired) {
-        mainWindow.Invoke (action);
+        mainWindow.Invoke(action);
       } else {
-        action.Invoke ();
+        action.Invoke();
       }
     }
 
     private void InvokeGtkThread(Action action)
     {
-      if (ReferenceEquals (Thread.CurrentThread, mGtkThread)) {
-        action.Invoke ();
+      if (ReferenceEquals(Thread.CurrentThread, mGtkThread)) {
+        action.Invoke();
       } else {
-        Gtk.ReadyEvent readyEvent = () => action.Invoke ();
-        var threadNotify = new Gtk.ThreadNotify (readyEvent);
-        threadNotify.WakeupMain ();
+        Gtk.ReadyEvent readyEvent = () => action.Invoke();
+        var threadNotify = new Gtk.ThreadNotify(readyEvent);
+        threadNotify.WakeupMain();
       }
     }
 
-    private void ConvertAndAddMenuItem(System.Windows.Forms.ToolStripItem item)
+    private void ConvertAndAddMenuItem(System.Windows.Forms.ToolStripItem item,
+                                       Gtk.MenuShell gtkMenuShell)
     {
       if (item is System.Windows.Forms.ToolStripMenuItem) {
-        // windows forms use & for mneumonic, gtk uses _
-        var gtkMenuItem = new Gtk.ImageMenuItem (item.Text.Replace ("&", "_"));
 
-        if (item.Image != null) {
-          var memStream = new MemoryStream ();
-          item.Image.Save (memStream, ImageFormat.Png);
+        var winformMenuItem = item as System.Windows.Forms.ToolStripMenuItem;
+
+        // windows forms use & for mneumonic, gtk uses _
+        var gtkMenuItem = new Gtk.ImageMenuItem(winformMenuItem.Text.Replace("&", "_"));
+
+        if (winformMenuItem.Image != null) {
+          var memStream = new MemoryStream();
+          winformMenuItem.Image.Save(memStream, ImageFormat.Png);
           memStream.Position = 0;
-          gtkMenuItem.Image = new Gtk.Image (memStream);
+          gtkMenuItem.Image = new Gtk.Image(memStream);
         }
 
-        gtkMenuItem.TooltipText = item.ToolTipText;
-        gtkMenuItem.Visible = item.Visible;
-        gtkMenuItem.Sensitive = item.Enabled;
+        gtkMenuItem.TooltipText = winformMenuItem.ToolTipText;
+        gtkMenuItem.Visible = winformMenuItem.Visible;
+        gtkMenuItem.Sensitive = winformMenuItem.Enabled;
 
         gtkMenuItem.Activated += (sender, e) =>
-          InvokeMainWindow (item.PerformClick);
+          InvokeMainWindow(winformMenuItem.PerformClick);
 
-        item.TextChanged += (sender, e) => InvokeGtkThread (() =>
+        winformMenuItem.TextChanged += (sender, e) => InvokeGtkThread(() =>
         {
           var label = gtkMenuItem.Child as Gtk.Label;
           if (label != null) {
-            label.Text = item.Text;
+            label.Text = winformMenuItem.Text;
           }
         }
         );
-        item.EnabledChanged += (sender, e) =>
-          InvokeGtkThread (() => gtkMenuItem.Sensitive = item.Enabled);
-        item.VisibleChanged += (sender, e) =>
-          InvokeGtkThread (() => gtkMenuItem.Visible = item.Visible);
+        winformMenuItem.EnabledChanged += (sender, e) =>
+          InvokeGtkThread(() => gtkMenuItem.Sensitive = winformMenuItem.Enabled);
+        winformMenuItem.VisibleChanged += (sender, e) =>
+          InvokeGtkThread(() => gtkMenuItem.Visible = winformMenuItem.Visible);
 
-        mMenu.Insert (gtkMenuItem, item.Owner.Items.IndexOf (item));
+        gtkMenuItem.Show();
+        gtkMenuShell.Insert(gtkMenuItem, winformMenuItem.Owner.Items.IndexOf(winformMenuItem));
+
+
+        if (winformMenuItem.HasDropDownItems) {
+          var subMenu = new Gtk.Menu();
+          foreach(System.Windows.Forms.ToolStripItem dropDownItem in
+                  winformMenuItem.DropDownItems)
+          {
+            ConvertAndAddMenuItem (dropDownItem, subMenu);
+          }
+          gtkMenuItem.Submenu = subMenu;
+
+          winformMenuItem.DropDown.ItemAdded += (sender, e) =>
+            InvokeMainWindow (() => ConvertAndAddMenuItem (e.Item, subMenu));
+        }
       } else if (item is System.Windows.Forms.ToolStripSeparator) {
-        mMenu.Insert (new Gtk.SeparatorMenuItem (), item.Owner.Items.IndexOf (item));
+        var gtkSeparator = new Gtk.SeparatorMenuItem();
+        gtkSeparator.Show ();
+        gtkMenuShell.Insert(gtkSeparator, item.Owner.Items.IndexOf(item));
       } else {
-        Debug.Fail ("Unexpected menu item");
+        Debug.Fail("Unexpected menu item");
       }
     }
   }

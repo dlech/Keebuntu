@@ -2,7 +2,7 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.0</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{AF47CF84-8823-4A58-9E79-543970D5BCA1}</ProjectGuid>
@@ -11,7 +11,7 @@
     <AssemblyName>Keebuntu</AssemblyName>
     <Description>Plugin for KeePass that add Ubuntu Application Indicator support</Description>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -19,27 +19,28 @@
     <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x86</PlatformTarget>
     <ConsolePause>false</ConsolePause>
     <CustomCommands>
       <CustomCommands>
+        <EnvironmentVariable>
+        <Variable name="MONO_TRACE_LISTENER" value="Console.Error" />
+        <Variable name="UBUNTU_MENUPROXY" value="libappmenu.so" />
+      </EnvironmentVariable>
         <Command type="Execute" command="bin/Debug/KeePass.exe --debug" />
       </CustomCommands>
     </CustomCommands>
     <EnvironmentVariables>
       <EnvironmentVariables>
-        <Variable name="MONO_TRACE_LISTENER" value="" />
+        <Variable name="MONO_TRACE_LISTENER" value="Console.Error" />
+        <Variable name="UBUNTU_MENUPROXY" value="libappmenu.so" />
       </EnvironmentVariables>
     </EnvironmentVariables>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
-    <Optimize>true</Optimize>
+    <Optimize>false</Optimize>
     <OutputPath>bin\Release</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x86</PlatformTarget>
-    <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
@@ -52,6 +53,14 @@
     <Reference Include="System" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Drawing" />
+    <Reference Include="dbus-sharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=5675b0c3093115b5">
+      <Private>False</Private>
+      <Package>dbus-sharp-1.0</Package>
+    </Reference>
+    <Reference Include="dbus-sharp-glib, Version=1.0.0.0, Culture=neutral, PublicKeyToken=5675b0c3093115b5">
+      <Private>False</Private>
+      <Package>dbus-sharp-glib-1.0</Package>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -64,12 +73,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="KeebuntuExt.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\KeePassPluginDevTools\keepass2\KeePass\KeePass.csproj">
-      <Project>{10938016-DEE2-4A25-9A5A-8FD3444379CA}</Project>
-      <Name>KeePass</Name>
-    </ProjectReference>
+    <Compile Include="IKeePassWindow.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="KeePass.config.xml">
@@ -83,5 +87,11 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\KeePassPluginDevTools\keepass2\KeePass\KeePass.csproj">
+      <Project>{10938016-DEE2-4A25-9A5A-8FD3444379CA}</Project>
+      <Name>KeePass</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>
