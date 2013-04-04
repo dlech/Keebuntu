@@ -75,7 +75,8 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="KeebuntuExt.cs" />
     <Compile Include="Registrar.cs" />
-    <Compile Include="DbusMenu.cs" />
+    <Compile Include="FakeDBusMenu.cs" />
+    <Compile Include="IDBusMenu.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="KeePass.config.xml">

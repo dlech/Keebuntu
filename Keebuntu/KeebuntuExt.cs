@@ -142,7 +142,7 @@ namespace Keebuntu
       var menuPath = "/com/canonical/menu/{0}";
       var menuBus = "com.canonical.dbusmenu";
       var windowObjectPath = new DBus.ObjectPath(string.Format(menuPath, xid));
-      var dbusMenu = new com.canonical.DbusMenu();
+      var dbusMenu = new FakeDBusMenu();
       sessionBus.Register(windowObjectPath, dbusMenu);      
 
       unityPanelServiceBus.RegisterWindow((uint)xid.ToInt32(), windowObjectPath);
