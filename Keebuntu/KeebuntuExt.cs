@@ -8,15 +8,19 @@ using System.IO;
 using System.ComponentModel;
 using KeePassLib;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace Keebuntu 
 {
-  public class KeebuntuExt : Plugin, IKeePassWindow
+  public class KeebuntuExt : Plugin
   {
     private IPluginHost mPluginHost;
     private Thread mGtkThread;
     private ApplicationIndicator mIndicator;
     private Gtk.Menu mAppIndicatorMenu;
+
+    [DllImport("gdk-x11-2.0")]
+    private static extern IntPtr gdk_x11_drawable_get_xid(IntPtr window);
 
     public override bool Initialize(IPluginHost host)
     {
@@ -122,8 +126,26 @@ namespace Keebuntu
       }
 
       var sessionBus = DBus.Bus.Session;
-      var objectPath = new DBus.ObjectPath("/com/canonical/Unity/Panel/Service");
-      sessionBus.Register (objectPath, new Object());
+
+      var dbusBusPath = "/org/freedesktop/DBus";
+      var dbusBusName = "org.freedesktop.DBus";
+      var dbusObjectPath = new DBus.ObjectPath(dbusBusPath);
+      var dbusService = sessionBus.GetObject<org.freedesktop.DBus.IBus>(dbusBusName, dbusObjectPath);
+      dbusService.NameAcquired += (name) => Console.WriteLine ("NameAcquired: " + name);
+
+      var busPath = "/com/canonical/AppMenu/Registrar";
+      var busName = "com.canonical.AppMenu.Registrar";
+      var objPath = new DBus.ObjectPath(busPath);
+      var unityPanelServiceBus = sessionBus.GetObject<com.canonical.AppMenu.Registrar>(busName, objPath);
+      var xid = gdk_x11_drawable_get_xid(gtkWindow.GdkWindow.Handle);
+
+      var menuPath = "/com/canonical/menu/{0}";
+      var menuBus = "com.canonical.dbusmenu";
+      var windowObjectPath = new DBus.ObjectPath(string.Format(menuPath, xid));
+      var dbusMenu = new com.canonical.DbusMenu();
+      sessionBus.Register(windowObjectPath, dbusMenu);      
+
+      unityPanelServiceBus.RegisterWindow((uint)xid.ToInt32(), windowObjectPath);
       Gtk.Application.Run();
 
       mAppIndicatorMenu.Shown -= OnAppIndicatorMenuShown;

@@ -22,10 +22,7 @@
     <ConsolePause>false</ConsolePause>
     <CustomCommands>
       <CustomCommands>
-        <EnvironmentVariable>
-        <Variable name="MONO_TRACE_LISTENER" value="Console.Error" />
-        <Variable name="UBUNTU_MENUPROXY" value="libappmenu.so" />
-      </EnvironmentVariable>
+        <Command type="BeforeBuild" />
         <Command type="Execute" command="bin/Debug/KeePass.exe --debug" />
       </CustomCommands>
     </CustomCommands>
@@ -61,6 +58,10 @@
       <Private>False</Private>
       <Package>dbus-sharp-glib-1.0</Package>
     </Reference>
+    <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Private>False</Private>
+      <Package>gtk-sharp-2.0</Package>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -73,7 +74,8 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="KeebuntuExt.cs" />
-    <Compile Include="IKeePassWindow.cs" />
+    <Compile Include="Registrar.cs" />
+    <Compile Include="DbusMenu.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="KeePass.config.xml">
