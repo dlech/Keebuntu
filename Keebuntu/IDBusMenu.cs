@@ -1,4 +1,4 @@
-/* Derived from com.canonical.dbusmenu.xml in libdbusmenu-qt
+/* Derived from dbus-menu.xml in libdbusmenu-glib
  */
 
 using System;
@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace com.canonical.dbusmenu
 {
-  public struct MenuItemProperties
+  public struct MenuItem
   {
     /// <summary>
     /// A unique numeric identifier.
@@ -27,11 +27,12 @@ namespace com.canonical.dbusmenu
     /// enabled           bool        true          Item can be activated
     /// visible           bool        true          Item is visible
     /// icon-name         string      ""            Icon name (freedesktop.org spec)
-    /// icon-data         byte[]      null          PNG data for icon
-    /// shortcut          string[][]  null          Shortcuts for item, {{"Control"|"Alt"|"Shift"|"Super", <key>}, ...}
+    /// icon-data         byte[]      byte[0]       PNG data for icon
+    /// shortcut          string[][]  string[0][0]  Shortcuts for item, {{"Control", "Alt", "Shift", "Super", <key>}, {...}, ... }
     /// toggle-type       string      ""            If item can be toggled, "checkmark"|"radio"
     /// toggle-state      int         -1            0 = off, 1 = on, else = indeterminate
     /// children-display  string      ""            If item has childeren, "submenu"
+    /// disposition       string      "normal"      How item should be presented, "normal", "informative", "warning", "alert"
     /// 
     /// </remarks>
     public Dictionary<string, object> properties;
@@ -61,14 +62,22 @@ namespace com.canonical.dbusmenu
     public object[] childeren;
   }
 
-  public struct PropertyDescriptor
+  public struct MenuItemPropertyDescriptor
   {
     int id;
     string[] properties;
   }
 
-  public delegate void ItemsPropertiesUpdatedHandler(MenuItemProperties[] updatedProps,
-                                                     PropertyDescriptor[] removedProps);
+  public struct MenuEvent
+  {
+    public int id;
+    public string eventId;
+    public object data;
+    public uint timestamp;
+  }
+
+  public delegate void ItemsPropertiesUpdatedHandler(MenuItem[] updatedProps,
+                                                     MenuItemPropertyDescriptor[] removedProps);
 
   /// <param name="revision">
   /// The revision of the layout that we're currently on.
@@ -96,6 +105,11 @@ namespace com.canonical.dbusmenu
     /// </summary>
     uint Version { get; }
 
+    /// Represents the way the text direction of the application.  This
+    /// allows the server to handle mismatches intelligently.  For left-
+    /// to-right the string is "ltr" for right-to-left it is "rtl".
+    string TextDirection { get; }
+
     /// <summary>
     /// Tells if the menus are in a normal state or they believe that they
     /// could use some attention.  Cases for showing them would be if help
@@ -104,6 +118,14 @@ namespace com.canonical.dbusmenu
     /// "notice" when they should have a higher priority to be shown.
     /// </summary>
     string Status { get; }
+
+    /// <summary>
+    /// A list of directories that should be used for finding icons using
+    /// the icon naming spec.  Idealy there should only be one for the icon
+    /// theme, but additional ones are often added by applications for
+    /// app specific icons.
+    /// </summary>
+    string[] IconThemePath { get; }
 
     /// <summary>
     /// Gets the layout of the menu.
@@ -161,7 +183,7 @@ namespace com.canonical.dbusmenu
     /// Property names.
     /// </param>
     [return: Argument("properties")]
-    MenuItemProperties[] GetGroupProperties(int[] ids, string[] propertyNames);
+    MenuItem[] GetGroupProperties(int[] ids, string[] propertyNames);
 
     /// <summary>
     /// Get a signal property on a single item.  This is not useful if you're
@@ -188,7 +210,7 @@ namespace com.canonical.dbusmenu
     /// The id of the item which received the event.
     /// </param>
     /// <param name='eventId'>
-    /// The type of event. One of "clicked"|"hovered"
+    /// The type of event. One of "clicked"|"hovered"|"opened"|"closed"
     /// </param>
     /// <param name='data'>
     /// Event-specific data.
@@ -198,6 +220,20 @@ namespace com.canonical.dbusmenu
     /// sent if not.
     /// </param>
     void Event(int id, string eventId, object data, uint timestamp);
+
+    /// <summary>
+    /// Used to pass a set of events as a single message for possibily several
+    /// different menuitems.  This is done to optimize DBus traffic.
+    /// </summary>
+    /// <returns>
+    /// A list of menuitem IDs that couldn't be found.  If none of the ones
+    /// in the list can be found, a DBus error is returned.
+    /// </returns>
+    /// <param name='events'>
+    /// An array of all the events that should be passed.
+    /// </param>
+    [return: Argument("idErrors")]
+    int[] EventGroup(MenuEvent[] events);
 
     /// <summary>
     /// This is called by the applet to notify the application that it is about
@@ -211,6 +247,25 @@ namespace com.canonical.dbusmenu
     /// </param>
     [return: Argument("needUpdate")]
     bool AboutToShow(int id);
+
+    /// <summary>
+    /// A function to tell several menus being shown that they are about to
+    /// be shown to the user.  This is likely only useful for programitc purposes
+    /// so while the return values are returned, in general, the singular function
+    /// should be used in most user interacation scenarios.
+    /// </summary>
+    /// <param name='ids'>
+    /// The IDs of the menu items who's submenus are being shown.
+    /// </param>
+    /// <param name='updatesNeeded'>
+    /// The IDs of the menus that need updates.  Note: if no update information
+    /// is needed the DBus message should set the no reply flag.
+    /// </param>
+    /// <param name='idErrors'>
+    /// A list of menuitem IDs that couldn't be found.  If none of the ones
+    /// in the list can be found, a DBus error is returned.
+    /// </param>
+    void AboutToShowGroup(int[] ids, out int[] updatesNeeded, out int[] idErrors);
 
     /// <summary>
     /// Triggered when there are lots of property updates across many items

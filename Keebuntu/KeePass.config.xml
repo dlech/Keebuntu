@@ -12,7 +12,10 @@
       <!-- Don't try to do anything on startup -->
       <OpenLastFile>false</OpenLastFile>
       <CheckForUpdate>false</CheckForUpdate>
-      <CheckForUpdateConfigured>true</CheckForUpdateConfigured>
+      <CheckForUpdateConfigured>true</CheckForUpdateConfigured>      
     </Start>
   </Application>
+  <Integration>    
+    <LimitToSingleInstance>false</LimitToSingleInstance>
+  </Integration>
 </Configuration>

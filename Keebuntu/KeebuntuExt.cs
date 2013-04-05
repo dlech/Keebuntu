@@ -9,6 +9,7 @@ using System.ComponentModel;
 using KeePassLib;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Reflection;
 
 namespace Keebuntu 
 {
@@ -18,9 +19,7 @@ namespace Keebuntu
     private Thread mGtkThread;
     private ApplicationIndicator mIndicator;
     private Gtk.Menu mAppIndicatorMenu;
-
-    [DllImport("gdk-x11-2.0")]
-    private static extern IntPtr gdk_x11_drawable_get_xid(IntPtr window);
+    private WinformsDBusMenu mDBusMenu;
 
     public override bool Initialize(IPluginHost host)
     {
@@ -44,10 +43,6 @@ namespace Keebuntu
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
       }
-    }
-
-    public Dictionary<string, string> GetMenuForWindow(){
-      return new Dictionary<string, string>();
     }
 
     private void OnAppIndicatorMenuShown(object sender, EventArgs e)
@@ -84,23 +79,11 @@ namespace Keebuntu
       DBus.BusG.Init();
       Gtk.Application.Init();
 
-      var gtkWindow = new Gtk.Window(PwDefs.ProductName);
-      gtkWindow.Visible = true;
-
-      var gtkMainMenu = new Gtk.MenuBar();
-      gtkWindow.Add(gtkMainMenu);
-      gtkMainMenu.Show();
-
-      var mainWindowMenu = mPluginHost.MainWindow.MainMenu;
-      foreach (System.Windows.Forms.ToolStripMenuItem item in mainWindowMenu.Items) {
-        ConvertAndAddMenuItem (item, gtkMainMenu);
-      }
-      mainWindowMenu.ItemAdded += (sender, e) =>
-        InvokeMainWindow (() => ConvertAndAddMenuItem (e.Item, gtkMainMenu));
+      /* setup appindicator */
 
       mIndicator = new ApplicationIndicator("keepass-appindicator-plugin",
-                                             "keepass-locked",
-                                             AppIndicator.Category.ApplicationStatus);
+                                            "keepass-locked",
+                                            AppIndicator.Category.ApplicationStatus);
 #if DEBUG
       mIndicator.IconThemePath =
         Path.GetFullPath("Resources/icons/ubuntu-mono-dark/apps/24");
@@ -118,37 +101,53 @@ namespace Keebuntu
       mAppIndicatorMenu.Shown += OnAppIndicatorMenuShown;
       mIndicator.Menu = mAppIndicatorMenu;
 
-      if (Environment.GetEnvironmentVariable ("UBUNTU_MENUPROXY",
-                                              EnvironmentVariableTarget.Process) !=
-          "libappmenu.so")
-      {
-        Debug.Fail ("appmenu not supported");
-      }
+      /* setup appmenu */
+
+      mDBusMenu = new WinformsDBusMenu(mPluginHost.MainWindow.MainMenu);
 
       var sessionBus = DBus.Bus.Session;
 
+#if DEBUG
       var dbusBusPath = "/org/freedesktop/DBus";
       var dbusBusName = "org.freedesktop.DBus";
       var dbusObjectPath = new DBus.ObjectPath(dbusBusPath);
-      var dbusService = sessionBus.GetObject<org.freedesktop.DBus.IBus>(dbusBusName, dbusObjectPath);
+      var dbusService =
+        sessionBus.GetObject<org.freedesktop.DBus.IBus>(dbusBusName, dbusObjectPath);
       dbusService.NameAcquired += (name) => Console.WriteLine ("NameAcquired: " + name);
-
+#endif
       var busPath = "/com/canonical/AppMenu/Registrar";
       var busName = "com.canonical.AppMenu.Registrar";
       var objPath = new DBus.ObjectPath(busPath);
-      var unityPanelServiceBus = sessionBus.GetObject<com.canonical.AppMenu.Registrar>(busName, objPath);
-      var xid = gdk_x11_drawable_get_xid(gtkWindow.GdkWindow.Handle);
+      var unityPanelServiceBus =
+        sessionBus.GetObject<com.canonical.AppMenu.Registrar>(busName, objPath);
+
+      // TODO - extract getting xid to separate function
+      var typeName = typeof(System.Windows.Forms.Control).AssemblyQualifiedName;
+      var hwndTypeName = typeName.Replace("Control", "Hwnd");
+      var hwndType = Type.GetType(hwndTypeName);
+      var objectFromHandleMethod =
+        hwndType.GetMethod("ObjectFromHandle", BindingFlags.Public | BindingFlags.Static);
+      var hwnd =
+        objectFromHandleMethod.Invoke(null, new object[] { mPluginHost.MainWindow.Handle });
+      var wholeWindowField = hwndType.GetField("whole_window",
+                                               BindingFlags.NonPublic | BindingFlags.Instance);
+      var xid = (IntPtr)wholeWindowField.GetValue(hwnd);
 
       var menuPath = "/com/canonical/menu/{0}";
-      var menuBus = "com.canonical.dbusmenu";
       var windowObjectPath = new DBus.ObjectPath(string.Format(menuPath, xid));
-      var dbusMenu = new FakeDBusMenu();
-      sessionBus.Register(windowObjectPath, dbusMenu);      
+
+      sessionBus.Register(windowObjectPath, mDBusMenu);      
 
       unityPanelServiceBus.RegisterWindow((uint)xid.ToInt32(), windowObjectPath);
+
+      /* run gtk event loop */
+
       Gtk.Application.Run();
 
+      /* cleanup */
+
       mAppIndicatorMenu.Shown -= OnAppIndicatorMenuShown;
+      sessionBus.Unregister(windowObjectPath);
     }
 
     private void InvokeMainWindow(Action action)
