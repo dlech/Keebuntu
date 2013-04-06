@@ -76,10 +76,10 @@ namespace Keebuntu
 
     private void RunGtkApp()
     {
-      //DBus.BusG.Init();
+      DBus.BusG.Init();
       Gtk.Application.Init();
 
-      /* setup appindicator */
+      /* setup ApplicationIndicator */
 
       mIndicator = new ApplicationIndicator("keepass-appindicator-plugin",
                                             "keepass2",
@@ -98,28 +98,16 @@ namespace Keebuntu
       trayContextMenu.ItemAdded += (sender, e) =>
         InvokeGtkThread(() => ConvertAndAddMenuItem(e.Item, mAppIndicatorMenu));
 
+      // might not be needed since we are monitoring via dbus too
+      mAppIndicatorMenu.Shown += OnAppIndicatorMenuShown;
+
       mIndicator.Menu = mAppIndicatorMenu;
 
-      /* setup appmenu */
+      /* setup ApplicationMenu */
 
       mDBusMenu = new WinformsDBusMenu(mPluginHost.MainWindow.MainMenu);
 
       var sessionBus = DBus.Bus.Session;
-
-      var sbType = sessionBus.GetType();
-      var addMatchMethod = sbType.GetMethod("AddMatch", BindingFlags.Instance|BindingFlags.NonPublic);
-      addMatchMethod.Invoke(sessionBus, new[] { "eavesdrop='true',path=/org/ayatana/NotificationItem/keepass_appindicator_plugin/Menu" });
-      var transportProp = sbType.GetProperty("Transport", BindingFlags.Instance|BindingFlags.NonPublic);
-      var transportObj = transportProp.GetValue(sessionBus, null);
-      var transportObjType = transportObj.GetType();
-      var readMessageMethod = transportObjType.GetMethod("ReadMessage", BindingFlags.Instance|BindingFlags.NonPublic);
-      int count = 0;
-      while(true)
-      {
-        var message = readMessageMethod.Invoke(transportObj, null);
-        Console.WriteLine("{0} {1}", count++, message);
-      }
-
 
 #if DEBUG
       var dbusBusPath = "/org/freedesktop/DBus";
@@ -152,10 +140,17 @@ namespace Keebuntu
       sessionBus.Register(windowObjectPath, mDBusMenu);
       unityPanelServiceBus.RegisterWindow((uint)xid.ToInt32(), windowObjectPath);
 
+      /* ApplicationIndicator dbus */
 
-      var appIndicatorBusPath = "/org/ayatana/NotificationItem/keepass_appindicator_plugin/Menu";
-      var appIndicatorObjPath = new DBus.ObjectPath(busPath);
-
+      var panelServiceBusName = "com.canonical.Unity.Panel.Service";
+      var panelServiceBusPath = "/com/canonical/Unity/Panel/Service";
+      var panelServiceObjectPath = new DBus.ObjectPath(panelServiceBusPath);
+      var panelService =
+        sessionBus.GetObject<com.canonical.Unity.Panel.IService>(panelServiceBusName,
+                                                                 panelServiceObjectPath);
+      // TODO - this could be improved by filtering on entry_id == ?
+      panelService.EntryActivated += (entry_id, entry_geometry) =>
+        OnAppIndicatorMenuShown(this, new EventArgs());
 
       /* run gtk event loop */
 

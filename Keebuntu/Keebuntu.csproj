@@ -77,6 +77,7 @@
     <Compile Include="Registrar.cs" />
     <Compile Include="IDBusMenu.cs" />
     <Compile Include="WinformsDBusMenu.cs" />
+    <Compile Include="IService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="KeePass.config.xml">
