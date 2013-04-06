@@ -28,6 +28,7 @@ namespace Keebuntu
       "accessible-desc"
     };
     private List<ToolStripItem> mMenuItemList;
+    private Form mMenuParentForm;
     private uint mRevision = 0;
     private object mLockObject = new object();
 
@@ -78,8 +79,10 @@ namespace Keebuntu
     }
 
     public string TextDirection {
-      // TODO get this value from menu
-      get { return "ltr"; }
+      get
+      {
+        return mMenuParentForm.RightToLeft == RightToLeft.Yes ? "rtl" : "ltr";
+      }
     }
 
     public string Status {
@@ -99,22 +102,29 @@ namespace Keebuntu
         throw new ArgumentNullException("menu");
       }
       lock (mLockObject) {
+        mMenuParentForm = menu.FindForm();
+
         mMenuItemList = new List<ToolStripItem>();
 
-        var rootMenuItem = new ToolStripMenuItem("Empty Label");
+        var rootMenuItem = new ToolStripMenuItem();
         rootMenuItem.DropDownItems.AddRange(menu.Items);
-        rootMenuItem.Available = true;
         mMenuItemList.Insert(0, rootMenuItem);
         AddItemsToMenuItemList(menu.Items);
-        // TODO - make this optional - look at environment variable
-        //menu.Visible = false;
+
+        if (Environment.GetEnvironmentVariable("APPMENU_DISPLAY_BOTH") != "1")
+        {
+          menu.Visible = false;
+        }
       }
     }
 
     private void AddItemsToMenuItemList(ToolStripItemCollection items)
     {
       foreach (ToolStripItem item in items) {
-        mMenuItemList.Add(item);
+        if (!mMenuItemList.Contains(item))
+        {
+          mMenuItemList.Add(item);
+        }
         var dropDownItem = item as ToolStripDropDownItem;
         if (dropDownItem != null) {
           AddItemsToMenuItemList(dropDownItem.DropDownItems);
@@ -129,7 +139,10 @@ namespace Keebuntu
           };
           dropDownItem.DropDown.ItemRemoved += (sender, e) => 
           {
-            mMenuItemList.Remove(e.Item);
+            // set to null instead of removing because we are using the index
+            // as the id and we don't want to mess it up.
+            var itemIndex = mMenuItemList.IndexOf(e.Item);
+            mMenuItemList[itemIndex] = null;
             if (dropDownItem.DropDownItems.Count == 0) {
               OnItemPropertyUpdated(e.Item, "children-display");
             }
@@ -202,12 +215,6 @@ namespace Keebuntu
             }
             if (menuItem.ShortcutKeys.HasFlag(Keys.Shift)) {
               keyList.Add("Shift");
-            }
-            if (menuItem.ShortcutKeys.HasFlag(Keys.Return)) {
-              keyList.Add("Return");
-            }
-            if (menuItem.ShortcutKeys.HasFlag(Keys.Delete)) {
-              keyList.Add("Delete");
             }
             var keyCode = menuItem.ShortcutKeys & Keys.KeyCode;
             if (keyCode != Keys.None) {
@@ -335,7 +342,7 @@ namespace Keebuntu
         }
       }
       var childList = new List<object>();
-      if (maxDepth < 0 || depth <= maxDepth) {
+      if (maxDepth < 0 || depth < maxDepth) {
         var dropDownItem = item as ToolStripDropDownItem;
         if (dropDownItem != null) {
           foreach (ToolStripItem childItem in dropDownItem.DropDownItems) {
@@ -400,7 +407,7 @@ namespace Keebuntu
       var item = mMenuItemList[id];
       switch (eventId) {
         case "clicked":
-          item.PerformClick();
+          InvokeParentForm(() => item.PerformClick());
           break;
         case "hovered":
           // TODO - hack hovered event?
@@ -437,7 +444,7 @@ namespace Keebuntu
       // try to use item so we throw and exception if it is null
       var dummy = item.Name;
       // TODO - is there anything in winforms here?
-      return false;
+      return true;
     }
 
     public void AboutToShowGroup(int[] ids, out int[] updatesNeeded, out int[] idErrors)
@@ -473,15 +480,36 @@ namespace Keebuntu
       properties.properties = new Dictionary<string, object>();
       properties.properties.Add(property, GetItemProperty(item, property));
       OnItemsPropertiesUpdated(new[] { properties }, null);
+      OnLayoutUpdated(mMenuItemList.IndexOf(item));
     }
 
     private void OnItemsPropertiesUpdated(com.canonical.dbusmenu.MenuItem[] updatedProps,
                                           MenuItemPropertyDescriptor[] removedProps)
     {
 #if DEBUG
-      Console.WriteLine("OnItemsPropertiesUpdated - updatedProps:{0}, removedProps:{1}",
-                        updatedProps == null ? "null" : string.Join(", ", updatedProps),
-                        removedProps == null ? "null" : string.Join(", ", removedProps));
+      Console.WriteLine("OnItemsPropertiesUpdated - ");
+      Console.Write("  updatedProps - ");
+      if (updatedProps == null) {
+        Console.WriteLine("Empty");
+      } else {
+        foreach(var prop in updatedProps)
+        {
+          Console.WriteLine("id:{0}, properties:{1}",
+                            prop.id, string.Join(", ", prop.properties));
+
+        }
+      }
+      Console.Write("  removedProps - ");
+      if (removedProps == null) {
+        Console.WriteLine("Empty");
+      } else {
+        foreach(var prop in removedProps)
+        {
+          Console.WriteLine("id:{0}, properties:{1}",
+                            prop.id, string.Join(", ", prop.properties));
+
+        }
+      }
 #endif
       if (ItemsPropertiesUpdated != null) {
         if (updatedProps == null) {
@@ -533,6 +561,15 @@ namespace Keebuntu
             Debug.Fail(ex.ToString());
           }
         }
+      }
+    }
+
+    private void InvokeParentForm(Action action)
+    {
+      if (mMenuParentForm.InvokeRequired) {
+        mMenuParentForm.Invoke(action);
+      } else {
+        action.Invoke();
       }
     }
   }

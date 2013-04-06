@@ -22,8 +22,8 @@
     <ConsolePause>false</ConsolePause>
     <CustomCommands>
       <CustomCommands>
-        <Command type="BeforeBuild" />
         <Command type="Execute" command="bin/Debug/KeePass.exe --debug" />
+        <Command type="BeforeExecute" command="run.sh" />
       </CustomCommands>
     </CustomCommands>
     <EnvironmentVariables>
@@ -85,8 +85,8 @@
     <None Include="KeePass.exe.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Resources\icons\ubuntu-mono-dark\apps\24\keepass-locked.svg" />
-    <None Include="Resources\icons\ubuntu-mono-light\apps\24\keepass-locked.svg" />
+    <None Include="Resources\icons\ubuntu-mono-dark\apps\24\keepass2.svg" />
+    <None Include="Resources\icons\ubuntu-mono-light\apps\24\keepass2.svg" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />

@@ -64,8 +64,8 @@ namespace com.canonical.dbusmenu
 
   public struct MenuItemPropertyDescriptor
   {
-    int id;
-    string[] properties;
+    public int id;
+    public string[] properties;
   }
 
   public struct MenuEvent

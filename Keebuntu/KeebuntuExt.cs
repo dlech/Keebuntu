@@ -52,7 +52,7 @@ namespace Keebuntu
         var onCtxTrayOpeningMethodInfo =
           mainWindowType.GetMethod("OnCtxTrayOpening",
                                     System.Reflection.BindingFlags.Instance |
-          System.Reflection.BindingFlags.NonPublic,
+                                      System.Reflection.BindingFlags.NonPublic,
                                     Type.DefaultBinder,
                                     new[] {
                                       typeof(object),
@@ -76,20 +76,20 @@ namespace Keebuntu
 
     private void RunGtkApp()
     {
-      DBus.BusG.Init();
+      //DBus.BusG.Init();
       Gtk.Application.Init();
 
       /* setup appindicator */
 
       mIndicator = new ApplicationIndicator("keepass-appindicator-plugin",
-                                            "keepass-locked",
+                                            "keepass2",
                                             AppIndicator.Category.ApplicationStatus);
 #if DEBUG
-      mIndicator.IconThemePath =
-        Path.GetFullPath("Resources/icons/ubuntu-mono-dark/apps/24");
+      mIndicator.IconThemePath = Path.GetFullPath("Resources/icons");
 #endif
-      mIndicator.Status = AppIndicator.Status.Active;
       mIndicator.Title = PwDefs.ProductName;
+      mIndicator.Status = AppIndicator.Status.Active;
+      
       mAppIndicatorMenu = new Gtk.Menu();
       var trayContextMenu = mPluginHost.MainWindow.TrayContextMenu;
       foreach (System.Windows.Forms.ToolStripItem item in trayContextMenu.Items) {
@@ -98,7 +98,6 @@ namespace Keebuntu
       trayContextMenu.ItemAdded += (sender, e) =>
         InvokeGtkThread(() => ConvertAndAddMenuItem(e.Item, mAppIndicatorMenu));
 
-      mAppIndicatorMenu.Shown += OnAppIndicatorMenuShown;
       mIndicator.Menu = mAppIndicatorMenu;
 
       /* setup appmenu */
@@ -106,6 +105,21 @@ namespace Keebuntu
       mDBusMenu = new WinformsDBusMenu(mPluginHost.MainWindow.MainMenu);
 
       var sessionBus = DBus.Bus.Session;
+
+      var sbType = sessionBus.GetType();
+      var addMatchMethod = sbType.GetMethod("AddMatch", BindingFlags.Instance|BindingFlags.NonPublic);
+      addMatchMethod.Invoke(sessionBus, new[] { "eavesdrop='true',path=/org/ayatana/NotificationItem/keepass_appindicator_plugin/Menu" });
+      var transportProp = sbType.GetProperty("Transport", BindingFlags.Instance|BindingFlags.NonPublic);
+      var transportObj = transportProp.GetValue(sessionBus, null);
+      var transportObjType = transportObj.GetType();
+      var readMessageMethod = transportObjType.GetMethod("ReadMessage", BindingFlags.Instance|BindingFlags.NonPublic);
+      int count = 0;
+      while(true)
+      {
+        var message = readMessageMethod.Invoke(transportObj, null);
+        Console.WriteLine("{0} {1}", count++, message);
+      }
+
 
 #if DEBUG
       var dbusBusPath = "/org/freedesktop/DBus";
@@ -135,10 +149,13 @@ namespace Keebuntu
 
       var menuPath = "/com/canonical/menu/{0}";
       var windowObjectPath = new DBus.ObjectPath(string.Format(menuPath, xid));
-
-      sessionBus.Register(windowObjectPath, mDBusMenu);      
-
+      sessionBus.Register(windowObjectPath, mDBusMenu);
       unityPanelServiceBus.RegisterWindow((uint)xid.ToInt32(), windowObjectPath);
+
+
+      var appIndicatorBusPath = "/org/ayatana/NotificationItem/keepass_appindicator_plugin/Menu";
+      var appIndicatorObjPath = new DBus.ObjectPath(busPath);
+
 
       /* run gtk event loop */
 
@@ -222,7 +239,7 @@ namespace Keebuntu
           gtkMenuItem.Submenu = subMenu;
 
           winformMenuItem.DropDown.ItemAdded += (sender, e) =>
-            InvokeMainWindow (() => ConvertAndAddMenuItem (e.Item, subMenu));
+            InvokeGtkThread (() => ConvertAndAddMenuItem (e.Item, subMenu));
         }
       } else if (item is System.Windows.Forms.ToolStripSeparator) {
         var gtkSeparator = new Gtk.SeparatorMenuItem();
