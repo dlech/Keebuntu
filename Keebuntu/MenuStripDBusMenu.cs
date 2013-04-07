@@ -10,9 +10,9 @@ using System.Drawing.Imaging;
 
 namespace Keebuntu
 {
-  public class WinformsDBusMenu : com.canonical.dbusmenu.IDbusMenu
+  public class MenuStripDBusMenu : com.canonical.dbusmenu.IDbusMenu
   {
-    private List<ToolStripItem> mMenuItemList;
+    private List<IMenuItemProxy> mMenuItemList;
     private Form mMenuParentForm;
     private uint mRevision = 0;
     private object mLockObject = new object();
@@ -37,7 +37,7 @@ namespace Keebuntu
       }
     }
 
-    private Dictionary<string, object> GetPropertiesForInterface(string interfaceName)
+    private IDictionary<string, object> GetPropertiesForInterface(string interfaceName)
     {
       var properties = new Dictionary<string, object>();
       foreach (var @interface in GetType().GetInterfaces()) {
@@ -77,11 +77,11 @@ namespace Keebuntu
       }
     }
 
-    public string[] IconThemePath { 
+    public string[] IconThemePath {
       get { return new string[0]; }
     }
 
-    public WinformsDBusMenu(MenuStrip menu)
+    public MenuStripDBusMenu(MenuStrip menu)
     {
       if (menu == null) {
         throw new ArgumentNullException("menu");
@@ -89,15 +89,13 @@ namespace Keebuntu
       lock (mLockObject) {
         mMenuParentForm = menu.FindForm();
 
-        mMenuItemList = new List<ToolStripItem>();
+        mMenuItemList = new List<IMenuItemProxy>();
 
-        var rootMenuItem = new ToolStripMenuItem();
-        rootMenuItem.DropDown.Items.AddRange(menu.Items);
-        mMenuItemList.Insert(0, rootMenuItem);
+        mMenuItemList.Insert(0, new MenuStripProxy(menu));
         AddItemsToMenuItemList(menu.Items);
         if (Environment.GetEnvironmentVariable("APPMENU_DISPLAY_BOTH") != "1")
         {
-          //menu.Visible = false;
+          menu.Visible = false;
         }
       }
     }
@@ -105,156 +103,59 @@ namespace Keebuntu
     private void AddItemsToMenuItemList(ToolStripItemCollection items)
     {
       foreach (ToolStripItem item in items) {
-        if (!mMenuItemList.Contains(item))
+        var itemProxy = ToolStripItemProxy.GetProxyFromCache(item);
+        if (!mMenuItemList.Contains(itemProxy))
         {
-          mMenuItemList.Add(item);
+          mMenuItemList.Add(itemProxy);
         }
         var dropDownItem = item as ToolStripDropDownItem;
         if (dropDownItem != null) {
           AddItemsToMenuItemList(dropDownItem.DropDownItems);
-          dropDownItem.DropDown.ItemAdded += (sender, e) => 
+          dropDownItem.DropDown.ItemAdded += (sender, e) =>
           {
-            if (!mMenuItemList.Contains(e.Item)) {
-              mMenuItemList.Add(e.Item);
+            var addedItemProxy = ToolStripItemProxy.GetProxyFromCache(e.Item);
+            if (!mMenuItemList.Contains(addedItemProxy)) {
+              mMenuItemList.Add(addedItemProxy);
             }
             if (dropDownItem.DropDownItems.Count == 1) {
-              OnItemPropertyUpdated(e.Item, "children-display");
+              OnItemPropertyUpdated(addedItemProxy, "children-display");
             }
           };
-          dropDownItem.DropDown.ItemRemoved += (sender, e) => 
+          dropDownItem.DropDown.ItemRemoved += (sender, e) =>
           {
+            var addedItemProxy = ToolStripItemProxy.GetProxyFromCache(e.Item);
             // set to null instead of removing because we are using the index
             // as the id and we don't want to mess it up.
-            var itemIndex = mMenuItemList.IndexOf(e.Item);
+            var itemIndex = mMenuItemList.IndexOf(addedItemProxy);
             mMenuItemList[itemIndex] = null;
             if (dropDownItem.DropDownItems.Count == 0) {
-              OnItemPropertyUpdated(e.Item, "children-display");
+              OnItemPropertyUpdated(addedItemProxy, "children-display");
             }
           };
           var menuItem = dropDownItem as ToolStripMenuItem;
+          var menuItemProxy = ToolStripItemProxy.GetProxyFromCache(item);
           if (menuItem != null) {
-            menuItem.CheckStateChanged += (sender, e) => 
-              OnItemPropertyUpdated(menuItem, "toggle-state");
+            menuItem.CheckStateChanged += (sender, e) =>
+              OnItemPropertyUpdated(menuItemProxy, "toggle-state");
           }
         }
         item.TextChanged += (sender, e) =>
-          OnItemPropertyUpdated(item, "label");
+          OnItemPropertyUpdated(itemProxy, "label");
         item.EnabledChanged += (sender, e) =>
-          OnItemPropertyUpdated(item, "enabled");
+          OnItemPropertyUpdated(itemProxy, "enabled");
         item.AvailableChanged += (sender, e) =>
-          OnItemPropertyUpdated(item, "visible");
+          OnItemPropertyUpdated(itemProxy, "visible");
       }
-    }
-
-    /// <summary>
-    /// Gets the dbus property for an item.
-    /// </summary>
-    /// <returns>
-    /// The item property.
-    /// </returns>
-    /// <param name='item'>
-    /// Item.
-    /// </param>
-    /// <param name='property'>
-    /// Property.
-    /// </param>
-    private object GetItemProperty(ToolStripItem item, string property)
-    {
-      if (item == null) {
-        throw new ArgumentNullException("item");
-      }
-      if (property == null) {
-        throw new ArgumentNullException("property");
-      }
-
-      ToolStripMenuItem menuItem;
-
-      switch (property) {
-        case "type":
-          return item is ToolStripSeparator ? "separator" : "standard";
-        case "label":
-          return item.Text == null ? string.Empty : item.Text.Replace("&", "_");
-        case "enabled":
-          return item.Enabled;
-        case "visible":
-          return item.Available;
-        case "icon-name":
-          return String.Empty;
-        case "icon-data":
-          if (item.Image == null) {
-            return new byte[0];
-          }
-          var memStream = new MemoryStream();
-          item.Image.Save(memStream, ImageFormat.Png);
-          // TODO - use imagemagick or something to gray icon if menu item is disabled
-          return memStream.ToArray();
-        case "shortcut":
-          var keyList = new List<string>();
-          menuItem = item as ToolStripMenuItem;
-          if (menuItem != null) {
-            if (menuItem.ShortcutKeys.HasFlag(Keys.Alt)) {
-              keyList.Add("Alt");
-            }
-            if (menuItem.ShortcutKeys.HasFlag(Keys.Control)) {
-              keyList.Add("Control");
-            }
-            if (menuItem.ShortcutKeys.HasFlag(Keys.Shift)) {
-              keyList.Add("Shift");
-            }
-            var keyCode = menuItem.ShortcutKeys & Keys.KeyCode;
-            if (keyCode != Keys.None) {
-              keyList.Add(keyCode.ToString());
-            }
-
-          }
-          var shortcutList = new string[1][];
-          shortcutList[0] = keyList.ToArray();
-          return shortcutList;
-        case "toggle-type":
-          menuItem = item as ToolStripMenuItem;
-          if (menuItem != null) {
-            if (menuItem.CheckOnClick) {
-              return "checkmark";
-            }
-          }
-          return String.Empty;
-        case "toggle-state":
-          menuItem = item as ToolStripMenuItem;
-          if (menuItem != null) {             
-            switch (menuItem.CheckState) {
-              case CheckState.Checked:
-                return 1;
-              case CheckState.Unchecked:
-                return 0;
-              case CheckState.Indeterminate:
-                return 2; // just for fun
-              default:
-                break;
-            }
-          }
-          return -1;
-        case "children-display":
-          var dropDownItem = item as ToolStripDropDownItem;
-          if (dropDownItem != null) {
-            if (dropDownItem.HasDropDownItems) {
-              return "submenu";
-            }
-          }
-          return String.Empty;
-        case "disposition":
-          return "normal";
-        case "accessible-desc":
-          return item.AccessibleDescription ?? string.Empty;
-      }
-      throw new ArgumentException("Invalid property name", property);
     }
 
     public void GetLayout(int parentId, int recursionDepth, string[] propertyNames,
                           out uint revision, out MenuItemLayout layout)
     {
 #if DEBUG
-      Console.WriteLine("GetLayout - parentId:{0}, recursionDepth:{1}, propertyNames:{2}",
-                        parentId, recursionDepth, string.Join(", ", propertyNames));
+      Console.WriteLine("GetLayout - parentId:{0}, " +
+                        "recursionDepth:{1}, propertyNames:{2}",
+                        parentId, recursionDepth,
+                        string.Join(", ", propertyNames));
 #endif
       if (propertyNames.Length == 0) {
         propertyNames = DefaultMenuItemProxy.GetAllDisplayNames();
@@ -266,20 +167,16 @@ namespace Keebuntu
       layout = CreateMenuItemLayout(item, 0, recursionDepth, propertyNames);
     }
 
-    private MenuItemLayout CreateMenuItemLayout(ToolStripItem item,
+    private MenuItemLayout CreateMenuItemLayout(IMenuItemProxy item,
                                                 int depth, int maxDepth,
                                                 string[] propertyNames)
-    {    
-#if DEBUG
-      //Console.WriteLine("CreateMenuItemLayout - item:{0}, depth:{1}, maxDepth:{2}, propertyNames:{3}",
-      //                  item, depth, maxDepth, string.Join(", ", propertyNames));
-#endif
+    {
       var layout = new MenuItemLayout();
       layout.id = mMenuItemList.IndexOf(item);
       layout.properties = new Dictionary<string, object>();
       foreach (var property in propertyNames) {
         try {
-          var value = GetItemProperty(item, property);
+          var value = item.GetValue(property);
           if (!DefaultMenuItemProxy.IsDefaultValue(property, value))
           {
             layout.properties.Add(property, value);
@@ -290,19 +187,15 @@ namespace Keebuntu
       }
       var childList = new List<object>();
       if (maxDepth < 0 || depth < maxDepth) {
-        var dropDownItem = item as ToolStripDropDownItem;
-        if (dropDownItem != null) {
-          foreach (ToolStripItem childItem in dropDownItem.DropDownItems) {
-            childList.Add(CreateMenuItemLayout(childItem, depth + 1, maxDepth,
-                                               propertyNames)
-            );
-          }
+        foreach (var childItem in item.GetChildren()) {
+          childList.Add(CreateMenuItemLayout(childItem, depth + 1,
+                                             maxDepth, propertyNames));
         }
       }
       layout.childeren = childList.ToArray();
       return layout;
     }
-   
+
     public com.canonical.dbusmenu.MenuItem[] GetGroupProperties(int[] ids,
                                                                 string[] propertyNames)
     {
@@ -321,7 +214,7 @@ namespace Keebuntu
         menuItem.properties = new Dictionary<string, object>();
         foreach (var property in propertyNames) {
           try {
-            var value = GetItemProperty(item, property);
+            var value = item.GetValue(property);
             if (!DefaultMenuItemProxy.IsDefaultValue(property, value))
             {
               menuItem.properties.Add(property, value);
@@ -335,16 +228,16 @@ namespace Keebuntu
 
       return itemList.ToArray();
     }
-   
+
     public object GetProperty(int id, string name)
     {
 #if DEBUG
       Console.WriteLine("GetProperty - id:{0}, name:{1}", id, name);
 #endif
       var item = mMenuItemList[id];
-      return GetItemProperty(item, name);
+      return item.GetValue(name);
     }
-   
+
     public void Event(int id, string eventId, object data, uint timestamp)
     {
 #if DEBUG
@@ -352,18 +245,7 @@ namespace Keebuntu
                         id, eventId, data, timestamp);
 #endif
       var item = mMenuItemList[id];
-      switch (eventId) {
-        case "clicked":
-          InvokeParentForm(() => item.PerformClick());
-          break;
-        case "hovered":
-          // TODO - hack hovered event?
-          break;
-        case "opened":
-          break;
-        case "closed":
-          break;
-      }
+      item.OnEvent(eventId, data, timestamp);
     }
 
     public int[] EventGroup(MenuEvent[] events)
@@ -388,10 +270,7 @@ namespace Keebuntu
       Console.WriteLine("AboutToShow - id:{0}", id);
 #endif
       var item = mMenuItemList[id];
-      // try to use item so we throw and exception if it is null
-      var dummy = item.Name;
-      // TODO - is there anything in winforms here?
-      return false;
+      return item.OnAboutToShow();
     }
 
     public void AboutToShowGroup(int[] ids, out int[] updatesNeeded, out int[] idErrors)
@@ -413,19 +292,19 @@ namespace Keebuntu
       updatesNeeded = needsUpdateList.ToArray();
       idErrors = errorList.ToArray();
     }
-       
+
     public event ItemsPropertiesUpdatedHandler ItemsPropertiesUpdated;
 
     /// <summary>
-    /// Helper class for single property change. 
+    /// Helper class for single property change.
     /// Raises the items properties updated event.
     /// </summary>
-    private void OnItemPropertyUpdated(ToolStripItem item, string property)
+    private void OnItemPropertyUpdated(IMenuItemProxy item, string property)
     {
       var properties = new com.canonical.dbusmenu.MenuItem();
       properties.id = mMenuItemList.IndexOf(item);
       properties.properties = new Dictionary<string, object>();
-      properties.properties.Add(property, GetItemProperty(item, property));
+      properties.properties.Add(property, item.GetValue(property));
       OnItemsPropertiesUpdated(new[] { properties }, null);
       OnLayoutUpdated(mMenuItemList.IndexOf(item));
     }

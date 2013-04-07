@@ -76,10 +76,12 @@
     <Compile Include="KeebuntuExt.cs" />
     <Compile Include="Registrar.cs" />
     <Compile Include="IDBusMenu.cs" />
-    <Compile Include="WinformsDBusMenu.cs" />
     <Compile Include="IService.cs" />
     <Compile Include="IMenuItemProxy.cs" />
     <Compile Include="DefaultMenuItemProxy.cs" />
+    <Compile Include="ToolStripItemProxy.cs" />
+    <Compile Include="MenuStripProxy.cs" />
+    <Compile Include="MenuStripDBusMenu.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="KeePass.config.xml">

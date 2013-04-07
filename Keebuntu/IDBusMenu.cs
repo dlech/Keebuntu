@@ -35,7 +35,7 @@ namespace com.canonical.dbusmenu
     /// disposition       string      "normal"      How item should be presented, "normal", "informative", "warning", "alert"
     /// 
     /// </remarks>
-    public Dictionary<string, object> properties;
+    public IDictionary<string, object> properties;
   }
 
   public struct MenuItemLayout
@@ -51,7 +51,7 @@ namespace com.canonical.dbusmenu
     /// <remarks>
     /// See <see cref="MenuItemProperties"/> for a list of valid properties.
     /// </remarks>
-    public Dictionary<string, object> properties;
+    public IDictionary<string, object> properties;
 
     /// <summary>
     /// The childeren menu items of this menu item.

@@ -9,44 +9,107 @@ namespace Keebuntu
     private static Dictionary<string, string> mDisplayNameCache;
     private static Dictionary<string, object> mDefaultValueCache;
 
-    public string Type { get { return GetDefaultValue<string>("Type"); } }
+    #region IMenuItemProxy implementation
 
-    public string Label { get { return GetDefaultValue<string>("Label"); } }
+    public virtual string Type {
+      get { return GetDefaultValue<string>("Type"); }
+    }
 
-    public bool Enabled { get { return GetDefaultValue<bool>("Enabled"); } }
+    public virtual string Label {
+      get { return GetDefaultValue<string>("Label"); }
+    }
 
-    public bool Visible { get { return GetDefaultValue<bool>("Visible"); } }
+    public virtual bool Enabled {
+      get { return GetDefaultValue<bool>("Enabled"); }
+    }
 
-    public string IconName { get { return GetDefaultValue<string>("IconName"); } }
+    public virtual bool Visible {
+      get { return GetDefaultValue<bool>("Visible"); }
+    }
 
-    public byte[] IconData { get { return GetDefaultValue<byte[]>("IconData"); } }
+    public virtual string IconName {
+      get { return GetDefaultValue<string>("IconName"); }
+    }
 
-    public string[][] Shortcut { get { return GetDefaultValue<string[][]>("Shortcut"); } }
+    public virtual byte[] IconData {
+      get { return GetDefaultValue<byte[]>("IconData"); }
+    }
 
-    public string ToggleType { get { return GetDefaultValue<string>("ToggleType"); } }
+    public virtual string[][] Shortcut {
+      get { return GetDefaultValue<string[][]>("Shortcut"); }
+    }
 
-    public int ToggleState { get { return GetDefaultValue<int>("ToggleState"); } }
+    public virtual string ToggleType {
+      get { return GetDefaultValue<string>("ToggleType"); }
+    }
 
-    public string ChildrenDisplay { get { return GetDefaultValue<string>("ChildrenDisplay"); } }
+    public virtual int ToggleState {
+      get { return GetDefaultValue<int>("ToggleState"); }
+    }
 
-    public string Disposition { get { return GetDefaultValue<string>("Disposition"); } }
-       
-    public string AccessibleDesc { get { return GetDefaultValue<string>("AccessibleDesc"); } }
+    public virtual string ChildrenDisplay {
+      get { return GetDefaultValue<string>("ChildrenDisplay"); }
+    }
+
+    public virtual string Disposition {
+      get { return GetDefaultValue<string>("Disposition"); }
+    }
+
+    public virtual string AccessibleDesc {
+      get { return GetDefaultValue<string>("AccessibleDesc"); }
+    }
+
+    public object GetValue(string propertyName)
+    {
+      var property = GetType().GetProperty(propertyName);
+      if  (property == null)
+      {
+        if (mDisplayNameCache.TryGetValue(propertyName, out propertyName))
+        {
+          property = GetType().GetProperty(propertyName);
+        }
+      }
+      if (property == null)
+      {
+        throw new ArgumentException("Unknown property: " + propertyName, "propertyName");
+      }
+      return property.GetValue(this, null);
+    }
+
+    public virtual IMenuItemProxy[] GetChildren()
+    {
+      return new IMenuItemProxy[0];
+    }
+
+    public virtual void OnEvent(string eventId, object data, uint timestamp)
+    {
+      return;
+    }
+
+    public virtual bool OnAboutToShow()
+    {
+      return false;
+    }
+
+    #endregion IMenuItemProxy implementation
 
     static DefaultMenuItemProxy()
     {
       mDisplayNameCache = new Dictionary<string, string>();
       mDefaultValueCache = new Dictionary<string, object>();
+      UpdateCaches<IMenuItemProxy>();
+    }
 
-      var menuItemProxyType = typeof(IMenuItemProxy);
-      foreach (var property in menuItemProxyType.GetProperties()) {
+    protected static void UpdateCaches<T>() where T : IMenuItemProxy
+    {
+      foreach (var property in typeof(T).GetProperties()) {
         foreach (DisplayNameAttribute attribute in
           property.GetCustomAttributes(typeof(DisplayNameAttribute), true)) {
-          mDisplayNameCache.Add(attribute.DisplayName, property.Name);
+          mDisplayNameCache[attribute.DisplayName] = property.Name;
         }
         foreach (DefaultValueAttribute attribute in
           property.GetCustomAttributes(typeof(DefaultValueAttribute), true)) {
-          mDefaultValueCache.Add(property.Name, attribute.Value);
+          mDefaultValueCache[property.Name] = attribute.Value;
         }
       }
     }
@@ -59,6 +122,13 @@ namespace Keebuntu
     public static object GetDefaultValue(string propertyName)
     {
       object value;
+
+      // special case for 'shortcut' since we can only pass a single dimensional
+      // array in the DefaultValueAttribute
+      if (propertyName.Equals("shortcut", StringComparison.OrdinalIgnoreCase))
+      {
+        return new string[0][];
+      }
 
       if (mDefaultValueCache.TryGetValue(propertyName, out value))
       {

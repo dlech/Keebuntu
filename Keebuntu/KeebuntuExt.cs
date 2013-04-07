@@ -19,7 +19,7 @@ namespace Keebuntu
     private Thread mGtkThread;
     private ApplicationIndicator mIndicator;
     private Gtk.Menu mAppIndicatorMenu;
-    private WinformsDBusMenu mDBusMenu;
+    private MenuStripDBusMenu mDBusMenu;
 
     public override bool Initialize(IPluginHost host)
     {
@@ -105,7 +105,7 @@ namespace Keebuntu
 
       /* setup ApplicationMenu */
 
-      mDBusMenu = new WinformsDBusMenu(mPluginHost.MainWindow.MainMenu);
+      mDBusMenu = new MenuStripDBusMenu(mPluginHost.MainWindow.MainMenu);
 
       var sessionBus = DBus.Bus.Session;
 

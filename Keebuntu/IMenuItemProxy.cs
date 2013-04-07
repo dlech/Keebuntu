@@ -52,6 +52,12 @@ namespace Keebuntu
     [DisplayName("accessible-desc")]
     [DefaultValue("")]
     string AccessibleDesc { get; }
+
+    object GetValue(string propertyName);
+    IMenuItemProxy[] GetChildren();
+
+    void OnEvent(string eventId, object data, uint timestamp);
+    bool OnAboutToShow();
   }
 }
 
