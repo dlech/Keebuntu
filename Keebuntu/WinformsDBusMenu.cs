@@ -12,21 +12,6 @@ namespace Keebuntu
 {
   public class WinformsDBusMenu : com.canonical.dbusmenu.IDbusMenu
   {
-    private readonly string[] supportedMenuItemProperties =
-    {
-      "type",
-      "label",
-      "enabled",
-      "visible",
-      "icon-name",
-      "icon-data",
-      "shortcut",
-      "toggle-type",
-      "toggle-state",
-      "children-display",
-      "disposition",
-      "accessible-desc"
-    };
     private List<ToolStripItem> mMenuItemList;
     private Form mMenuParentForm;
     private uint mRevision = 0;
@@ -107,13 +92,12 @@ namespace Keebuntu
         mMenuItemList = new List<ToolStripItem>();
 
         var rootMenuItem = new ToolStripMenuItem();
-        rootMenuItem.DropDownItems.AddRange(menu.Items);
+        rootMenuItem.DropDown.Items.AddRange(menu.Items);
         mMenuItemList.Insert(0, rootMenuItem);
         AddItemsToMenuItemList(menu.Items);
-
         if (Environment.GetEnvironmentVariable("APPMENU_DISPLAY_BOTH") != "1")
         {
-          menu.Visible = false;
+          //menu.Visible = false;
         }
       }
     }
@@ -202,6 +186,7 @@ namespace Keebuntu
           }
           var memStream = new MemoryStream();
           item.Image.Save(memStream, ImageFormat.Png);
+          // TODO - use imagemagick or something to gray icon if menu item is disabled
           return memStream.ToArray();
         case "shortcut":
           var keyList = new List<string>();
@@ -264,44 +249,6 @@ namespace Keebuntu
       throw new ArgumentException("Invalid property name", property);
     }
 
-    private bool IsDefaultValue(string property, object value)
-    {
-      if (property == null) {
-        throw new ArgumentNullException("property");
-      }
-      if (value == null) {
-        throw new ArgumentNullException("value");
-      }
-
-      switch (property) {
-        case "type":
-          return value.Equals("standard");
-        case "label":
-          return value.Equals(String.Empty);
-        case "enabled":
-          return value.Equals(true);
-        case "visible":
-          return value.Equals(true);
-        case "icon-name":
-          return value.Equals(String.Empty);
-        case "icon-data":
-          return value is byte[] && (value as byte[]).Length == 0;
-        case "shortcut":
-          return value is string[][] && (value as string[][])[0].Length == 0;
-        case "toggle-type":
-          return value.Equals(String.Empty);
-        case "toggle-state":
-          return value.Equals(-1);
-        case "children-display":
-          return value.Equals(String.Empty);
-        case "disposition":
-          return value.Equals("normal");
-        case "accessible-desc":
-          return value.Equals(String.Empty);
-      }
-      throw new ArgumentException("Invalid property name", property);
-    }
-
     public void GetLayout(int parentId, int recursionDepth, string[] propertyNames,
                           out uint revision, out MenuItemLayout layout)
     {
@@ -310,7 +257,7 @@ namespace Keebuntu
                         parentId, recursionDepth, string.Join(", ", propertyNames));
 #endif
       if (propertyNames.Length == 0) {
-        propertyNames = supportedMenuItemProperties;
+        propertyNames = DefaultMenuItemProxy.GetAllDisplayNames();
       }
 
       revision = mRevision;
@@ -333,7 +280,7 @@ namespace Keebuntu
       foreach (var property in propertyNames) {
         try {
           var value = GetItemProperty(item, property);
-          if (!IsDefaultValue(property, value))
+          if (!DefaultMenuItemProxy.IsDefaultValue(property, value))
           {
             layout.properties.Add(property, value);
           }
@@ -364,7 +311,7 @@ namespace Keebuntu
                         string.Join(", ", ids), string.Join(", ", propertyNames));
 #endif
       if (propertyNames.Length == 0) {
-        propertyNames = supportedMenuItemProperties;
+        propertyNames = DefaultMenuItemProxy.GetAllDisplayNames();
       }
       var itemList = new List<com.canonical.dbusmenu.MenuItem>();
       foreach (var id in ids) {
@@ -375,7 +322,7 @@ namespace Keebuntu
         foreach (var property in propertyNames) {
           try {
             var value = GetItemProperty(item, property);
-            if (!IsDefaultValue(property, value))
+            if (!DefaultMenuItemProxy.IsDefaultValue(property, value))
             {
               menuItem.properties.Add(property, value);
             }
@@ -444,7 +391,7 @@ namespace Keebuntu
       // try to use item so we throw and exception if it is null
       var dummy = item.Name;
       // TODO - is there anything in winforms here?
-      return true;
+      return false;
     }
 
     public void AboutToShowGroup(int[] ids, out int[] updatesNeeded, out int[] idErrors)

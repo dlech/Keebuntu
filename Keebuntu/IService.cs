@@ -3,6 +3,8 @@ using DBus;
 
 // TODO - find docs on this - only function tested/used is EntryActivated event
 
+// based on panel-main.c from unity
+
 namespace com.canonical.Unity.Panel
 {
   public struct ObjectInfo

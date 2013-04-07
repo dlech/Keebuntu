@@ -78,6 +78,8 @@
     <Compile Include="IDBusMenu.cs" />
     <Compile Include="WinformsDBusMenu.cs" />
     <Compile Include="IService.cs" />
+    <Compile Include="IMenuItemProxy.cs" />
+    <Compile Include="DefaultMenuItemProxy.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="KeePass.config.xml">
