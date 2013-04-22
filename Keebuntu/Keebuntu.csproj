@@ -61,9 +61,12 @@
         <OS>Unix</OS>
       </Prerequisites>
       <BuildCommands>
-        <PreBuild>rm {PLGX_TEMP_DIR}Keebuntu.csproj</PreBuild>
+        <PreBuild>bash "{PLGX_TEMP_DIR}pre-build.sh" "{PLGX_TEMP_DIR}"</PreBuild>
       </BuildCommands>
     </PlgxConfiguration>
+    <PlgxExtras>
+      <Item Source="pre-build.sh" Destination="pre-build.sh" />
+    </PlgxExtras>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="gtk-sharp">
