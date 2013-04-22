@@ -10,6 +10,7 @@
     <RootNamespace>Keebuntu</RootNamespace>
     <AssemblyName>Keebuntu</AssemblyName>
     <Description>Plugin for KeePass that add Ubuntu Application Indicator support</Description>
+    <ReleaseVersion>0.1.0</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -23,7 +24,6 @@
     <CustomCommands>
       <CustomCommands>
         <Command type="Execute" command="bin/Debug/KeePass.exe --debug" />
-        <Command type="BeforeExecute" command="run.sh" />
       </CustomCommands>
     </CustomCommands>
     <EnvironmentVariables>
@@ -38,32 +38,63 @@
     <Optimize>false</Optimize>
     <OutputPath>bin\Release</OutputPath>
     <WarningLevel>4</WarningLevel>
+    <CustomCommands>
+      <CustomCommands>
+        <Command type="Execute" command="bin/Debug/KeePass.exe" />
+      </CustomCommands>
+    </CustomCommands>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'ReleasePlgx|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\ReleasePlgx</OutputPath>
+    <WarningLevel>4</WarningLevel>
+    <CustomCommands>
+      <CustomCommands>
+        <Command type="Execute" command="bin/ReleasePlgx/KeePass.exe --debug --saveplgxcr" />
+      </CustomCommands>
+    </CustomCommands>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PlgxConfiguration>
+      <Prerequisites>
+        <OS>Unix</OS>
+      </Prerequisites>
+      <BuildCommands>
+        <PreBuild>rm {PLGX_TEMP_DIR}Keebuntu.csproj</PreBuild>
+      </BuildCommands>
+    </PlgxConfiguration>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+    <Reference Include="gtk-sharp">
       <Package>gtk-sharp-2.0</Package>
-    </Reference>
-    <Reference Include="appindicator-sharp, Version=0.2.0.0, Culture=neutral, PublicKeyToken=bcae265d1c7ab4c2">
       <Private>False</Private>
+    </Reference>
+    <Reference Include="appindicator-sharp">
       <Package>appindicator-sharp-0.1</Package>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Drawing" />
-    <Reference Include="dbus-sharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=5675b0c3093115b5">
-      <Private>False</Private>
+    <Reference Include="dbus-sharp">
       <Package>dbus-sharp-1.0</Package>
-    </Reference>
-    <Reference Include="dbus-sharp-glib, Version=1.0.0.0, Culture=neutral, PublicKeyToken=5675b0c3093115b5">
       <Private>False</Private>
+    </Reference>
+    <Reference Include="dbus-sharp-glib">
       <Package>dbus-sharp-glib-1.0</Package>
-    </Reference>
-    <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <Private>False</Private>
+    </Reference>
+    <Reference Include="gdk-sharp">
       <Package>gtk-sharp-2.0</Package>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="KeePass.exe">
+      <HintPath>$(KeePassPath)KeePass.exe</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(KeePassPluginDevToolsPath)\Plgx.targets" />
   <ProjectExtensions>
     <MonoDevelop>
       <Properties>
@@ -86,20 +117,21 @@
   <ItemGroup>
     <None Include="KeePass.config.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <ExcludeFromPlgx />
     </None>
     <None Include="KeePass.exe.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <ExcludeFromPlgx />
     </None>
-    <None Include="Resources\icons\ubuntu-mono-dark\apps\24\keepass2.svg" />
-    <None Include="Resources\icons\ubuntu-mono-light\apps\24\keepass2.svg" />
+    <None Include="Resources\icons\ubuntu-mono-dark\apps\24\keepass2.svg">
+      <ExcludeFromPlgx />
+    </None>
+    <None Include="Resources\icons\ubuntu-mono-light\apps\24\keepass2.svg">
+      <ExcludeFromPlgx />
+    </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Resources\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\KeePassPluginDevTools\keepass2\KeePass\KeePass.csproj">
-      <Project>{10938016-DEE2-4A25-9A5A-8FD3444379CA}</Project>
-      <Name>KeePass</Name>
-    </ProjectReference>
-  </ItemGroup>
+  <Target Name="AfterBuild" Condition="'$(Configuration)' == 'ReleasePlgx'">
+    <CallTarget Targets="BuildPlgx" />
+    <Delete Files="$(OutDir)$(AssemblyName)$(TargetExt)" />
+  </Target>
 </Project>

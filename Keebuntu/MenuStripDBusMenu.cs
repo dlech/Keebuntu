@@ -12,6 +12,7 @@ namespace Keebuntu
 {
   public class MenuStripDBusMenu : com.canonical.dbusmenu.IDbusMenu
   {
+    // TODO - replace this with a dictionary
     private List<IMenuItemProxy> mMenuItemList;
     private Form mMenuParentForm;
     private uint mRevision = 0;
@@ -59,7 +60,7 @@ namespace Keebuntu
     #endregion
 
     public uint Version {
-      // TODO - need to verify that this is OK
+      // TODO - need to verify that this is correct
       get { return 3; }
     }
 
@@ -301,6 +302,7 @@ namespace Keebuntu
     /// </summary>
     private void OnItemPropertyUpdated(IMenuItemProxy item, string property)
     {
+      // TODO - cache property values so that we don't send unnessasary events
       var properties = new com.canonical.dbusmenu.MenuItem();
       properties.id = mMenuItemList.IndexOf(item);
       properties.properties = new Dictionary<string, object>();
