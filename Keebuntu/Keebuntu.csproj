@@ -60,9 +60,6 @@
       <Prerequisites>
         <OS>Unix</OS>
       </Prerequisites>
-      <BuildCommands>
-        <PreBuild>bash "{PLGX_TEMP_DIR}pre-build.sh" "{PLGX_TEMP_DIR}"</PreBuild>
-      </BuildCommands>
     </PlgxConfiguration>
     <PlgxExtras>
       <Item Source="pre-build.sh" Destination="pre-build.sh" />
