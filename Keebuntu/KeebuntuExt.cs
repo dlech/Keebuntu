@@ -15,6 +15,8 @@ namespace Keebuntu
 {
   public class KeebuntuExt : Plugin
   {
+    const string menuPath = "/com/canonical/menu/{0}";
+
     private IPluginHost mPluginHost;
     private Thread mGtkThread;
     private ApplicationIndicator mIndicator;
@@ -122,23 +124,24 @@ namespace Keebuntu
       var objPath = new DBus.ObjectPath(busPath);
       var unityPanelServiceBus =
         sessionBus.GetObject<com.canonical.AppMenu.Registrar>(busName, objPath);
+      var mainFormXid = GetWindowXid(mPluginHost.MainWindow);
+      var mainFormObjectPath = new DBus.ObjectPath(string.Format(menuPath,
+                                                                 mainFormXid));
+      sessionBus.Register(mainFormObjectPath, mDBusMenu);
+      unityPanelServiceBus.RegisterWindow((uint)mainFormXid.ToInt32(),
+                                          mainFormObjectPath);
 
-      // TODO - extract getting xid to separate function
-      var typeName = typeof(System.Windows.Forms.Control).AssemblyQualifiedName;
-      var hwndTypeName = typeName.Replace("Control", "Hwnd");
-      var hwndType = Type.GetType(hwndTypeName);
-      var objectFromHandleMethod =
-        hwndType.GetMethod("ObjectFromHandle", BindingFlags.Public | BindingFlags.Static);
-      var hwnd =
-        objectFromHandleMethod.Invoke(null, new object[] { mPluginHost.MainWindow.Handle });
-      var wholeWindowField = hwndType.GetField("whole_window",
-                                               BindingFlags.NonPublic | BindingFlags.Instance);
-      var xid = (IntPtr)wholeWindowField.GetValue(hwnd);
-
-      var menuPath = "/com/canonical/menu/{0}";
-      var windowObjectPath = new DBus.ObjectPath(string.Format(menuPath, xid));
-      sessionBus.Register(windowObjectPath, mDBusMenu);
-      unityPanelServiceBus.RegisterWindow((uint)xid.ToInt32(), windowObjectPath);
+      // have to re-register the window each time the main windows is shown
+      // otherwise we lose the application menu
+      mPluginHost.MainWindow.VisibleChanged += (sender, e) => 
+      {
+        if (mPluginHost.MainWindow.Visible) {
+          InvokeGtkThread(
+            () => unityPanelServiceBus.RegisterWindow((uint)mainFormXid.ToInt32(),
+                                                    mainFormObjectPath)
+            );
+        }
+      };
 
       /* ApplicationIndicator dbus */
 
@@ -159,7 +162,20 @@ namespace Keebuntu
       /* cleanup */
 
       mAppIndicatorMenu.Shown -= OnAppIndicatorMenuShown;
-      sessionBus.Unregister(windowObjectPath);
+    }
+
+    private IntPtr GetWindowXid(System.Windows.Forms.Form form)
+    {
+      var typeName = typeof(System.Windows.Forms.Control).AssemblyQualifiedName;
+      var hwndTypeName = typeName.Replace("Control", "Hwnd");
+      var hwndType = Type.GetType(hwndTypeName);
+      var objectFromHandleMethod =
+        hwndType.GetMethod("ObjectFromHandle", BindingFlags.Public | BindingFlags.Static);
+      var hwnd =
+        objectFromHandleMethod.Invoke(null, new object[] { form.Handle });
+      var wholeWindowField = hwndType.GetField("whole_window",
+                                               BindingFlags.NonPublic | BindingFlags.Instance);
+      return (IntPtr)wholeWindowField.GetValue(hwnd);
     }
 
     private void InvokeMainWindow(Action action)
