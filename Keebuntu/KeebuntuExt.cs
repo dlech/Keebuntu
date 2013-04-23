@@ -82,7 +82,7 @@ namespace Keebuntu
       /* setup ApplicationIndicator */
 
       mIndicator = new ApplicationIndicator("keepass-appindicator-plugin",
-                                            "keepass2",
+                                            "keepass2-locked",
                                             AppIndicator.Category.ApplicationStatus);
 #if DEBUG
       mIndicator.IconThemePath = Path.GetFullPath("Resources/icons");

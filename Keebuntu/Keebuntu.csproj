@@ -94,7 +94,7 @@
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(KeePassPluginDevToolsPath)\Plgx.targets" />
+  <Import Project="$(KeePassPluginDevToolsPath)\Plgx.targets" Condition="'$(Configuration)' == 'ReleasePlgx'" />
   <ProjectExtensions>
     <MonoDevelop>
       <Properties>
@@ -123,12 +123,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <ExcludeFromPlgx />
     </None>
-    <None Include="Resources\icons\ubuntu-mono-dark\apps\24\keepass2.svg">
-      <ExcludeFromPlgx />
-    </None>
-    <None Include="Resources\icons\ubuntu-mono-light\apps\24\keepass2.svg">
-      <ExcludeFromPlgx />
-    </None>
+    <None Include="Resources\icons\highcolor\256x256\apps\keepass2-locked.png" />
+    <None Include="Resources\icons\ubuntu-mono-dark\apps\24\keepass2-locked.svg" />
+    <None Include="Resources\icons\ubuntu-mono-light\apps\24\keepass2-locked.svg" />
   </ItemGroup>
   <Target Name="AfterBuild" Condition="'$(Configuration)' == 'ReleasePlgx'">
     <CallTarget Targets="BuildPlgx" />
