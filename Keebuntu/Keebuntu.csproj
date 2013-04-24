@@ -113,6 +113,7 @@
     <Compile Include="ToolStripItemProxy.cs" />
     <Compile Include="MenuStripProxy.cs" />
     <Compile Include="MenuStripDBusMenu.cs" />
+    <Compile Include="IMatcher.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="KeePass.config.xml">

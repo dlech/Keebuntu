@@ -119,11 +119,12 @@ namespace Keebuntu
         sessionBus.GetObject<org.freedesktop.DBus.IBus>(dbusBusName, dbusObjectPath);
       dbusService.NameAcquired += (name) => Console.WriteLine ("NameAcquired: " + name);
 #endif
-      var busPath = "/com/canonical/AppMenu/Registrar";
-      var busName = "com.canonical.AppMenu.Registrar";
-      var objPath = new DBus.ObjectPath(busPath);
+      var registrarBusPath = "/com/canonical/AppMenu/Registrar";
+      var registratBusName = "com.canonical.AppMenu.Registrar";
+      var registrarObjectPath = new DBus.ObjectPath(registrarBusPath);
       var unityPanelServiceBus =
-        sessionBus.GetObject<com.canonical.AppMenu.Registrar>(busName, objPath);
+        sessionBus.GetObject<com.canonical.AppMenu.Registrar>(registratBusName,
+                                                              registrarObjectPath);
       var mainFormXid = GetWindowXid(mPluginHost.MainWindow);
       var mainFormObjectPath = new DBus.ObjectPath(string.Format(menuPath,
                                                                  mainFormXid));
@@ -138,10 +139,30 @@ namespace Keebuntu
         if (mPluginHost.MainWindow.Visible) {
           InvokeGtkThread(
             () => unityPanelServiceBus.RegisterWindow((uint)mainFormXid.ToInt32(),
-                                                    mainFormObjectPath)
-            );
+                                                      mainFormObjectPath));
         }
       };
+
+      var matcherBusName = "org.ayatana.bamf";
+      var matcherBusPath = "/org/ayatana/bamf/matcher";
+      var matcherObjectPath = new DBus.ObjectPath(matcherBusPath);
+      var matcherService =
+        sessionBus.GetObject<org.ayatana.bamf.IMatcher>(matcherBusName,
+                                                        matcherObjectPath);
+      var applicationPath =
+        matcherService.ApplicationForXid((uint)mainFormXid.ToInt32());
+      matcherService.ActiveApplicationChanged += (old_app, new_app) =>
+      {
+#if DEBUG
+        Console.WriteLine("ActiveApplicationChanged - old_app: {0}, new_app: {1}",
+                          old_app, new_app);
+        if (new_app == applicationPath)
+        {
+          Console.WriteLine("We have a match!" + mPluginHost.MainWindow.Visible);
+        }
+#endif
+      };
+
 
       /* ApplicationIndicator dbus */
 
