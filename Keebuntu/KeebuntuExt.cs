@@ -22,10 +22,16 @@ namespace Keebuntu
     private ApplicationIndicator mIndicator;
     private Gtk.Menu mAppIndicatorMenu;
     private MenuStripDBusMenu mDBusMenu;
+    private bool mActiveateWorkaroundNeeded;
+    private System.Windows.Forms.Timer mActivateWorkaroundTimer;
 
     public override bool Initialize(IPluginHost host)
     {
       mPluginHost = host;
+      mActivateWorkaroundTimer = new System.Windows.Forms.Timer();
+      mActivateWorkaroundTimer.Interval = 100;
+      mActivateWorkaroundTimer.Tick += OnActivateWorkaroundTimerTick;
+
       try {
         mGtkThread = new Thread(RunGtkApp);
         mGtkThread.SetApartmentState(ApartmentState.STA);
@@ -134,35 +140,31 @@ namespace Keebuntu
 
       // have to re-register the window each time the main windows is shown
       // otherwise we lose the application menu
-      mPluginHost.MainWindow.VisibleChanged += (sender, e) => 
+      mPluginHost.MainWindow.Activated += (sender, e) =>
       {
-        if (mPluginHost.MainWindow.Visible) {
-          InvokeGtkThread(
-            () => unityPanelServiceBus.RegisterWindow((uint)mainFormXid.ToInt32(),
-                                                      mainFormObjectPath));
+        // TODO - sometimes we invoke this unnessasarily. If there is a way to
+        // test that we are still registered, that would proably be better.
+        // For now, it does not seem to hurt anything.
+        InvokeGtkThread(
+          () => unityPanelServiceBus.RegisterWindow((uint)mainFormXid.ToInt32(),
+                                                    mainFormObjectPath));
+        if (mActiveateWorkaroundNeeded) {
+          // see explanation in OnActivateWorkaroundTimerTick()
+          mActivateWorkaroundTimer.Start();
+          mActiveateWorkaroundNeeded = false;
         }
       };
 
-      var matcherBusName = "org.ayatana.bamf";
-      var matcherBusPath = "/org/ayatana/bamf/matcher";
-      var matcherObjectPath = new DBus.ObjectPath(matcherBusPath);
-      var matcherService =
-        sessionBus.GetObject<org.ayatana.bamf.IMatcher>(matcherBusName,
-                                                        matcherObjectPath);
-      var applicationPath =
-        matcherService.ApplicationForXid((uint)mainFormXid.ToInt32());
-      matcherService.ActiveApplicationChanged += (old_app, new_app) =>
+      mPluginHost.MainWindow.Resize += (sender, e) =>
       {
-#if DEBUG
-        Console.WriteLine("ActiveApplicationChanged - old_app: {0}, new_app: {1}",
-                          old_app, new_app);
-        if (new_app == applicationPath)
+        if (!mPluginHost.MainWindow.Visible &&
+            mPluginHost.MainWindow.WindowState ==
+            System.Windows.Forms.FormWindowState.Minimized)
         {
-          Console.WriteLine("We have a match!" + mPluginHost.MainWindow.Visible);
+          // see explanation in OnActivateWorkaroundTimerTick()
+          mActiveateWorkaroundNeeded = true;
         }
-#endif
       };
-
 
       /* ApplicationIndicator dbus */
 
@@ -280,6 +282,18 @@ namespace Keebuntu
       } else {
         Debug.Fail("Unexpected menu item");
       }
+    }
+
+    private void OnActivateWorkaroundTimerTick(object sender, EventArgs e)
+    {
+      // There seems to be a bug? in Mono where if you change Visible from
+      // false to true and WindowState from Minimized to !Minimized and then call
+      // Activate() all in the same method call, then the icon in the launcher
+      // is resored, but the window is not shown. To work around this, we use a
+      // timer to invoke Activate() a second time to get the window to show.
+
+      mActivateWorkaroundTimer.Stop();
+      InvokeMainWindow(() => mPluginHost.MainWindow.Activate());
     }
   }
 }

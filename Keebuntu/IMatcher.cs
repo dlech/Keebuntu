@@ -3,7 +3,7 @@ using System;
 using DBus;
 
 namespace org.ayatana.bamf
-{  
+{
   public delegate void ActiveApplicationChangedHandler(string old_app, string new_app);
 
   public delegate void ActiveWindowChangedHandler(string old_win, string new_win);
@@ -28,7 +28,7 @@ namespace org.ayatana.bamf
 
     [return: Argument("paths")]
     string[] RunningApplications();
-   
+
     [return: Argument("paths")]
     string[] RunningApplicationsDesktopFiles();
 
@@ -51,7 +51,7 @@ namespace org.ayatana.bamf
 
     [return: Argument("window")]
     string ActiveWindow();
-    
+
     [return: Argument("application")]
     string ActiveApplication();
 

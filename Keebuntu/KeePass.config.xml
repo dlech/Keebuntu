@@ -15,6 +15,9 @@
       <CheckForUpdateConfigured>true</CheckForUpdateConfigured>      
     </Start>
   </Application>
+  <MainWindow>
+		<MinimizeToTray>true</MinimizeToTray>
+  </MainWindow>
   <Integration>    
     <LimitToSingleInstance>false</LimitToSingleInstance>
   </Integration>
