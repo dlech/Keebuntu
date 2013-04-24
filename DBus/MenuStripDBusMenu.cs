@@ -2,13 +2,14 @@ using System;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Windows.Forms;
-using DBus;
-using com.canonical.dbusmenu;
 using System.Diagnostics;
 using System.IO;
 using System.Drawing.Imaging;
+using DBus;
+using Keebuntu.DBus;
+using com.canonical.dbusmenu;
 
-namespace Keebuntu
+namespace Keebuntu.Dbus
 {
   public class MenuStripDBusMenu : com.canonical.dbusmenu.IDbusMenu
   {
@@ -43,9 +44,9 @@ namespace Keebuntu
       var properties = new Dictionary<string, object>();
       foreach (var @interface in GetType().GetInterfaces()) {
         var interfaceAttributes =
-          @interface.GetCustomAttributes(typeof(DBus.InterfaceAttribute), false);
+          @interface.GetCustomAttributes(typeof(InterfaceAttribute), false);
         // TODO need to check this for DBus.InterfaceAttribute too.
-        foreach (DBus.InterfaceAttribute attrib in interfaceAttributes) {
+        foreach (InterfaceAttribute attrib in interfaceAttributes) {
           if (string.IsNullOrWhiteSpace(interfaceName) || attrib.Name == interfaceName) {
             foreach (var property in @interface.GetProperties()) {
               // TODO - do we need to handle indexed properties?

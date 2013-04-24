@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 
-namespace Keebuntu
+namespace Keebuntu.DBus
 {
   public interface IMenuItemProxy
   {

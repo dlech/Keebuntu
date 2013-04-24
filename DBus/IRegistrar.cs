@@ -8,19 +8,27 @@ namespace com.canonical.AppMenu
   /// Interface for dbus
   /// </summary>
   [Interface("com.canonical.AppMenu.Registrar")]
-  public interface Registrar
+  public interface IRegistrar
   {
+    [return: Argument("menu")]
     string GetMenuForWindow(uint windowId, ObjectPath menuObjectPath);
-      object GetMenus();
+
+    [return: Argument("menus")]
+    object GetMenus();
+
     void RegisterWindow(uint windowId, ObjectPath menuObjectPath);
+
     void UnregisterWindow(uint windowId);
 
     event WindowRegisteredHandler WindowRegistered;
-    event WindowUnregisteredHandler WindowUnregistered;
 
+    event WindowUnregisteredHandler WindowUnregistered;
   }
 
-  public delegate void WindowRegisteredHandler(uint windowId, string service, ObjectPath menuObjectPath);
+  public delegate void WindowRegisteredHandler(uint windowId,
+                                               string service,
+                                               ObjectPath menuObjectPath);
+
   public delegate void WindowUnregisteredHandler(uint windowId);
 
 }

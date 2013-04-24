@@ -7,9 +7,9 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{AF47CF84-8823-4A58-9E79-543970D5BCA1}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Keebuntu</RootNamespace>
-    <AssemblyName>Keebuntu</AssemblyName>
-    <Description>Plugin for KeePass that add Ubuntu Application Indicator support</Description>
+    <RootNamespace>KeebuntuAppMenu</RootNamespace>
+    <AssemblyName>KeebuntuAppMenu</AssemblyName>
+    <Description>Plugin for KeePass 2.x that add support for Ubuntu Application Menus</Description>
     <ReleaseVersion>0.1.0</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -44,17 +44,6 @@
       </CustomCommands>
     </CustomCommands>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'ReleasePlgx|AnyCPU' ">
-    <DebugType>none</DebugType>
-    <Optimize>False</Optimize>
-    <OutputPath>bin\ReleasePlgx</OutputPath>
-    <WarningLevel>4</WarningLevel>
-    <CustomCommands>
-      <CustomCommands>
-        <Command type="Execute" command="bin/ReleasePlgx/KeePass.exe --debug --saveplgxcr" />
-      </CustomCommands>
-    </CustomCommands>
-  </PropertyGroup>
   <PropertyGroup>
     <PlgxConfiguration>
       <Prerequisites>
@@ -66,14 +55,6 @@
     </PlgxExtras>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="gtk-sharp">
-      <Package>gtk-sharp-2.0</Package>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="appindicator-sharp">
-      <Package>appindicator-sharp-0.1</Package>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Drawing" />
@@ -85,15 +66,15 @@
       <Package>dbus-sharp-glib-1.0</Package>
       <Private>False</Private>
     </Reference>
-    <Reference Include="gdk-sharp">
-      <Package>gtk-sharp-2.0</Package>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="KeePass.exe">
       <HintPath>$(KeePassPath)KeePass.exe</HintPath>
     </Reference>
     <Reference Include="KeePass">
       <HintPath>..\..\keepass2-2.22+dfsg\Build\KeePass\Release\KeePass.exe</HintPath>
+    </Reference>
+    <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Private>False</Private>
+      <Package>gtk-sharp-2.0</Package>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
@@ -101,22 +82,13 @@
   <ProjectExtensions>
     <MonoDevelop>
       <Properties>
-        <Deployment.LinuxDeployData generateScript="False" />
+        <Deployment.LinuxDeployData generateScript="False" generatePcFile="False" />
       </Properties>
     </MonoDevelop>
   </ProjectExtensions>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="KeebuntuExt.cs" />
-    <Compile Include="Registrar.cs" />
-    <Compile Include="IDBusMenu.cs" />
-    <Compile Include="IService.cs" />
-    <Compile Include="IMenuItemProxy.cs" />
-    <Compile Include="DefaultMenuItemProxy.cs" />
-    <Compile Include="ToolStripItemProxy.cs" />
-    <Compile Include="MenuStripProxy.cs" />
-    <Compile Include="MenuStripDBusMenu.cs" />
-    <Compile Include="IMatcher.cs" />
+    <Compile Include="KeebuntuAppMenuExt.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="KeePass.config.xml">
@@ -127,12 +99,15 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <ExcludeFromPlgx />
     </None>
-    <None Include="Resources\icons\highcolor\256x256\apps\keepass2-locked.png" />
-    <None Include="Resources\icons\ubuntu-mono-dark\apps\24\keepass2-locked.svg" />
-    <None Include="Resources\icons\ubuntu-mono-light\apps\24\keepass2-locked.svg" />
   </ItemGroup>
   <Target Name="AfterBuild" Condition="'$(Configuration)' == 'ReleasePlgx'">
     <CallTarget Targets="BuildPlgx" />
     <Delete Files="$(OutDir)$(AssemblyName)$(TargetExt)" />
   </Target>
+  <ItemGroup>
+    <ProjectReference Include="..\DBus\DBus.csproj">
+      <Project>{B20055CC-0AD7-4DCB-BA74-8DC54DEF6B6B}</Project>
+      <Name>DBus</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

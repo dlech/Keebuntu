@@ -2,7 +2,7 @@ using System;
 using System.Windows.Forms;
 using System.Collections.Generic;
 
-namespace Keebuntu
+namespace Keebuntu.DBus
 {
   public class MenuStripProxy : DefaultMenuItemProxy
   {

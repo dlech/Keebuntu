@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Drawing.Imaging;
 
-namespace Keebuntu
+namespace Keebuntu.DBus
 {
   public class ToolStripItemProxy : DefaultMenuItemProxy
   {
