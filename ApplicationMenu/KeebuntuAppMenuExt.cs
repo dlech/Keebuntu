@@ -19,18 +19,25 @@ namespace KeebuntuAppMenu
     const string menuPath = "/com/canonical/menu/{0}";
 
     private IPluginHost mPluginHost;
-    private Thread mGtkThread;
+    private Thread mGtkBusThread;
     private MenuStripDBusMenu mDBusMenu;
+    private object mStartupThreadLock = new object();
 
     public override bool Initialize(IPluginHost host)
     {
       mPluginHost = host;
 
       try {
-        mGtkThread = new Thread(RunGtkApp);
-        mGtkThread.SetApartmentState(ApartmentState.STA);
-        mGtkThread.Name = "KeebuntuAppMenu DBus Thread";
-        mGtkThread.Start();
+        mGtkBusThread = new Thread(RunGtkDBusThread);
+        mGtkBusThread.SetApartmentState(ApartmentState.STA);
+        mGtkBusThread.Name = "KeebuntuAppMenu DBus Thread";
+        lock (mStartupThreadLock) {
+          mGtkBusThread.Start();
+          if (!Monitor.Wait(mStartupThreadLock, 5000)) {
+            mGtkBusThread.Abort();
+            throw new Exception("KeebuntuAppMenu DBus thread failed to start");
+          }
+        }
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
         return false;
@@ -47,53 +54,61 @@ namespace KeebuntuAppMenu
       }
     }
 
-    private void RunGtkApp()
+    private void RunGtkDBusThread()
     {
-      BusG.Init();
-      Gtk.Application.Init();
+      try {
+        lock (mStartupThreadLock) {
+          BusG.Init();
+          Gtk.Application.Init();
 
-      /* setup ApplicationMenu */
+          /* setup ApplicationMenu */
 
-      mDBusMenu = new MenuStripDBusMenu(mPluginHost.MainWindow.MainMenu);
+          mDBusMenu = new MenuStripDBusMenu(mPluginHost.MainWindow.MainMenu);
 
-      var sessionBus = Bus.Session;
+          var sessionBus = Bus.Session;
 
 #if DEBUG
-      var dbusBusPath = "/org/freedesktop/DBus";
-      var dbusBusName = "org.freedesktop.DBus";
-      var dbusObjectPath = new ObjectPath(dbusBusPath);
-      var dbusService =
-        sessionBus.GetObject<org.freedesktop.DBus.IBus>(dbusBusName, dbusObjectPath);
-      dbusService.NameAcquired += (name) => Console.WriteLine ("NameAcquired: " + name);
+          var dbusBusPath = "/org/freedesktop/DBus";
+          var dbusBusName = "org.freedesktop.DBus";
+          var dbusObjectPath = new ObjectPath(dbusBusPath);
+          var dbusService =
+            sessionBus.GetObject<org.freedesktop.DBus.IBus>(dbusBusName, dbusObjectPath);
+          dbusService.NameAcquired += (name) => Console.WriteLine ("NameAcquired: " + name);
 #endif
-      var registrarBusPath = "/com/canonical/AppMenu/Registrar";
-      var registratBusName = "com.canonical.AppMenu.Registrar";
-      var registrarObjectPath = new ObjectPath(registrarBusPath);
-      var unityPanelServiceBus =
-        sessionBus.GetObject<com.canonical.AppMenu.IRegistrar>(registratBusName,
-                                                               registrarObjectPath);
-      var mainFormXid = GetWindowXid(mPluginHost.MainWindow);
-      var mainFormObjectPath = new ObjectPath(string.Format(menuPath,
-                                                            mainFormXid));
-      sessionBus.Register(mainFormObjectPath, mDBusMenu);
-      unityPanelServiceBus.RegisterWindow((uint)mainFormXid.ToInt32(),
-                                          mainFormObjectPath);
+          var registrarBusPath = "/com/canonical/AppMenu/Registrar";
+          var registratBusName = "com.canonical.AppMenu.Registrar";
+          var registrarObjectPath = new ObjectPath(registrarBusPath);
+          var unityPanelServiceBus =
+            sessionBus.GetObject<com.canonical.AppMenu.IRegistrar>(registratBusName,
+                                                                   registrarObjectPath);
+          var mainFormXid = GetWindowXid(mPluginHost.MainWindow);
+          var mainFormObjectPath = new ObjectPath(string.Format(menuPath,
+                                                                mainFormXid));
+          sessionBus.Register(mainFormObjectPath, mDBusMenu);
+          unityPanelServiceBus.RegisterWindow((uint)mainFormXid.ToInt32(),
+                                              mainFormObjectPath);
 
-      // have to re-register the window each time the main windows is shown
-      // otherwise we lose the application menu
-      mPluginHost.MainWindow.Activated += (sender, e) =>
-      {
-        // TODO - sometimes we invoke this unnessasarily. If there is a way to
-        // test that we are still registered, that would proably be better.
-        // For now, it does not seem to hurt anything.
-        InvokeGtkThread(
-          () => unityPanelServiceBus.RegisterWindow((uint)mainFormXid.ToInt32(),
-                                                    mainFormObjectPath));
-      };
+          // have to re-register the window each time the main windows is shown
+          // otherwise we lose the application menu
+          mPluginHost.MainWindow.Activated += (sender, e) =>
+          {
+            // TODO - sometimes we invoke this unnessasarily. If there is a way to
+            // test that we are still registered, that would proably be better.
+            // For now, it does not seem to hurt anything.
+            InvokeGtkThread(
+              () => unityPanelServiceBus.RegisterWindow((uint)mainFormXid.ToInt32(),
+                                                        mainFormObjectPath));
+          };
 
-      /* run gtk event loop */
+          Monitor.Pulse(mStartupThreadLock);
+        }
 
-      Gtk.Application.Run();
+        /* run gtk event loop */
+        Gtk.Application.Run();
+
+      } catch (Exception ex) {
+        Debug.Fail(ex.ToString());
+      }
     }
 
     private IntPtr GetWindowXid(System.Windows.Forms.Form form)
@@ -122,7 +137,7 @@ namespace KeebuntuAppMenu
 
     private void InvokeGtkThread(Action action)
     {
-      if (ReferenceEquals(Thread.CurrentThread, mGtkThread)) {
+      if (ReferenceEquals(Thread.CurrentThread, mGtkBusThread)) {
         action.Invoke();
       } else {
         Gtk.ReadyEvent readyEvent = () => action.Invoke();

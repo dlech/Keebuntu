@@ -22,6 +22,7 @@ namespace KeebuntuAppIndicator
     private Gtk.Menu mAppIndicatorMenu;
     private bool mActiveateWorkaroundNeeded;
     private System.Windows.Forms.Timer mActivateWorkaroundTimer;
+    private object mStartupThreadLock = new object();
 
     public override bool Initialize(IPluginHost host)
     {
@@ -31,10 +32,16 @@ namespace KeebuntuAppIndicator
       mActivateWorkaroundTimer.Tick += OnActivateWorkaroundTimerTick;
 
       try {
-        mGtkThread = new Thread(RunGtkApp);
+        mGtkThread = new Thread(RunGtkDBusThread);
         mGtkThread.SetApartmentState(ApartmentState.STA);
         mGtkThread.Name = "KeebuntuAppIndicator GTK/DBus Thread";
-        mGtkThread.Start();
+        lock(mStartupThreadLock) {
+          mGtkThread.Start();
+          if (!Monitor.Wait(mStartupThreadLock, 5000)) {
+            mGtkThread.Abort();
+            throw new Exception("KeebuntuAppIndicator Gtk/DBus Thread failed to start");
+          }
+        }
 
         mPluginHost.MainWindow.Activated += (sender, e) =>
         {
@@ -87,7 +94,7 @@ namespace KeebuntuAppIndicator
                                     },
                                       null);
         if (onCtxTrayOpeningMethodInfo != null) {
-          InvokeMainWindow(
+          InvokeMainWindowAsync(
             () => onCtxTrayOpeningMethodInfo.Invoke(mPluginHost.MainWindow,
                                                      new[] {
                                                        sender,
@@ -101,74 +108,81 @@ namespace KeebuntuAppIndicator
       }
     }
 
-    private void RunGtkApp()
+    private void RunGtkDBusThread()
     {
-      DBus.BusG.Init();
-      Gtk.Application.Init();
+      try {
+        lock (mStartupThreadLock) {
+          DBus.BusG.Init();
+          Gtk.Application.Init();
 
-      /* setup ApplicationIndicator */
+          /* setup ApplicationIndicator */
 
-      mIndicator = new ApplicationIndicator("keepass2-plugin-appindicator",
-                                            "keepass2-locked",
-                                            AppIndicator.Category.ApplicationStatus);
+          mIndicator = new ApplicationIndicator("keepass2-plugin-appindicator",
+                                                "keepass2-locked",
+                                                AppIndicator.Category.ApplicationStatus);
 #if DEBUG
-      mIndicator.IconThemePath = Path.GetFullPath("Resources/icons");
+          mIndicator.IconThemePath = Path.GetFullPath("Resources/icons");
 #endif
-      mIndicator.Title = PwDefs.ProductName;
-      mIndicator.Status = AppIndicator.Status.Active;
-      
-      mAppIndicatorMenu = new Gtk.Menu();
-      var trayContextMenu = mPluginHost.MainWindow.TrayContextMenu;
-      foreach (System.Windows.Forms.ToolStripItem item in trayContextMenu.Items) {
-        ConvertAndAddMenuItem(item, mAppIndicatorMenu);
+          mIndicator.Title = PwDefs.ProductName;
+          mIndicator.Status = AppIndicator.Status.Active;
+
+          mAppIndicatorMenu = new Gtk.Menu();
+          var trayContextMenu = mPluginHost.MainWindow.TrayContextMenu;
+          foreach (System.Windows.Forms.ToolStripItem item in trayContextMenu.Items) {
+            ConvertAndAddMenuItem(item, mAppIndicatorMenu);
+          }
+          trayContextMenu.ItemAdded += (sender, e) =>
+            InvokeGtkThread(() => ConvertAndAddMenuItem(e.Item, mAppIndicatorMenu));
+
+          // might not be needed since we are monitoring via dbus too
+          mAppIndicatorMenu.Shown += OnAppIndicatorMenuShown;
+
+          mIndicator.Menu = mAppIndicatorMenu;
+
+          var sessionBus = DBus.Bus.Session;
+
+#if DEBUG
+          var dbusBusPath = "/org/freedesktop/DBus";
+          var dbusBusName = "org.freedesktop.DBus";
+          var dbusObjectPath = new DBus.ObjectPath(dbusBusPath);
+          var dbusService =
+            sessionBus.GetObject<org.freedesktop.DBus.IBus>(dbusBusName, dbusObjectPath);
+          dbusService.NameAcquired += (name) => Console.WriteLine ("NameAcquired: " + name);
+#endif
+
+          /* ApplicationIndicator dbus */
+
+          var panelServiceBusName = "com.canonical.Unity.Panel.Service";
+          var panelServiceBusPath = "/com/canonical/Unity/Panel/Service";
+          var panelServiceObjectPath = new DBus.ObjectPath(panelServiceBusPath);
+          var panelService =
+            sessionBus.GetObject<com.canonical.Unity.Panel.IService>(panelServiceBusName,
+                                                                     panelServiceObjectPath);
+          // TODO - this could be improved by filtering on entry_id == ?
+          panelService.EntryActivated += (entry_id, entry_geometry) =>
+            OnAppIndicatorMenuShown(this, new EventArgs());
+
+          Monitor.Pulse(mStartupThreadLock);
+        }
+
+        /* run gtk event loop */
+        Gtk.Application.Run();
+
+        /* cleanup */
+
+        mAppIndicatorMenu.Shown -= OnAppIndicatorMenuShown;
+      } catch (Exception ex) {
+        Debug.Fail(ex.ToString());
       }
-      trayContextMenu.ItemAdded += (sender, e) =>
-        InvokeGtkThread(() => ConvertAndAddMenuItem(e.Item, mAppIndicatorMenu));
-
-      // might not be needed since we are monitoring via dbus too
-      mAppIndicatorMenu.Shown += OnAppIndicatorMenuShown;
-
-      mIndicator.Menu = mAppIndicatorMenu;
-
-      var sessionBus = DBus.Bus.Session;
-
-#if DEBUG
-      var dbusBusPath = "/org/freedesktop/DBus";
-      var dbusBusName = "org.freedesktop.DBus";
-      var dbusObjectPath = new DBus.ObjectPath(dbusBusPath);
-      var dbusService =
-        sessionBus.GetObject<org.freedesktop.DBus.IBus>(dbusBusName, dbusObjectPath);
-      dbusService.NameAcquired += (name) => Console.WriteLine ("NameAcquired: " + name);
-#endif
-
-      /* ApplicationIndicator dbus */
-
-      var panelServiceBusName = "com.canonical.Unity.Panel.Service";
-      var panelServiceBusPath = "/com/canonical/Unity/Panel/Service";
-      var panelServiceObjectPath = new DBus.ObjectPath(panelServiceBusPath);
-      var panelService =
-        sessionBus.GetObject<com.canonical.Unity.Panel.IService>(panelServiceBusName,
-                                                                 panelServiceObjectPath);
-      // TODO - this could be improved by filtering on entry_id == ?
-      panelService.EntryActivated += (entry_id, entry_geometry) =>
-        OnAppIndicatorMenuShown(this, new EventArgs());
-
-      /* run gtk event loop */
-
-      Gtk.Application.Run();
-
-      /* cleanup */
-
-      mAppIndicatorMenu.Shown -= OnAppIndicatorMenuShown;
     }
 
-    private void InvokeMainWindow(Action action)
+    private void InvokeMainWindowAsync(Action action)
     {
       var mainWindow = mPluginHost.MainWindow;
       if (mainWindow.InvokeRequired) {
-        mainWindow.Invoke(action);
+        mainWindow.BeginInvoke(action);
       } else {
-        action.Invoke();
+        action.BeginInvoke(null, null);
       }
     }
 
@@ -205,7 +219,7 @@ namespace KeebuntuAppIndicator
         gtkMenuItem.Sensitive = winformMenuItem.Enabled;
 
         gtkMenuItem.Activated += (sender, e) =>
-          InvokeMainWindow(winformMenuItem.PerformClick);
+          InvokeMainWindowAsync(winformMenuItem.PerformClick);
 
         winformMenuItem.TextChanged += (sender, e) => InvokeGtkThread(() =>
         {
@@ -254,7 +268,7 @@ namespace KeebuntuAppIndicator
       // timer to invoke Activate() a second time to get the window to show.
 
       mActivateWorkaroundTimer.Stop();
-      InvokeMainWindow(() => mPluginHost.MainWindow.Activate());
+      InvokeMainWindowAsync(() => mPluginHost.MainWindow.Activate());
     }
   }
 }
