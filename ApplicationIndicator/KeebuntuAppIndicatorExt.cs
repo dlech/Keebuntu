@@ -74,6 +74,18 @@ namespace KeebuntuAppIndicator
     {
       try {
         InvokeGtkThread(() => Gtk.Application.Quit());
+
+        // Mono tends to lock up sometimes when trying to hide/remove the
+        // notification icon (the System.Windows.Forms.NotifyIcon, not our
+        // ApplicationIndicator) on shutdown. We fake the private variable so
+        // that mono does not call the HideSystray() method since it is not
+        // shown anyway.
+        var notifyIconType = mPluginHost.MainWindow.MainNotifyIcon.GetType();
+        var notifyIconVisibleField =
+          notifyIconType.GetField("visible", BindingFlags.Instance |
+                                             BindingFlags.NonPublic);
+        notifyIconVisibleField.SetValue(mPluginHost.MainWindow.MainNotifyIcon,
+                                        false);
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
       }
@@ -94,7 +106,7 @@ namespace KeebuntuAppIndicator
                                     },
                                       null);
         if (onCtxTrayOpeningMethodInfo != null) {
-          InvokeMainWindowAsync(
+          InvokeMainWindow(
             () => onCtxTrayOpeningMethodInfo.Invoke(mPluginHost.MainWindow,
                                                      new[] {
                                                        sender,
@@ -176,13 +188,13 @@ namespace KeebuntuAppIndicator
       }
     }
 
-    private void InvokeMainWindowAsync(Action action)
+    private void InvokeMainWindow(Action action)
     {
       var mainWindow = mPluginHost.MainWindow;
       if (mainWindow.InvokeRequired) {
-        mainWindow.BeginInvoke(action);
+        mainWindow.Invoke(action);
       } else {
-        action.BeginInvoke(null, null);
+        action.Invoke();
       }
     }
 
@@ -219,7 +231,7 @@ namespace KeebuntuAppIndicator
         gtkMenuItem.Sensitive = winformMenuItem.Enabled;
 
         gtkMenuItem.Activated += (sender, e) =>
-          InvokeMainWindowAsync(winformMenuItem.PerformClick);
+          InvokeMainWindow(winformMenuItem.PerformClick);
 
         winformMenuItem.TextChanged += (sender, e) => InvokeGtkThread(() =>
         {
@@ -268,7 +280,7 @@ namespace KeebuntuAppIndicator
       // timer to invoke Activate() a second time to get the window to show.
 
       mActivateWorkaroundTimer.Stop();
-      InvokeMainWindowAsync(() => mPluginHost.MainWindow.Activate());
+      InvokeMainWindow(() => mPluginHost.MainWindow.Activate());
     }
   }
 }
