@@ -73,9 +73,6 @@
     <Reference Include="KeePass.exe">
       <HintPath>$(KeePassPath)KeePass.exe</HintPath>
     </Reference>
-    <Reference Include="KeePass">
-      <HintPath>..\..\keepass2-2.22+dfsg\Build\KeePass\Release\KeePass.exe</HintPath>
-    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(KeePassPluginDevToolsPath)\Plgx.targets" Condition="'$(Configuration)' == 'ReleasePlgx'" />
