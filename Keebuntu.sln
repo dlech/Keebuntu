@@ -27,7 +27,7 @@ Global
 		{B20055CC-0AD7-4DCB-BA74-8DC54DEF6B6B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = ApplicationIndicator\AppIndicatorPlugin.csproj
+		StartupItem = ApplicationMenu\AppMenuPlugin.csproj
 		Policies = $0
 		$0.TextStylePolicy = $1
 		$1.inheritsSet = null
