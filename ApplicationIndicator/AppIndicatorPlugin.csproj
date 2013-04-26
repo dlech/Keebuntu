@@ -10,7 +10,7 @@
     <RootNamespace>KeebuntuAppIndicator</RootNamespace>
     <AssemblyName>KeebuntuAppIndicator</AssemblyName>
     <Description>Plugin for KeePass 2.x that add support for Ubuntu Application Indicators</Description>
-    <ReleaseVersion>0.2.1</ReleaseVersion>
+    <ReleaseVersion>0.2.2</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -64,9 +64,11 @@
     <Reference Include="System.Drawing" />
     <Reference Include="dbus-sharp">
       <Private>False</Private>
+      <Package>dbus-sharp-1.0</Package>
     </Reference>
     <Reference Include="dbus-sharp-glib">
       <Private>False</Private>
+      <Package>dbus-sharp-glib-1.0</Package>
     </Reference>
     <Reference Include="KeePass.exe">
       <HintPath>$(KeePassPath)KeePass.exe</HintPath>
