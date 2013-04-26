@@ -76,8 +76,8 @@ namespace KeebuntuAppIndicator
         InvokeGtkThread(() => Gtk.Application.Quit());
 
         // Mono tends to lock up sometimes when trying to hide/remove the
-        // notification icon (the System.Windows.Forms.NotifyIcon, not our
-        // ApplicationIndicator) on shutdown. We fake the private variable so
+        // notification icon on shutdown (the System.Windows.Forms.NotifyIcon,
+        // not our ApplicationIndicator). We fake the private variable so
         // that mono does not call the HideSystray() method since it is not
         // shown anyway.
         var notifyIconType = mPluginHost.MainWindow.MainNotifyIcon.GetType();
