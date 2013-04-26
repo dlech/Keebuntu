@@ -45,7 +45,6 @@
   <ItemGroup>
     <Reference Include="dbus-sharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=5675b0c3093115b5">
       <Private>False</Private>
-      <Package>dbus-sharp-1.0</Package>
     </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Drawing" />

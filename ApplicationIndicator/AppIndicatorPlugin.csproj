@@ -63,11 +63,9 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Drawing" />
     <Reference Include="dbus-sharp">
-      <Package>dbus-sharp-1.0</Package>
       <Private>False</Private>
     </Reference>
     <Reference Include="dbus-sharp-glib">
-      <Package>dbus-sharp-glib-1.0</Package>
       <Private>False</Private>
     </Reference>
     <Reference Include="KeePass.exe">
@@ -100,9 +98,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <ExcludeFromPlgx />
     </None>
-    <None Include="Resources\icons\highcolor\256x256\apps\keepass2-locked.png" />
     <None Include="Resources\icons\ubuntu-mono-dark\apps\24\keepass2-locked.svg" />
     <None Include="Resources\icons\ubuntu-mono-light\apps\24\keepass2-locked.svg" />
+    <None Include="Resources\icons\hicolor\256x256\apps\keepass2-locked.png" />
   </ItemGroup>
   <Target Name="AfterBuild" Condition="'$(Configuration)' == 'ReleasePlgx'">
     <CallTarget Targets="BuildPlgx" />

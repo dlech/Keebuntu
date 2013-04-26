@@ -95,10 +95,6 @@ namespace Keebuntu.Dbus
 
         mMenuItemList.Insert(0, new MenuStripProxy(menu));
         AddItemsToMenuItemList(menu.Items);
-        if (Environment.GetEnvironmentVariable("APPMENU_DISPLAY_BOTH") != "1")
-        {
-          menu.Visible = false;
-        }
       }
     }
 

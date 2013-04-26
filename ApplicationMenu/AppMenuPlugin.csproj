@@ -59,11 +59,9 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Drawing" />
     <Reference Include="dbus-sharp">
-      <Package>dbus-sharp-1.0</Package>
       <Private>False</Private>
     </Reference>
     <Reference Include="dbus-sharp-glib">
-      <Package>dbus-sharp-glib-1.0</Package>
       <Private>False</Private>
     </Reference>
     <Reference Include="KeePass.exe">
