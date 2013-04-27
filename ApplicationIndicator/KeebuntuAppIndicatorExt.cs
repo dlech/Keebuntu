@@ -219,13 +219,20 @@ namespace KeebuntuAppIndicator
 
         var winformMenuItem = item as System.Windows.Forms.ToolStripMenuItem;
 
-        // windows forms use & for mneumonic, gtk uses _
+        // windows forms use '&' for mneumonic, gtk uses '_'
         var gtkMenuItem = new Gtk.ImageMenuItem(winformMenuItem.Text.Replace("&", "_"));
 
         if (winformMenuItem.Image != null) {
-          var memStream = new MemoryStream();
-          winformMenuItem.Image.Save(memStream, ImageFormat.Png);
-          memStream.Position = 0;
+          MemoryStream memStream;
+          var image = winformMenuItem.Image;
+          if (image.Width != 16 || image.Height != 16) {
+            var newImage = ImageMagick.MagickWand.ResizeImage(image, 16, 16);
+            memStream = new MemoryStream(newImage);
+          } else {
+            memStream = new MemoryStream();
+            image.Save(memStream, ImageFormat.Png);
+            memStream.Position = 0;
+          }
           gtkMenuItem.Image = new Gtk.Image(memStream);
         }
 

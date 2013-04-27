@@ -64,9 +64,11 @@
     <Reference Include="System.Drawing" />
     <Reference Include="dbus-sharp">
       <Private>False</Private>
+      <Package>dbus-sharp-1.0</Package>
     </Reference>
     <Reference Include="dbus-sharp-glib">
       <Private>False</Private>
+      <Package>dbus-sharp-glib-1.0</Package>
     </Reference>
     <Reference Include="KeePass.exe">
       <HintPath>$(KeePassPath)KeePass.exe</HintPath>
@@ -110,6 +112,10 @@
     <ProjectReference Include="..\DBus\DBus.csproj">
       <Project>{B20055CC-0AD7-4DCB-BA74-8DC54DEF6B6B}</Project>
       <Name>DBus</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ImageMagick\ImageMagick.csproj">
+      <Project>{00BB4233-A62B-4B5F-9022-1C87157C9B37}</Project>
+      <Name>ImageMagick</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>
