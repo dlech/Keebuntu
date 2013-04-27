@@ -241,6 +241,6 @@ Global
 		$38.IncludeInstanceMembers = True
 		$38.IncludeStaticEntities = True
 		description = Ubuntu Unity integration for KeePass 2.x
-		version = 0.2.1
+		version = 0.2.2
 	EndGlobalSection
 EndGlobal
