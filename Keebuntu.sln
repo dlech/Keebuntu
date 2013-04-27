@@ -7,12 +7,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DBus", "DBus\DBus.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppIndicatorPlugin", "ApplicationIndicator\AppIndicatorPlugin.csproj", "{12ED99CD-CE00-4AC2-A0B6-3B9714597927}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageMagick", "ImageMagick\ImageMagick.csproj", "{00BB4233-A62B-4B5F-9022-1C87157C9B37}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{00BB4233-A62B-4B5F-9022-1C87157C9B37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00BB4233-A62B-4B5F-9022-1C87157C9B37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00BB4233-A62B-4B5F-9022-1C87157C9B37}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00BB4233-A62B-4B5F-9022-1C87157C9B37}.Release|Any CPU.Build.0 = Release|Any CPU
 		{12ED99CD-CE00-4AC2-A0B6-3B9714597927}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{12ED99CD-CE00-4AC2-A0B6-3B9714597927}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{12ED99CD-CE00-4AC2-A0B6-3B9714597927}.Release|Any CPU.ActiveCfg = Release|Any CPU
