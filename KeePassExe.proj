@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- 
+This file is imported by other project files. It adds a reference to the local
+copy of KeePass.exe. The location of KeePass.exe will be autodetected if you
+installed KeePass using the keepass2 package. You can also specify any location
+by replacing the first comment below.
+ -->
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <KeePassExePath><!-- Add a path here to override the default path to KeePass.exe --></KeePassExePath>
+  </PropertyGroup>  
+  
+  <PropertyGroup Condition="'$(KeePassExePath)'==''">
+    <KeePassExePath>/usr/lib/keepass2/KeePass.exe</KeePassExePath>
+  </PropertyGroup>  
+  <PropertyGroup Condition="!Exists('$(KeePassExePath)')">
+    <KeePassExePath></KeePassExePath>
+  </PropertyGroup>  
+  
+  <ItemGroup>
+    <Reference Include="KeePass.exe">
+      <HintPath>$(KeePassExePath)</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>
+

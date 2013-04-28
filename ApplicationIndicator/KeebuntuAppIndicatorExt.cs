@@ -18,6 +18,8 @@ namespace KeebuntuAppIndicator
 {
   public class KeebuntuAppIndicatorExt : Plugin
   {
+    private static int instanceCount = 0;
+
     private IPluginHost mPluginHost;
     private Thread mGtkThread;
     private ApplicationIndicator mIndicator;
@@ -132,9 +134,10 @@ namespace KeebuntuAppIndicator
 
         /* setup ApplicationIndicator */
 
-        mIndicator = new ApplicationIndicator("keepass2-plugin-appindicator",
-                                              "keepass2-locked",
-                                              AppIndicator.Category.ApplicationStatus);
+        mIndicator =
+          new ApplicationIndicator("keepass2-plugin-appindicator" + instanceCount++,
+                                   "keepass2-locked",
+                                   AppIndicator.Category.ApplicationStatus);
 #if DEBUG
         mIndicator.IconThemePath = Path.GetFullPath("Resources/icons");
 #endif
@@ -157,8 +160,8 @@ namespace KeebuntuAppIndicator
         var sessionBus = DBus.Bus.Session;
 
 #if DEBUG
-        var dbusBusPath = "/org/freedesktop/DBus";
-        var dbusBusName = "org.freedesktop.DBus";
+        const string dbusBusPath = "/org/freedesktop/DBus";
+        const string dbusBusName = "org.freedesktop.DBus";
         var dbusObjectPath = new DBus.ObjectPath(dbusBusPath);
         var dbusService =
           sessionBus.GetObject<org.freedesktop.DBus.IBus>(dbusBusName, dbusObjectPath);
@@ -167,8 +170,8 @@ namespace KeebuntuAppIndicator
 
         /* ApplicationIndicator dbus */
 
-        var panelServiceBusName = "com.canonical.Unity.Panel.Service";
-        var panelServiceBusPath = "/com/canonical/Unity/Panel/Service";
+        const string panelServiceBusName = "com.canonical.Unity.Panel.Service";
+        const string panelServiceBusPath = "/com/canonical/Unity/Panel/Service";
         var panelServiceObjectPath = new DBus.ObjectPath(panelServiceBusPath);
         var panelService =
           sessionBus.GetObject<com.canonical.Unity.Panel.IService>(panelServiceBusName,

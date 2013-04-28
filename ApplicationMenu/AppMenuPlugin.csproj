@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\KeePassExe.proj" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -10,7 +11,7 @@
     <RootNamespace>KeebuntuAppMenu</RootNamespace>
     <AssemblyName>KeebuntuAppMenu</AssemblyName>
     <Description>Plugin for KeePass 2.x that add support for Ubuntu Application Menus</Description>
-    <ReleaseVersion>0.2.2</ReleaseVersion>
+    <ReleaseVersion>0.2.3</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -66,16 +67,12 @@
       <Private>False</Private>
       <Package>dbus-sharp-glib-1.0</Package>
     </Reference>
-    <Reference Include="KeePass.exe">
-      <HintPath>$(KeePassPath)KeePass.exe</HintPath>
-    </Reference>
     <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <Private>False</Private>
       <Package>gtk-sharp-2.0</Package>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(KeePassPluginDevToolsPath)\Plgx.targets" Condition="'$(Configuration)' == 'ReleasePlgx'" />
   <ProjectExtensions>
     <MonoDevelop>
       <Properties>

@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>ImageMagick</RootNamespace>
     <AssemblyName>ImageMagick</AssemblyName>
-    <ReleaseVersion>0.2.2</ReleaseVersion>
+    <ReleaseVersion>0.2.3</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -56,6 +56,8 @@
     <Folder Include="MagickWand\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ImageMagick.dll.config" />
+    <Content Include="ImageMagick.dll.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>

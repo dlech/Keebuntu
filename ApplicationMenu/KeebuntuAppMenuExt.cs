@@ -74,15 +74,15 @@ namespace KeebuntuAppMenu
         var sessionBus = Bus.Session;
 
 #if DEBUG
-        var dbusBusPath = "/org/freedesktop/DBus";
-        var dbusBusName = "org.freedesktop.DBus";
+        const string dbusBusPath = "/org/freedesktop/DBus";
+        const string dbusBusName = "org.freedesktop.DBus";
         var dbusObjectPath = new ObjectPath(dbusBusPath);
         var dbusService =
           sessionBus.GetObject<org.freedesktop.DBus.IBus>(dbusBusName, dbusObjectPath);
         dbusService.NameAcquired += (name) => Console.WriteLine ("NameAcquired: " + name);
 #endif
-        var registrarBusPath = "/com/canonical/AppMenu/Registrar";
-        var registratBusName = "com.canonical.AppMenu.Registrar";
+        const string registrarBusPath = "/com/canonical/AppMenu/Registrar";
+        const string registratBusName = "com.canonical.AppMenu.Registrar";
         var registrarObjectPath = new ObjectPath(registrarBusPath);
         var unityPanelServiceBus =
           sessionBus.GetObject<com.canonical.AppMenu.IRegistrar>(registratBusName,
