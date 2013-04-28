@@ -299,10 +299,15 @@ namespace KeebuntuAppIndicator
     {
       var stream = new MemoryStream();
       image.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
-      var wand = new MagickWand();
-      wand.ReadImageBlob(stream.ToArray());
-      wand.ResizeImage(width, height, FilterType.Mitchell, 0.5);
-      return wand.GetImageBlob();
+      try {
+        var wand = new MagickWand();
+        wand.ReadImageBlob(stream.ToArray());
+        wand.ResizeImage(width, height, FilterType.Mitchell, 0.5);
+        return wand.GetImageBlob();
+      } catch (Exception ex) {
+        Debug.Fail(ex.ToString());
+      }
+      return stream.ToArray();
     }
   }
 }

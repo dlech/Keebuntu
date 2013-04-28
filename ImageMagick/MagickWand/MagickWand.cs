@@ -110,127 +110,127 @@ namespace ImageMagick.MagickWand
 
     #region Magic Wand Methods - from magick-wand.c
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "ClearMagickWand")]
+    [DllImport("libMagickWand", EntryPoint = "ClearMagickWand")]
     private static extern void ClearMagickWand(IntPtr wand);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "CloneMagickWand")]
+    [DllImport("libMagickWand", EntryPoint = "CloneMagickWand")]
     private static extern IntPtr CloneMagickWand(IntPtr wand);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "DestroyMagickWand")]
+    [DllImport("libMagickWand", EntryPoint = "DestroyMagickWand")]
     private static extern IntPtr DestroyMagickWand(IntPtr wand);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "IsMagickWand")]
+    [DllImport("libMagickWand", EntryPoint = "IsMagickWand")]
     private static extern bool IsMagickWand(IntPtr wand);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickClearException")]
+    [DllImport("libMagickWand", EntryPoint = "MagickClearException")]
     private static extern bool MagickClearException(IntPtr wand);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickGetException")]
+    [DllImport("libMagickWand", EntryPoint = "MagickGetException")]
     private static extern IntPtr MagickGetException(IntPtr wand,
                                                     ExceptionType severity);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickGetExceptionType")]
+    [DllImport("libMagickWand", EntryPoint = "MagickGetExceptionType")]
     private static extern ExceptionType MagickGetExceptionType(IntPtr wand);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickGetIteratorIndex")]
+    [DllImport("libMagickWand", EntryPoint = "MagickGetIteratorIndex")]
     private static extern UIntPtr MagickGetIteratorIndex(IntPtr wand);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickQueryConfigureOption")]
+    [DllImport("libMagickWand", EntryPoint = "MagickQueryConfigureOption")]
     private static extern IntPtr MagickQueryConfigureOption(string option);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickQueryConfigureOptions")]
+    [DllImport("libMagickWand", EntryPoint = "MagickQueryConfigureOptions")]
     private static extern IntPtr MagickQueryConfigureOptions(string pattern,
                                                              [Out] out UIntPtr number_options);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickQueryFontMetrics")]
+    [DllImport("libMagickWand", EntryPoint = "MagickQueryFontMetrics")]
     private static extern IntPtr MagickQueryFontMetrics(IntPtr wand,
                                                         IntPtr drawing_wand,
                                                         string text);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickQueryMultilineFontMetrics")]
+    [DllImport("libMagickWand", EntryPoint = "MagickQueryMultilineFontMetrics")]
     private static extern IntPtr MagickQueryMultilineFontMetrics(IntPtr wand,
                                                                  IntPtr drawing_wand,
                                                                  string text);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickQueryFonts")]
+    [DllImport("libMagickWand", EntryPoint = "MagickQueryFonts")]
     private static extern IntPtr MagickQueryFonts(string pattern,
                                                   [Out] out UIntPtr number_fonts);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickQueryFormats")]
+    [DllImport("libMagickWand", EntryPoint = "MagickQueryFormats")]
     private static extern IntPtr MagickQueryFormats(string pattern,
                                                     [Out] out UIntPtr number_formats);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickRelinquishMemory")]
+    [DllImport("libMagickWand", EntryPoint = "MagickRelinquishMemory")]
     private static extern IntPtr MagickRelinquishMemory(IntPtr resource);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickSetFirstIterator")]
+    [DllImport("libMagickWand", EntryPoint = "MagickSetFirstIterator")]
     private static extern void MagickSetFirstIterator(IntPtr wand);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickResetIterator")]
+    [DllImport("libMagickWand", EntryPoint = "MagickResetIterator")]
     private static extern void MagickResetIterator(IntPtr wand);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickSetIteratorIndex")]
+    [DllImport("libMagickWand", EntryPoint = "MagickSetIteratorIndex")]
     private static extern bool MagickSetIteratorIndex(IntPtr wand, IntPtr index);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickSetLastIterator")]
+    [DllImport("libMagickWand", EntryPoint = "MagickSetLastIterator")]
     private static extern void MagickSetLastIterator(IntPtr wand);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickWandGenesis")]
+    [DllImport("libMagickWand", EntryPoint = "MagickWandGenesis")]
     private static extern void MagickWandGenesis();
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickWandTerminus")]
+    [DllImport("libMagickWand", EntryPoint = "MagickWandTerminus")]
     private static extern void MagickWandTerminus();
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "NewMagickWand")]
+    [DllImport("libMagickWand", EntryPoint = "NewMagickWand")]
     private static extern IntPtr NewMagickWand();
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "NewMagickWandFromImage")]
+    [DllImport("libMagickWand", EntryPoint = "NewMagickWandFromImage")]
     private static extern IntPtr NewMagickWandFromImage(IntPtr image);
 
     #endregion Magic Wand Methods - from magick-wand.c
 
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickEvaluateImage")]
+    [DllImport("libMagickWand", EntryPoint = "MagickEvaluateImage")]
     private static extern bool MagickEvaluateImage(IntPtr wand,
                                                    MagickEvaluateOperator op,
                                                    double value);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickFunctionImage")]
+    [DllImport("libMagickWand", EntryPoint = "MagickFunctionImage")]
     private static extern bool MagickFunctionImage(IntPtr wand,
                                                    MagickFunction function,
                                                    UIntPtr number_arguments,
                                                    double[] arguments);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickGetImageBlob")]
+    [DllImport("libMagickWand", EntryPoint = "MagickGetImageBlob")]
     private static extern IntPtr MagickGetImageBlob(IntPtr wand,
                                                     [Out] out IntPtr length);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickGetImageHeight")]
+    [DllImport("libMagickWand", EntryPoint = "MagickGetImageHeight")]
     private static extern IntPtr MagickGetImageHeight(IntPtr wand);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickGetImageType")]
+    [DllImport("libMagickWand", EntryPoint = "MagickGetImageType")]
     private static extern ImageType MagickGetImageType(IntPtr wand);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickGetImageWidth")]
+    [DllImport("libMagickWand", EntryPoint = "MagickGetImageWidth")]
     private static extern IntPtr MagickGetImageWidth(IntPtr wand);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickResizeImage")]
+    [DllImport("libMagickWand", EntryPoint = "MagickResizeImage")]
     private static extern bool MagickResizeImage(IntPtr mgck_wand,
                                                  IntPtr columns,
                                                  IntPtr rows,
                                                  FilterType filter_type,
                                                  double blur);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickReadImageBlob")]
+    [DllImport("libMagickWand", EntryPoint = "MagickReadImageBlob")]
     private static extern bool MagickReadImageBlob(IntPtr wand,
                                                    IntPtr blob,
                                                    IntPtr length);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickSetImageOpacity")]
+    [DllImport("libMagickWand", EntryPoint = "MagickSetImageOpacity")]
     private static extern bool MagickSetImageOpacity(IntPtr wand,
                                                      double alpha);
 
-    [DllImport("libMagickWand.so.5", EntryPoint = "MagickSetImageType")]
+    [DllImport("libMagickWand", EntryPoint = "MagickSetImageType")]
     private static extern bool MagickSetImageType(IntPtr wand,
                                                   ImageType image_type);
 

@@ -103,6 +103,10 @@
     <None Include="Resources\icons\ubuntu-mono-dark\apps\24\keepass2-locked.svg" />
     <None Include="Resources\icons\ubuntu-mono-light\apps\24\keepass2-locked.svg" />
     <None Include="Resources\icons\hicolor\256x256\apps\keepass2-locked.png" />
+    <None Include="..\ImageMagick\ImageMagick.dll.config">
+      <Link>ImageMagick.dll.config</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Target Name="AfterBuild" Condition="'$(Configuration)' == 'ReleasePlgx'">
     <CallTarget Targets="BuildPlgx" />

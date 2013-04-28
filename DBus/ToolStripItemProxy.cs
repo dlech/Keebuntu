@@ -5,6 +5,7 @@ using System.IO;
 using System.Drawing.Imaging;
 using ImageMagick.MagickWand;
 using ImageMagick.MagickCore;
+using System.Diagnostics;
 
 namespace Keebuntu.DBus
 {
@@ -211,11 +212,16 @@ namespace Keebuntu.DBus
     {
       var stream = new MemoryStream();
       image.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
-      var wand = new MagickWand();
-      wand.ReadImageBlob(stream.ToArray());
-      wand.ImageType = ImageType.GrayscaleMatte;
-      wand.EvaluateImage(MagickEvaluateOperator.DivideEvaluateOperator, 4);
-      return wand.GetImageBlob();
+      try {
+        var wand = new MagickWand();
+        wand.ReadImageBlob(stream.ToArray());
+        wand.ImageType = ImageType.GrayscaleMatte;
+        wand.EvaluateImage(MagickEvaluateOperator.DivideEvaluateOperator, 4);
+        return wand.GetImageBlob();
+      } catch (Exception ex) {
+        Debug.Fail(ex.ToString());
+      }
+      return stream.ToArray();
     }
   }
 }

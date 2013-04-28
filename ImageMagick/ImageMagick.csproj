@@ -36,7 +36,9 @@
     <Compile Include="MagickCore\InterlaceType.cs" />
     <Compile Include="MagickCore\OrientationType.cs" />
     <Compile Include="MagickCore\ResolutionType.cs" />
-    <Compile Include="MagickWand\MagickWand.cs" />
+    <Compile Include="MagickWand\MagickWand.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
     <Compile Include="MagickCore\ExceptionType.cs" />
     <Compile Include="MagickCore\ExceptionInfo.cs" />
     <Compile Include="MagickCore\SemaphoreInfo.cs" />
@@ -52,5 +54,8 @@
   <ItemGroup>
     <Folder Include="MagickCore\" />
     <Folder Include="MagickWand\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="ImageMagick.dll.config" />
   </ItemGroup>
 </Project>
