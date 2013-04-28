@@ -2,8 +2,9 @@ using System;
 using System.Runtime.InteropServices;
 using System.Collections;
 using System.IO;
+using ImageMagick.MagickCore;
 
-namespace ImageMagick
+namespace ImageMagick.MagickWand
 {
   public class MagickWand : ICloneable
   {
@@ -35,6 +36,25 @@ namespace ImageMagick
       }
     }
 
+
+    #region Properties
+
+    public ImageType ImageType
+    {
+      get {
+        return MagickGetImageType(mWand);
+      }
+      set {
+        if (!MagickSetImageType(mWand, value)) {
+          //TODO - implement exceptions
+          throw new Exception();
+        }
+      }
+    }
+
+    #endregion Properties
+
+
     #region IClonable implementation
 
     /// <summary>
@@ -48,153 +68,44 @@ namespace ImageMagick
     #endregion IClonable implementation
 
 
-    public static byte[] ResizeImage(System.Drawing.Image image,
-                                     int newWidth, int newHeight)
+    public bool EvaluateImage(MagickEvaluateOperator op, double value)
     {
-      var stream = new MemoryStream();
-      image.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
-      var wand = new MagickWand();
-      wand.ReadImageBlob(stream.ToArray());
-      MagickResizeImage(wand.mWand,
-                        (IntPtr)newWidth,
-                        (IntPtr)newHeight,
-                        Filter.Mitchell,
-                        1.0);
-      return wand.GetImageBlob();
+      // TODO - implement exception checking
+      return MagickEvaluateImage(mWand, op, value);
     }
 
-    public enum Filter
+    public byte[] GetImageBlob()
     {
-      Undefined,
-      Point,
-      Box,
-      Triangle,
-      Hermite,
-      Hanning,
-      Hamming,
-      Blackman,
-      Gaussian,
-      Quadratic,
-      Cubic,
-      Catrom,
-      Mitchell,
-      Lanczos,
-      Bessel,
-      Sinc,
-      Kaiser,
-      Welsh,
-      Parzen,
-      Lagrange,
-      Bohman,
-      Bartlett,
-      SincFast
-    };
+      // Get the blob
+      IntPtr len;
+      IntPtr buf=MagickGetImageBlob(mWand, out len);
 
-    public enum InterpolatePixel
-    {
-      Undefined,
-      Average,
-      Bicubic,
-      Bilinear,
-      Filter,
-      Integer,
-      Mesh,
-      NearestNeighbor,
-      Spline
-    };
+      // Copy it
+      var dest=new byte[len.ToInt32()];
+      Marshal.Copy(buf, dest, 0, len.ToInt32());
 
-    private enum ExceptionType
-    {
-      UndefinedException,
-      WarningException = 300,
-      ResourceLimitWarning = 300,
-      TypeWarning = 305,
-      OptionWarning = 310,
-      DelegateWarning = 315,
-      MissingDelegateWarning = 320,
-      CorruptImageWarning = 325,
-      FileOpenWarning = 330,
-      BlobWarning = 335,
-      StreamWarning = 340,
-      CacheWarning = 345,
-      CoderWarning = 350,
-      FilterWarning = 352,
-      ModuleWarning = 355,
-      DrawWarning = 360,
-      ImageWarning = 365,
-      WandWarning = 370,
-      RandomWarning = 375,
-      XServerWarning = 380,
-      MonitorWarning = 385,
-      RegistryWarning = 390,
-      ConfigureWarning = 395,
-      PolicyWarning = 399,
-      ErrorException = 400,
-      ResourceLimitError = 400,
-      TypeError = 405,
-      OptionError = 410,
-      DelegateError = 415,
-      MissingDelegateError = 420,
-      CorruptImageError = 425,
-      FileOpenError = 430,
-      BlobError = 435,
-      StreamError = 440,
-      CacheError = 445,
-      CoderError = 450,
-      FilterError = 452,
-      ModuleError = 455,
-      DrawError = 460,
-      ImageError = 465,
-      WandError = 470,
-      RandomError = 475,
-      XServerError = 480,
-      MonitorError = 485,
-      RegistryError = 490,
-      ConfigureError = 495,
-      PolicyError = 499,
-      FatalErrorException = 700,
-      ResourceLimitFatalError = 700,
-      TypeFatalError = 705,
-      OptionFatalError = 710,
-      DelegateFatalError = 715,
-      MissingDelegateFatalError = 720,
-      CorruptImageFatalError = 725,
-      FileOpenFatalError = 730,
-      BlobFatalError = 735,
-      StreamFatalError = 740,
-      CacheFatalError = 745,
-      CoderFatalError = 750,
-      FilterFatalError = 752,
-      ModuleFatalError = 755,
-      DrawFatalError = 760,
-      ImageFatalError = 765,
-      WandFatalError = 770,
-      RandomFatalError = 775,
-      XServerFatalError = 780,
-      MonitorFatalError = 785,
-      RegistryFatalError = 790,
-      ConfigureFatalError = 795,
-      PolicyFatalError = 799
+      // Relinquish
+      MagickRelinquishMemory(buf);
+
+      return dest;
     }
 
-    struct SemaphoreInfo
+    public bool ReadImageBlob(byte[] blob)
     {
-      public IntPtr mutex;
-      public int id;
-      public IntPtr reference_count;
-      public UIntPtr signature;
+      GCHandle pinnedArray = GCHandle.Alloc(blob, GCHandleType.Pinned);
+      IntPtr pointer = pinnedArray.AddrOfPinnedObject();
+
+      bool result = MagickReadImageBlob(mWand, pointer, (IntPtr)blob.Length);
+
+      pinnedArray.Free();
+      // TODO - implement exception checking
+      return result;
     }
 
-    private struct ExceptionInfo
+    public bool ResizeImage(int width, int heigth, FilterType filter, double blur)
     {
-      public ExceptionType severity;
-      public int error_number;
-      public string reason;
-      public string description;
-      public IntPtr exceptions;
-      public bool relinquish;
-      public SemaphoreInfo semaphore;
-      public UIntPtr signature;
+      // TODO - implement exception checking
+      return MagickResizeImage(mWand, (IntPtr)width, (IntPtr)heigth, filter, blur);
     }
 
     #region Magic Wand Methods - from magick-wand.c
@@ -279,12 +190,26 @@ namespace ImageMagick
     #endregion Magic Wand Methods - from magick-wand.c
 
 
+    [DllImport("libMagickWand.so.5", EntryPoint = "MagickEvaluateImage")]
+    private static extern bool MagickEvaluateImage(IntPtr wand,
+                                                   MagickEvaluateOperator op,
+                                                   double value);
+
+    [DllImport("libMagickWand.so.5", EntryPoint = "MagickFunctionImage")]
+    private static extern bool MagickFunctionImage(IntPtr wand,
+                                                   MagickFunction function,
+                                                   UIntPtr number_arguments,
+                                                   double[] arguments);
+
     [DllImport("libMagickWand.so.5", EntryPoint = "MagickGetImageBlob")]
     private static extern IntPtr MagickGetImageBlob(IntPtr wand,
                                                     [Out] out IntPtr length);
 
     [DllImport("libMagickWand.so.5", EntryPoint = "MagickGetImageHeight")]
     private static extern IntPtr MagickGetImageHeight(IntPtr wand);
+
+    [DllImport("libMagickWand.so.5", EntryPoint = "MagickGetImageType")]
+    private static extern ImageType MagickGetImageType(IntPtr wand);
 
     [DllImport("libMagickWand.so.5", EntryPoint = "MagickGetImageWidth")]
     private static extern IntPtr MagickGetImageWidth(IntPtr wand);
@@ -293,7 +218,7 @@ namespace ImageMagick
     private static extern bool MagickResizeImage(IntPtr mgck_wand,
                                                  IntPtr columns,
                                                  IntPtr rows,
-                                                 Filter filter_type,
+                                                 FilterType filter_type,
                                                  double blur);
 
     [DllImport("libMagickWand.so.5", EntryPoint = "MagickReadImageBlob")]
@@ -305,36 +230,9 @@ namespace ImageMagick
     private static extern bool MagickSetImageOpacity(IntPtr wand,
                                                      double alpha);
 
+    [DllImport("libMagickWand.so.5", EntryPoint = "MagickSetImageType")]
+    private static extern bool MagickSetImageType(IntPtr wand,
+                                                  ImageType image_type);
 
-
-    // Interop
-    private bool ReadImageBlob(byte[] blob)
-    {
-      GCHandle pinnedArray = GCHandle.Alloc(blob, GCHandleType.Pinned);
-      IntPtr pointer = pinnedArray.AddrOfPinnedObject();
-
-      bool result = MagickReadImageBlob(mWand, pointer, (IntPtr)blob.Length);
-
-      pinnedArray.Free();
-
-      return result;
-    }
-
-    // Interop
-    private byte[] GetImageBlob()
-    {
-      // Get the blob
-      IntPtr len;
-      IntPtr buf=MagickGetImageBlob(mWand, out len);
-
-      // Copy it
-      var dest=new byte[len.ToInt32()];
-      Marshal.Copy(buf, dest, 0, len.ToInt32());
-
-      // Relinquish
-      MagickRelinquishMemory(buf);
-
-      return dest;
-    }
   }
 }

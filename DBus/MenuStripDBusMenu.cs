@@ -116,7 +116,7 @@ namespace Keebuntu.Dbus
               mMenuItemList.Add(addedItemProxy);
             }
             if (dropDownItem.DropDownItems.Count == 1) {
-              OnItemPropertyUpdated(addedItemProxy, "children-display");
+              OnItemPropertyChanged("children-display", addedItemProxy);
             }
           };
           dropDownItem.DropDown.ItemRemoved += (sender, e) =>
@@ -127,22 +127,29 @@ namespace Keebuntu.Dbus
             var itemIndex = mMenuItemList.IndexOf(addedItemProxy);
             mMenuItemList[itemIndex] = null;
             if (dropDownItem.DropDownItems.Count == 0) {
-              OnItemPropertyUpdated(addedItemProxy, "children-display");
+              OnItemPropertyChanged("children-display", addedItemProxy);
             }
           };
           var menuItem = dropDownItem as ToolStripMenuItem;
           var menuItemProxy = ToolStripItemProxy.GetProxyFromCache(item);
           if (menuItem != null) {
             menuItem.CheckStateChanged += (sender, e) =>
-              OnItemPropertyUpdated(menuItemProxy, "toggle-state");
+              OnItemPropertyChanged("toggle-state", menuItemProxy);
           }
         }
         item.TextChanged += (sender, e) =>
-          OnItemPropertyUpdated(itemProxy, "label");
+          OnItemPropertyChanged("label", itemProxy);
         item.EnabledChanged += (sender, e) =>
-          OnItemPropertyUpdated(itemProxy, "enabled");
+        {
+          if (item.Image != null) {
+            OnItemPropertiesChanged(new string[] { "enabled", "icon-data" },
+                                    itemProxy);
+          } else {
+            OnItemPropertyChanged("enabled", itemProxy);
+          }
+        };
         item.AvailableChanged += (sender, e) =>
-          OnItemPropertyUpdated(itemProxy, "visible");
+          OnItemPropertyChanged("visible", itemProxy);
       }
     }
 
@@ -297,14 +304,25 @@ namespace Keebuntu.Dbus
     /// Helper class for single property change.
     /// Raises the items properties updated event.
     /// </summary>
-    private void OnItemPropertyUpdated(IMenuItemProxy item, string property)
+    private void OnItemPropertyChanged(string property, IMenuItemProxy item)
+    {
+      OnItemPropertiesChanged(new string[] { property }, item);
+    }
+
+    /// <summary>
+    /// Helper class for single property change.
+    /// Raises the items properties updated event.
+    /// </summary>
+    private void OnItemPropertiesChanged(string[] properties, IMenuItemProxy item)
     {
       // TODO - cache property values so that we don't send unnessasary events
-      var properties = new com.canonical.dbusmenu.MenuItem();
-      properties.id = mMenuItemList.IndexOf(item);
-      properties.properties = new Dictionary<string, object>();
-      properties.properties.Add(property, item.GetValue(property));
-      OnItemsPropertiesUpdated(new[] { properties }, null);
+      var menuItem = new com.canonical.dbusmenu.MenuItem();
+      menuItem.id = mMenuItemList.IndexOf(item);
+      menuItem.properties = new Dictionary<string, object>();
+      foreach(var property in properties) {
+        menuItem.properties.Add(property, item.GetValue(property));
+      }
+      OnItemsPropertiesUpdated(new[] { menuItem }, null);
       OnLayoutUpdated(mMenuItemList.IndexOf(item));
     }
 

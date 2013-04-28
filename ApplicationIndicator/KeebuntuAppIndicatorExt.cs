@@ -11,6 +11,8 @@ using AppIndicator;
 using KeePass.Plugins;
 using KeePassLib;
 using Keebuntu.Dbus;
+using ImageMagick.MagickCore;
+using ImageMagick.MagickWand;
 
 namespace KeebuntuAppIndicator 
 {
@@ -226,7 +228,7 @@ namespace KeebuntuAppIndicator
           MemoryStream memStream;
           var image = winformMenuItem.Image;
           if (image.Width != 16 || image.Height != 16) {
-            var newImage = ImageMagick.MagickWand.ResizeImage(image, 16, 16);
+            var newImage = ResizeImage(image, 16, 16);
             memStream = new MemoryStream(newImage);
           } else {
             memStream = new MemoryStream();
@@ -291,6 +293,16 @@ namespace KeebuntuAppIndicator
 
       mActivateWorkaroundTimer.Stop();
       InvokeMainWindow(() => mPluginHost.MainWindow.Activate());
+    }
+
+    private byte[] ResizeImage(System.Drawing.Image image, int width, int height)
+    {
+      var stream = new MemoryStream();
+      image.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+      var wand = new MagickWand();
+      wand.ReadImageBlob(stream.ToArray());
+      wand.ResizeImage(width, height, FilterType.Mitchell, 0.5);
+      return wand.GetImageBlob();
     }
   }
 }

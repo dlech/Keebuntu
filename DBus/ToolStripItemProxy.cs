@@ -3,6 +3,8 @@ using System.Windows.Forms;
 using System.Collections.Generic;
 using System.IO;
 using System.Drawing.Imaging;
+using ImageMagick.MagickWand;
+using ImageMagick.MagickCore;
 
 namespace Keebuntu.DBus
 {
@@ -60,9 +62,11 @@ namespace Keebuntu.DBus
         if (mItem.Image == null) {
             return new byte[0];
           }
+          if (!mItem.Enabled) {
+            return ApplyDisabledStyling(mItem.Image);
+          }
           var memStream = new MemoryStream();
           mItem.Image.Save(memStream, ImageFormat.Png);
-          // TODO - use imagemagick or something to gray icon if menu item is disabled
           return memStream.ToArray();
       }
     }
@@ -198,6 +202,20 @@ namespace Keebuntu.DBus
       } else {
         action.Invoke();
       }
+    }
+
+    /// <summary>
+    /// Uses ImageMagick to convert icon to grayscale and lighten it
+    /// </summary>
+    private byte[] ApplyDisabledStyling(System.Drawing.Image image)
+    {
+      var stream = new MemoryStream();
+      image.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+      var wand = new MagickWand();
+      wand.ReadImageBlob(stream.ToArray());
+      wand.ImageType = ImageType.GrayscaleMatte;
+      wand.EvaluateImage(MagickEvaluateOperator.DivideEvaluateOperator, 4);
+      return wand.GetImageBlob();
     }
   }
 }

@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>ImageMagick</RootNamespace>
     <AssemblyName>ImageMagick</AssemblyName>
-    <ReleaseVersion>0.2.1</ReleaseVersion>
+    <ReleaseVersion>0.2.2</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -31,10 +31,26 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <Compile Include="MagickWand.cs" />
+    <Compile Include="MagickCore\AlphaChannelType.cs" />
+    <Compile Include="MagickCore\ImageType.cs" />
+    <Compile Include="MagickCore\InterlaceType.cs" />
+    <Compile Include="MagickCore\OrientationType.cs" />
+    <Compile Include="MagickCore\ResolutionType.cs" />
+    <Compile Include="MagickWand\MagickWand.cs" />
+    <Compile Include="MagickCore\ExceptionType.cs" />
+    <Compile Include="MagickCore\ExceptionInfo.cs" />
+    <Compile Include="MagickCore\SemaphoreInfo.cs" />
+    <Compile Include="MagickCore\InterpolatePixelMethod.cs" />
+    <Compile Include="MagickCore\FilterType.cs" />
+    <Compile Include="MagickCore\MagickEvaluateOperator.cs" />
+    <Compile Include="MagickCore\MagickFunction.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Drawing" />
     <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="MagickCore\" />
+    <Folder Include="MagickWand\" />
   </ItemGroup>
 </Project>
