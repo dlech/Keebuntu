@@ -8,13 +8,14 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Reflection;
 using AppIndicator;
+using Notifications;
 using KeePass.Plugins;
 using KeePassLib;
 using Keebuntu.Dbus;
 using ImageMagick.MagickCore;
 using ImageMagick.MagickWand;
 
-namespace KeebuntuAppIndicator 
+namespace KeebuntuAppIndicator
 {
   public class KeebuntuAppIndicatorExt : Plugin
   {
@@ -65,6 +66,49 @@ namespace KeebuntuAppIndicator
             mActiveateWorkaroundNeeded = true;
           }
         };
+
+        mPluginHost.MainWindow.MainNotifyIcon.BalloonTipShown += (sender, e) =>
+        {
+          var winformsNotifyIcon = mPluginHost.MainWindow.MainNotifyIcon;
+          var notification = new Notification();
+          // it seems that BalloonTip properties are cleared before this
+          // event is triggered. :(
+          notification.Summary = winformsNotifyIcon.BalloonTipTitle;
+          notification.Body = winformsNotifyIcon.BalloonTipText;
+          switch(winformsNotifyIcon.BalloonTipIcon)
+          {
+            case System.Windows.Forms.ToolTipIcon.Info:
+              notification.IconName = "info";
+              break;
+            case System.Windows.Forms.ToolTipIcon.Warning:
+              notification.IconName = "warning";
+              break;
+            case System.Windows.Forms.ToolTipIcon.Error:
+              notification.IconName = "error";
+              break;
+          }
+          InvokeGtkThread(() => notification.Show());
+        };
+
+#if DEBUG
+        var toolsMenu = mPluginHost.MainWindow.MainMenu.Items["m_menuTools"]
+          as System.Windows.Forms.ToolStripMenuItem;
+        var infoMenuItem = toolsMenu.DropDownItems.Add("Show Info Notification");
+        infoMenuItem.Click += (sender, e) =>
+          InvokeMainWindow(() => mPluginHost.MainWindow.MainNotifyIcon
+                           .ShowBalloonTip(10, "Title", "Body - Info",
+                          System.Windows.Forms.ToolTipIcon.Info));
+        var warnMenuItem = toolsMenu.DropDownItems.Add("Show Warning Notification");
+        warnMenuItem.Click += (sender, e) =>
+          InvokeMainWindow(() => mPluginHost.MainWindow.MainNotifyIcon
+                           .ShowBalloonTip(10, "Title", "Body - Warning",
+                          System.Windows.Forms.ToolTipIcon.Warning));
+        var errMenuItem = toolsMenu.DropDownItems.Add("Show Error Notification");
+        errMenuItem.Click += (sender, e) =>
+          InvokeMainWindow(() => mPluginHost.MainWindow.MainNotifyIcon
+                           .ShowBalloonTip(10, "Title", "Body - Error",
+                          System.Windows.Forms.ToolTipIcon.Error));
+#endif
 
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
