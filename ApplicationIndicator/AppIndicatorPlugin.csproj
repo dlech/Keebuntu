@@ -11,7 +11,7 @@
     <RootNamespace>KeebuntuAppIndicator</RootNamespace>
     <AssemblyName>KeebuntuAppIndicator</AssemblyName>
     <Description>Plugin for KeePass 2.x that add support for Ubuntu Application Indicators</Description>
-    <ReleaseVersion>0.2.4</ReleaseVersion>
+    <ReleaseVersion>0.2.5</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>

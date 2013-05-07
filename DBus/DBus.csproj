@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Keebuntu.DBus</RootNamespace>
     <AssemblyName>DBus</AssemblyName>
-    <ReleaseVersion>0.2.4</ReleaseVersion>
+    <ReleaseVersion>0.2.5</ReleaseVersion>
     <Description>Common DBus components for Keebuntu plugins</Description>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

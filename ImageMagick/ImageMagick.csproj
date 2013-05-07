@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>ImageMagick</RootNamespace>
     <AssemblyName>ImageMagick</AssemblyName>
-    <ReleaseVersion>0.2.4</ReleaseVersion>
+    <ReleaseVersion>0.2.5</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
