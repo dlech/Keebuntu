@@ -11,6 +11,7 @@ using KeePass.Plugins;
 using KeePassLib;
 using Keebuntu.Dbus;
 using DBus;
+using Keebuntu.DBus;
 
 namespace KeebuntuAppMenu
 {
@@ -19,23 +20,15 @@ namespace KeebuntuAppMenu
     const string menuPath = "/com/canonical/menu/{0}";
 
     private IPluginHost mPluginHost;
-    private Thread mGtkBusThread;
     private MenuStripDBusMenu mDBusMenu;
-    private object mStartupThreadLock = new object();
 
     public override bool Initialize(IPluginHost host)
     {
       mPluginHost = host;
-      Monitor.Enter(mStartupThreadLock);
       try {
-        mGtkBusThread = new Thread(RunGtkDBusThread);
-        mGtkBusThread.SetApartmentState(ApartmentState.STA);
-        mGtkBusThread.Name = "KeebuntuAppMenu DBus Thread";
-        mGtkBusThread.Start();
-        if (!Monitor.Wait(mStartupThreadLock, 5000) || !mGtkBusThread.IsAlive) {
-          mGtkBusThread.Abort();
-          throw new Exception("KeebuntuAppMenu DBus thread failed to start");
-        }
+        GtkThread.Start();
+        GtkThread.Invoke(() => GtkDBusInit());
+
         // mimmic behavior of other ubuntu apps
         if (Environment.GetEnvironmentVariable("APPMENU_DISPLAY_BOTH") != "1")
         {
@@ -44,8 +37,6 @@ namespace KeebuntuAppMenu
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
         return false;
-      } finally {
-        Monitor.Exit(mStartupThreadLock);
       }
       return true;
     }
@@ -53,20 +44,15 @@ namespace KeebuntuAppMenu
     public override void Terminate()
     {
       try {
-        InvokeGtkThread(() => Gtk.Application.Quit());
+        GtkThread.Stop();
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
       }
     }
 
-    private void RunGtkDBusThread()
+    private void GtkDBusInit()
     {
-      Monitor.Enter(mStartupThreadLock);
       try {
-
-        BusG.Init();
-        Gtk.Application.Init();
-
         /* setup ApplicationMenu */
 
         mDBusMenu = new MenuStripDBusMenu(mPluginHost.MainWindow.MainMenu);
@@ -101,21 +87,12 @@ namespace KeebuntuAppMenu
           // TODO - sometimes we invoke this unnessasarily. If there is a way to
           // test that we are still registered, that would proably be better.
           // For now, it does not seem to hurt anything.
-          InvokeGtkThread(
+          GtkThread.Invoke(
             () => unityPanelServiceBus.RegisterWindow((uint)mainFormXid.ToInt32(),
                                                       mainFormObjectPath));
         };
-
-        Monitor.Pulse(mStartupThreadLock);
-        Monitor.Exit(mStartupThreadLock);
-
-        /* run gtk event loop */
-        Gtk.Application.Run();
-
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
-        Monitor.Pulse(mStartupThreadLock);
-        Monitor.Exit(mStartupThreadLock);
       }
     }
 
@@ -140,17 +117,6 @@ namespace KeebuntuAppMenu
         mainWindow.Invoke(action);
       } else {
         action.Invoke();
-      }
-    }
-
-    private void InvokeGtkThread(Action action)
-    {
-      if (ReferenceEquals(Thread.CurrentThread, mGtkBusThread)) {
-        action.Invoke();
-      } else {
-        Gtk.ReadyEvent readyEvent = () => action.Invoke();
-        var threadNotify = new Gtk.ThreadNotify(readyEvent);
-        threadNotify.WakeupMain();
       }
     }
   }
