@@ -34,9 +34,10 @@ namespace KeebuntuAppIndicator
       mActivateWorkaroundTimer.Interval = 100;
       mActivateWorkaroundTimer.Tick += OnActivateWorkaroundTimerTick;
 
+      var threadStarted = false;
       try {
         GtkThread.Start();
-
+        threadStarted = true;
         GtkThread.Invoke(() => GtkDBusInit());
 
         mPluginHost.MainWindow.Activated += (sender, e) =>
@@ -58,9 +59,11 @@ namespace KeebuntuAppIndicator
             mActiveateWorkaroundNeeded = true;
           }
         };
-
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
+        if (threadStarted) {
+          Terminate();
+        }
         return false;
       }
       return true;
@@ -120,56 +123,68 @@ namespace KeebuntuAppIndicator
     /// </summary>
     private void GtkDBusInit()
     {
-      try {
-        /* setup ApplicationIndicator */
+      /* setup ApplicationIndicator */
 
-        mIndicator =
-          new ApplicationIndicator("keepass2-plugin-appindicator" + instanceCount++,
-                                   "keepass2-locked",
-                                   AppIndicator.Category.ApplicationStatus);
+      mIndicator =
+        new ApplicationIndicator("keepass2-plugin-appindicator" + instanceCount++,
+                                 "keepass2-locked",
+                                 AppIndicator.Category.ApplicationStatus);
 #if DEBUG
-        mIndicator.IconThemePath = Path.GetFullPath("Resources/icons");
+      mIndicator.IconThemePath = Path.GetFullPath("Resources/icons");
 #endif
-        mIndicator.Title = PwDefs.ProductName;
-        mIndicator.Status = AppIndicator.Status.Active;
+      mIndicator.Title = PwDefs.ProductName;
+      mIndicator.Status = AppIndicator.Status.Active;
 
-        mAppIndicatorMenu = new Gtk.Menu();
-        var trayContextMenu = mPluginHost.MainWindow.TrayContextMenu;
-        foreach (System.Windows.Forms.ToolStripItem item in trayContextMenu.Items) {
-          ConvertAndAddMenuItem(item, mAppIndicatorMenu);
-        }
-        trayContextMenu.ItemAdded += (sender, e) =>
-          GtkThread.Invoke(() => ConvertAndAddMenuItem(e.Item, mAppIndicatorMenu));
+      mAppIndicatorMenu = new Gtk.Menu();
 
-        // might not be needed since we are monitoring via dbus too
-        mAppIndicatorMenu.Shown += OnAppIndicatorMenuShown;
+      var trayContextMenu = mPluginHost.MainWindow.TrayContextMenu;
+      // make copy of item list to prevent list changed exception when iterating
+      var menuItems =
+        new System.Windows.Forms.ToolStripItem[trayContextMenu.Items.Count];
+      trayContextMenu.Items.CopyTo(menuItems, 0);
+      trayContextMenu.ItemAdded += (sender, e) =>
+        GtkThread.Invoke(() => ConvertAndAddMenuItem(e.Item, mAppIndicatorMenu));
 
-        mIndicator.Menu = mAppIndicatorMenu;
+      foreach (System.Windows.Forms.ToolStripItem item in menuItems) {
+        ConvertAndAddMenuItem(item, mAppIndicatorMenu);
+      }
 
-        var sessionBus = DBus.Bus.Session;
+      // might not be needed since we are monitoring via dbus too
+      mAppIndicatorMenu.Shown += OnAppIndicatorMenuShown;
+
+      mIndicator.Menu = mAppIndicatorMenu;
+
+      var sessionBus = DBus.Bus.Session;
 
 #if DEBUG
-        const string dbusBusPath = "/org/freedesktop/DBus";
-        const string dbusBusName = "org.freedesktop.DBus";
-        var dbusObjectPath = new DBus.ObjectPath(dbusBusPath);
-        var dbusService =
-          sessionBus.GetObject<org.freedesktop.DBus.IBus>(dbusBusName, dbusObjectPath);
-        dbusService.NameAcquired += (name) => Console.WriteLine ("NameAcquired: " + name);
+      const string dbusBusPath = "/org/freedesktop/DBus";
+      const string dbusBusName = "org.freedesktop.DBus";
+      var dbusObjectPath = new DBus.ObjectPath(dbusBusPath);
+      var dbusService =
+        sessionBus.GetObject<org.freedesktop.DBus.IBus>(dbusBusName, dbusObjectPath);
+      dbusService.NameAcquired += (name) => Console.WriteLine ("NameAcquired: " + name);
 #endif
 
-        /* ApplicationIndicator dbus */
+      /* ApplicationIndicator dbus */
 
-        const string panelServiceBusName = "com.canonical.Unity.Panel.Service";
-        const string panelServiceBusPath = "/com/canonical/Unity/Panel/Service";
-        var panelServiceObjectPath = new DBus.ObjectPath(panelServiceBusPath);
-        var panelService =
-          sessionBus.GetObject<com.canonical.Unity.Panel.IService>(panelServiceBusName,
-                                                                   panelServiceObjectPath);
-        // TODO - this could be improved by filtering on entry_id == ?
-        panelService.EntryActivated += (entry_id, entry_geometry) =>
-          OnAppIndicatorMenuShown(this, new EventArgs());
-      } catch (Exception ex) {
-        Debug.Fail(ex.ToString());
+      const string panelServiceBusName = "com.canonical.Unity.Panel.Service";
+      const string panelServiceBusPath = "/com/canonical/Unity/Panel/Service";
+      var panelServiceObjectPath = new DBus.ObjectPath(panelServiceBusPath);
+      var panelService =
+        sessionBus.GetObject<com.canonical.Unity.Panel.IService>(panelServiceBusName,
+                                                                 panelServiceObjectPath);
+      // TODO - this could be improved by filtering on entry_id == ?
+      panelService.EntryActivated += (entry_id, entry_geometry) =>
+        OnAppIndicatorMenuShown(this, new EventArgs());
+    }
+
+    private void InvokeMainWindow(Action action)
+    {
+      var mainWindow = mPluginHost.MainWindow;
+      if (mainWindow.InvokeRequired) {
+        mainWindow.Invoke(action);
+      } else {
+        action.Invoke();
       }
     }
 

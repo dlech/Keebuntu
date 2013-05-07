@@ -20,12 +20,12 @@ namespace Keebuntu.DBus
     /// </summary>
     public static void Start()
     {
-      UserCount++;
-      if (UserCount != 1) {
-        return;
-      }
       Monitor.Enter(mStartupThreadLock);
       try {
+        UserCount++;
+        if (UserCount != 1) {
+          return;
+        }
         mGtkThread = new Thread(RunGtkDBusThread);
         mGtkThread.SetApartmentState(ApartmentState.STA);
         mGtkThread.Name = "Keebuntu DBus Thread";
