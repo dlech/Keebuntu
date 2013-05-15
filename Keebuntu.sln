@@ -41,11 +41,6 @@ Global
 		$0.CSharpFormattingPolicy = $2
 		$2.IndentSwitchBody = True
 		$2.AnonymousMethodBraceStyle = NextLine
-		$2.IfElseBraceForcement = AddBraces
-		$2.ForBraceForcement = AddBraces
-		$2.WhileBraceForcement = AddBraces
-		$2.UsingBraceForcement = AddBraces
-		$2.FixedBraceForcement = AddBraces
 		$2.ElseIfNewLinePlacement = SameLine
 		$2.BeforeMethodDeclarationParentheses = False
 		$2.BeforeMethodCallParentheses = False
@@ -241,6 +236,6 @@ Global
 		$38.IncludeInstanceMembers = True
 		$38.IncludeStaticEntities = True
 		description = Ubuntu Unity integration for KeePass 2.x
-		version = 0.2.5
+		version = 0.2.6
 	EndGlobalSection
 EndGlobal
