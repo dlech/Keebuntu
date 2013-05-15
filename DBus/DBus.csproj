@@ -11,6 +11,7 @@
     <AssemblyName>DBus</AssemblyName>
     <ReleaseVersion>0.2.5</ReleaseVersion>
     <Description>Common DBus components for Keebuntu plugins</Description>
+    <SynchReleaseVersion>false</SynchReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
