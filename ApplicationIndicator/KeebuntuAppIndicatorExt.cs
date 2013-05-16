@@ -143,10 +143,10 @@ namespace KeebuntuAppIndicator
         new System.Windows.Forms.ToolStripItem[trayContextMenu.Items.Count];
       trayContextMenu.Items.CopyTo(menuItems, 0);
       trayContextMenu.ItemAdded += (sender, e) =>
-        GtkThread.Invoke(() => ConvertAndAddMenuItem(e.Item, mAppIndicatorMenu, false));
+        GtkThread.Invoke(() => ConvertAndAddMenuItem(e.Item, mAppIndicatorMenu));
 
       foreach (System.Windows.Forms.ToolStripItem item in menuItems) {
-        ConvertAndAddMenuItem(item, mAppIndicatorMenu, item.Name == "m_ctxTrayTray");
+        ConvertAndAddMenuItem(item, mAppIndicatorMenu);
       }
 
       // might not be needed since we are monitoring via dbus too
@@ -199,8 +199,7 @@ namespace KeebuntuAppIndicator
     }
 
     private void ConvertAndAddMenuItem(System.Windows.Forms.ToolStripItem item,
-                                       Gtk.MenuShell gtkMenuShell,
-                                       bool isSecondaryTarget)
+                                       Gtk.MenuShell gtkMenuShell)
     {
       if (item is System.Windows.Forms.ToolStripMenuItem) {
 
@@ -246,21 +245,17 @@ namespace KeebuntuAppIndicator
         gtkMenuItem.Show();
         gtkMenuShell.Insert(gtkMenuItem, winformMenuItem.Owner.Items.IndexOf(winformMenuItem));
 
-        if (isSecondaryTarget) {
-          mIndicator.SecondaryActivateTarget = gtkMenuItem;
-        }
-
         if (winformMenuItem.HasDropDownItems) {
           var subMenu = new Gtk.Menu();
           foreach(System.Windows.Forms.ToolStripItem dropDownItem in
                   winformMenuItem.DropDownItems)
           {
-            ConvertAndAddMenuItem (dropDownItem, subMenu, false);
+            ConvertAndAddMenuItem (dropDownItem, subMenu);
           }
           gtkMenuItem.Submenu = subMenu;
 
           winformMenuItem.DropDown.ItemAdded += (sender, e) =>
-            GtkThread.Invoke(() => ConvertAndAddMenuItem (e.Item, subMenu, false));
+            GtkThread.Invoke(() => ConvertAndAddMenuItem (e.Item, subMenu));
         }
       } else if (item is System.Windows.Forms.ToolStripSeparator) {
         var gtkSeparator = new Gtk.SeparatorMenuItem();
