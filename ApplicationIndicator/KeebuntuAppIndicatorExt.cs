@@ -154,6 +154,28 @@ namespace KeebuntuAppIndicator
 
       mIndicator.Menu = mAppIndicatorMenu;
 
+      // when mouse cursor is over application indicator, scroll up will untray
+      // and scroll down will tray KeePass
+      mIndicator.ScrollEvent += (o, args) =>
+      {
+        /* Workaround for bug in mono/appindicator-sharp.
+         *
+         * args.Direction throws InvalidCastException
+         * Can't cast args.Arg[1] to Gdk.ScrollDirection for some reason, so we
+         * have to cast to uint first (that is the underlying data type) and
+         * then cast to Gdk.ScrollDirection
+         */
+        var scrollDirectionUint = (uint)args.Args[1];
+        var scrollDirection = (Gdk.ScrollDirection)scrollDirectionUint;
+
+        var trayMenuItem = trayContextMenu.Items["m_ctxTrayTray"];
+        if (trayMenuItem.Enabled && (scrollDirection == Gdk.ScrollDirection.Up ^
+                                     mPluginHost.MainWindow.Visible ))
+        {
+            InvokeMainWindow(() => trayMenuItem.PerformClick());
+        }
+      };
+
       var sessionBus = DBus.Bus.Session;
 
 #if DEBUG
