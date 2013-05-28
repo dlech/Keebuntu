@@ -173,7 +173,8 @@ namespace KeebuntuAppIndicator
         if (trayMenuItem.Enabled && (scrollDirection == Gdk.ScrollDirection.Up ^
                                      mPluginHost.MainWindow.Visible ))
         {
-            InvokeMainWindow(() => trayMenuItem.PerformClick());
+          DBusBackgroundWorker.InvokeWinformsThread
+            (() => trayMenuItem.PerformClick());
         }
       };
 

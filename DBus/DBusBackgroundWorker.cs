@@ -12,7 +12,6 @@ namespace Keebuntu.DBus
   {
     static BackgroundWorker mWorker;
     static Thread mGtkThread;
-    static object mStartupThreadLock = new object();
 
     public static int UserCount { get; set; }
 
@@ -91,6 +90,7 @@ namespace Keebuntu.DBus
       }
     }
 
+    // ReportProgress event is used as a callback to the Winforms thread
     private static void mWorker_ReportProgress(object sender,
                                                ProgressChangedEventArgs e)
     {
