@@ -183,7 +183,7 @@ namespace Keebuntu.DBus
     {
       switch (eventId) {
         case "clicked":
-          InvokeWinformsThread(() => mItem.PerformClick());
+          DBusBackgroundWorker.InvokeWinformsThread(() => mItem.PerformClick());
           break;
         case "hovered":
           // TODO - hack hovered event?
@@ -192,16 +192,6 @@ namespace Keebuntu.DBus
           break;
         case "closed":
           break;
-      }
-    }
-
-    private void InvokeWinformsThread(Action action)
-    {
-      var parent = mItem.GetCurrentParent();
-      if (parent.InvokeRequired) {
-        parent.Invoke(action);
-      } else {
-        action.Invoke();
       }
     }
 
@@ -225,4 +215,3 @@ namespace Keebuntu.DBus
     }
   }
 }
-

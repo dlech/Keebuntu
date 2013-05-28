@@ -41,7 +41,7 @@
     <Compile Include="MenuStripDBusMenu.cs" />
     <Compile Include="MenuStripProxy.cs" />
     <Compile Include="ToolStripItemProxy.cs" />
-    <Compile Include="GtkThread.cs" />
+    <Compile Include="DBusBackgroundWorker.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="dbus-sharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=5675b0c3093115b5">

@@ -27,9 +27,9 @@ namespace KeebuntuAppMenu
       mPluginHost = host;
       var threadStarted = false;
       try {
-        GtkThread.Start();
+        DBusBackgroundWorker.Start();
         threadStarted = true;
-        GtkThread.Invoke(() => GtkDBusInit());
+        DBusBackgroundWorker.InvokeGtkThread(() => GtkDBusInit());
 
         // mimmic behavior of other ubuntu apps
         if (Environment.GetEnvironmentVariable("APPMENU_DISPLAY_BOTH") != "1")
@@ -49,7 +49,7 @@ namespace KeebuntuAppMenu
     public override void Terminate()
     {
       try {
-        GtkThread.Stop();
+        DBusBackgroundWorker.Stop();
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
       }
@@ -91,7 +91,7 @@ namespace KeebuntuAppMenu
         // TODO - sometimes we invoke this unnessasarily. If there is a way to
         // test that we are still registered, that would proably be better.
         // For now, it does not seem to hurt anything.
-        GtkThread.Invoke(
+        DBusBackgroundWorker.InvokeGtkThread(
           () => unityPanelServiceBus.RegisterWindow((uint)mainFormXid.ToInt32(),
                                                     mainFormObjectPath));
       };
@@ -109,16 +109,6 @@ namespace KeebuntuAppMenu
       var wholeWindowField = hwndType.GetField("whole_window",
                                                BindingFlags.NonPublic | BindingFlags.Instance);
       return (IntPtr)wholeWindowField.GetValue(hwnd);
-    }
-
-    private void InvokeMainWindow(Action action)
-    {
-      var mainWindow = mPluginHost.MainWindow;
-      if (mainWindow.InvokeRequired) {
-        mainWindow.Invoke(action);
-      } else {
-        action.Invoke();
-      }
     }
   }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Threading;
 using System.Diagnostics;
 
@@ -7,8 +8,9 @@ namespace Keebuntu.DBus
   /// <summary>
   /// Runs Gtk Application loop for non-Gtk programs
   /// </summary>
-  public static class GtkThread
+  public static class DBusBackgroundWorker
   {
+    static BackgroundWorker mWorker;
     static Thread mGtkThread;
     static object mStartupThreadLock = new object();
 
@@ -20,23 +22,16 @@ namespace Keebuntu.DBus
     /// </summary>
     public static void Start()
     {
-      Monitor.Enter(mStartupThreadLock);
-      try {
-        UserCount++;
-        if (UserCount != 1) {
-          return;
-        }
-        mGtkThread = new Thread(RunGtkDBusThread);
-        mGtkThread.SetApartmentState(ApartmentState.STA);
-        mGtkThread.Name = "Keebuntu DBus Thread";
-        mGtkThread.Start();
-        if (!Monitor.Wait(mStartupThreadLock, 5000) || !mGtkThread.IsAlive) {
-          mGtkThread.Abort();
-          throw new Exception("Gtk Thread failed to start");
-        }
-      } finally {
-        Monitor.Exit(mStartupThreadLock);
+      if (mWorker == null) {
+        mWorker = new System.ComponentModel.BackgroundWorker();
+        mWorker.WorkerReportsProgress = true;
+        mWorker.DoWork += mWorker_DoWork;
+        mWorker.ProgressChanged += mWorker_ReportProgress;
       }
+      if (!mWorker.IsBusy) {
+        mWorker.RunWorkerAsync();
+      }
+      UserCount++;
     }
 
     /// <summary>
@@ -53,15 +48,14 @@ namespace Keebuntu.DBus
       if (UserCount > 0) {
         return;
       }
-      Invoke(() => Gtk.Application.Quit());
+      InvokeGtkThread(() => Gtk.Application.Quit());
     }
 
-    public static void Invoke(Action action)
+    public static void InvokeGtkThread(Action action)
     {
-      if (mGtkThread == null ||
-          mGtkThread.ThreadState != System.Threading.ThreadState.Running)
+      if (mWorker == null || !mWorker.IsBusy)
       {
-        throw new Exception("Gtk Thread not Running.");
+        throw new Exception("DBusBackgroundWorker not running.");
       }
       if (ReferenceEquals(Thread.CurrentThread, mGtkThread)) {
         action.Invoke();
@@ -72,23 +66,37 @@ namespace Keebuntu.DBus
       }
     }
 
-    private static void RunGtkDBusThread()
+    public static void InvokeWinformsThread(Action action)
     {
-      Monitor.Enter(mStartupThreadLock);
+      if (mWorker == null || !mWorker.IsBusy)
+      {
+        throw new Exception("DBusBackgroundWorker not running.");
+      }
+      mWorker.ReportProgress(0, action);
+    }
+
+    private static void mWorker_DoWork(object sender, DoWorkEventArgs e)
+    {
       try {
+        mGtkThread = Thread.CurrentThread;
+
         global::DBus.BusG.Init();
         Gtk.Application.Init();
-
-        Monitor.Pulse(mStartupThreadLock);
-        Monitor.Exit(mStartupThreadLock);
 
         /* run gtk event loop */
         Gtk.Application.Run();
 
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
-        Monitor.Pulse(mStartupThreadLock);
-        Monitor.Exit(mStartupThreadLock);
+      }
+    }
+
+    private static void mWorker_ReportProgress(object sender,
+                                               ProgressChangedEventArgs e)
+    {
+      var action = e.UserState as Action;
+      if (action != null) {
+        action.Invoke();
       }
     }
   }

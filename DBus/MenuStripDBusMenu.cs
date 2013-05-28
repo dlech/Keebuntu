@@ -406,14 +406,5 @@ namespace Keebuntu.Dbus
         }
       }
     }
-
-    private void InvokeParentForm(Action action)
-    {
-      if (mMenuParentForm.InvokeRequired) {
-        mMenuParentForm.Invoke(action);
-      } else {
-        action.Invoke();
-      }
-    }
   }
 }

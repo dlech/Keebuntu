@@ -36,9 +36,9 @@ namespace KeebuntuAppIndicator
 
       var threadStarted = false;
       try {
-        GtkThread.Start();
+        DBusBackgroundWorker.Start();
         threadStarted = true;
-        GtkThread.Invoke(() => GtkDBusInit());
+        DBusBackgroundWorker.InvokeGtkThread(() => GtkDBusInit());
 
         mPluginHost.MainWindow.Activated += (sender, e) =>
         {
@@ -72,7 +72,7 @@ namespace KeebuntuAppIndicator
     public override void Terminate()
     {
       try {
-        GtkThread.Stop();
+        DBusBackgroundWorker.Stop();
         // Mono tends to lock up sometimes when trying to hide/remove the
         // notification icon on shutdown (the System.Windows.Forms.NotifyIcon,
         // not our ApplicationIndicator). We fake the private variable so
@@ -104,8 +104,8 @@ namespace KeebuntuAppIndicator
                                     },
                                       null);
         if (onCtxTrayOpeningMethodInfo != null) {
-          InvokeMainWindowAsync(
-            () => onCtxTrayOpeningMethodInfo.Invoke(mPluginHost.MainWindow,
+          DBusBackgroundWorker.InvokeWinformsThread
+            (() => onCtxTrayOpeningMethodInfo.Invoke(mPluginHost.MainWindow,
                                                      new[] {
                                                        sender,
                                                        new CancelEventArgs()
@@ -143,7 +143,8 @@ namespace KeebuntuAppIndicator
         new System.Windows.Forms.ToolStripItem[trayContextMenu.Items.Count];
       trayContextMenu.Items.CopyTo(menuItems, 0);
       trayContextMenu.ItemAdded += (sender, e) =>
-        GtkThread.Invoke(() => ConvertAndAddMenuItem(e.Item, mAppIndicatorMenu));
+        DBusBackgroundWorker.InvokeGtkThread
+          (() => ConvertAndAddMenuItem(e.Item, mAppIndicatorMenu));
 
       foreach (System.Windows.Forms.ToolStripItem item in menuItems) {
         ConvertAndAddMenuItem(item, mAppIndicatorMenu);
@@ -178,26 +179,6 @@ namespace KeebuntuAppIndicator
         OnAppIndicatorMenuShown(this, new EventArgs());
     }
 
-    private void InvokeMainWindow(Action action)
-    {
-      var mainWindow = mPluginHost.MainWindow;
-      if (mainWindow.InvokeRequired) {
-        mainWindow.Invoke(action);
-      } else {
-        action.Invoke();
-      }
-    }
-
-    private void InvokeMainWindowAsync(Action action)
-    {
-      var mainWindow = mPluginHost.MainWindow;
-      if (mainWindow.InvokeRequired) {
-        mainWindow.BeginInvoke(action);
-      } else {
-        action.BeginInvoke(null, null);
-      }
-    }
-
     private void ConvertAndAddMenuItem(System.Windows.Forms.ToolStripItem item,
                                        Gtk.MenuShell gtkMenuShell)
     {
@@ -227,9 +208,10 @@ namespace KeebuntuAppIndicator
         gtkMenuItem.Sensitive = winformMenuItem.Enabled;
 
         gtkMenuItem.Activated += (sender, e) =>
-          InvokeMainWindowAsync(winformMenuItem.PerformClick);
+          DBusBackgroundWorker.InvokeWinformsThread(winformMenuItem.PerformClick);
 
-        winformMenuItem.TextChanged += (sender, e) => GtkThread.Invoke(() =>
+        winformMenuItem.TextChanged +=
+          (sender, e) => DBusBackgroundWorker.InvokeGtkThread(() =>
         {
           var label = gtkMenuItem.Child as Gtk.Label;
           if (label != null) {
@@ -238,12 +220,15 @@ namespace KeebuntuAppIndicator
         }
         );
         winformMenuItem.EnabledChanged += (sender, e) =>
-          GtkThread.Invoke(() => gtkMenuItem.Sensitive = winformMenuItem.Enabled);
+          DBusBackgroundWorker.InvokeGtkThread
+            (() => gtkMenuItem.Sensitive = winformMenuItem.Enabled);
         winformMenuItem.VisibleChanged += (sender, e) =>
-          GtkThread.Invoke(() => gtkMenuItem.Visible = winformMenuItem.Visible);
+          DBusBackgroundWorker.InvokeGtkThread
+            (() => gtkMenuItem.Visible = winformMenuItem.Visible);
 
         gtkMenuItem.Show();
-        gtkMenuShell.Insert(gtkMenuItem, winformMenuItem.Owner.Items.IndexOf(winformMenuItem));
+        gtkMenuShell.Insert(gtkMenuItem,
+                            winformMenuItem.Owner.Items.IndexOf(winformMenuItem));
 
 
         if (winformMenuItem.HasDropDownItems) {
@@ -256,7 +241,8 @@ namespace KeebuntuAppIndicator
           gtkMenuItem.Submenu = subMenu;
 
           winformMenuItem.DropDown.ItemAdded += (sender, e) =>
-            GtkThread.Invoke(() => ConvertAndAddMenuItem (e.Item, subMenu));
+            DBusBackgroundWorker.InvokeGtkThread
+              (() => ConvertAndAddMenuItem (e.Item, subMenu));
         }
       } else if (item is System.Windows.Forms.ToolStripSeparator) {
         var gtkSeparator = new Gtk.SeparatorMenuItem();
@@ -276,7 +262,8 @@ namespace KeebuntuAppIndicator
       // timer to invoke Activate() a second time to get the window to show.
 
       mActivateWorkaroundTimer.Stop();
-      InvokeMainWindowAsync(() => mPluginHost.MainWindow.Activate());
+      DBusBackgroundWorker.InvokeWinformsThread
+        (() => mPluginHost.MainWindow.Activate());
     }
 
     private byte[] ResizeImage(System.Drawing.Image image, int width, int height)
@@ -295,4 +282,3 @@ namespace KeebuntuAppIndicator
     }
   }
 }
-
