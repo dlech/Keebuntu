@@ -1,0 +1,42 @@
+Keebuntu
+========
+
+KeePass 2.x plugins that provide Ubuntu (Unity) integration.
+
+
+Includes two plugins:
+
+Application Indicator
+=====================
+
+Provides an application indicator tray icon for KeePass. 
+
+
+Background:
+
+The built-in notification tray icon for KeePass does not display in the panel. This is because the Ubuntu Unity
+Desktop only supports application indicator type tray icons.
+
+
+Usage:
+
+Right or left-clicking the icon displays the menu. Hovering the mouse over the icon and scrolling down with the
+scroll wheel will minimize KeePass to the tray. Scrolling up will resore KeePass from the tray.
+
+
+Application Menu
+================
+
+Shows the KeePass application menu in the panel instead of the application window.
+
+
+Background:
+
+Most applications, when used in the Ubuntu Unity desktop, have their menus shown in a common area in the panel rather
+than in the application window.
+
+
+Usage:
+
+Setting the environemnt variable APPMENU_DISPLAY_BOTH=1 before starting KeePass will show the menu both on the panel
+and in the KeePass application window.
