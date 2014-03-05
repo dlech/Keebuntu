@@ -11,7 +11,7 @@
     <RootNamespace>KeebuntuAppIndicator</RootNamespace>
     <AssemblyName>KeebuntuAppIndicator</AssemblyName>
     <Description>Plugin for KeePass 2.x that add support for Ubuntu Application Indicators</Description>
-    <ReleaseVersion>0.3.2</ReleaseVersion>
+    <ReleaseVersion>0.4.0</ReleaseVersion>
     <SynchReleaseVersion>False</SynchReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -57,17 +57,9 @@
     </PlgxExtras>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="appindicator-sharp">
-      <Package>appindicator-sharp-0.1</Package>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Drawing" />
-    <Reference Include="dbus-sharp">
-      <Private>False</Private>
-      <Package>dbus-sharp-1.0</Package>
-    </Reference>
     <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <Private>False</Private>
       <Package>gtk-sharp-2.0</Package>
@@ -83,6 +75,14 @@
     <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <Private>False</Private>
       <Package>gtk-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="appindicator-sharp, Version=0.2.0.0, Culture=neutral, PublicKeyToken=bcae265d1c7ab4c2">
+      <Private>False</Private>
+      <Package>appindicator-sharp-0.1</Package>
+    </Reference>
+    <Reference Include="dbus-sharp, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5675b0c3093115b5">
+      <Private>False</Private>
+      <Package>dbus-sharp-2.0</Package>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

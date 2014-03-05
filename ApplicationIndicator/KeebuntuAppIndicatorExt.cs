@@ -1,31 +1,34 @@
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
-using System.Threading;
 using System.Drawing.Imaging;
 using System.IO;
-using System.ComponentModel;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Threading;
 using AppIndicator;
-using KeePass.Plugins;
-using KeePassLib;
-using Keebuntu.Dbus;
 using ImageMagick.MagickCore;
 using ImageMagick.MagickWand;
+using KeePass.Plugins;
+using KeePassLib;
 using Keebuntu.DBus;
+using Keebuntu.Dbus;
 
 namespace KeebuntuAppIndicator
 {
   public class KeebuntuAppIndicatorExt : Plugin
   {
-    private static int instanceCount = 0;
+    static int instanceCount = 0;
 
-    private IPluginHost mPluginHost;
-    private ApplicationIndicator mIndicator;
-    private Gtk.Menu mAppIndicatorMenu;
-    private bool mActiveateWorkaroundNeeded;
-    private System.Windows.Forms.Timer mActivateWorkaroundTimer;
+    IPluginHost mPluginHost;
+    ApplicationIndicator mIndicator;
+    string mEntryId;
+    Gtk.Menu mAppIndicatorMenu;
+    bool mActiveateWorkaroundNeeded;
+    System.Windows.Forms.Timer mActivateWorkaroundTimer;
+    com.canonical.Unity.Panel.IService mPanelService;
 
     public override bool Initialize(IPluginHost host)
     {
@@ -97,12 +100,12 @@ namespace KeebuntuAppIndicator
           mainWindowType.GetMethod("OnCtxTrayOpening",
                                     System.Reflection.BindingFlags.Instance |
                                       System.Reflection.BindingFlags.NonPublic,
-                                    Type.DefaultBinder,
+                                    null,
                                     new[] {
                                       typeof(object),
                                       typeof(CancelEventArgs)
                                     },
-                                      null);
+                                    null);
         if (onCtxTrayOpeningMethodInfo != null) {
           DBusBackgroundWorker.InvokeWinformsThread
             (() => onCtxTrayOpeningMethodInfo.Invoke(mPluginHost.MainWindow,
@@ -150,9 +153,6 @@ namespace KeebuntuAppIndicator
         ConvertAndAddMenuItem(item, mAppIndicatorMenu);
       }
 
-      // might not be needed since we are monitoring via dbus too
-      mAppIndicatorMenu.Shown += OnAppIndicatorMenuShown;
-
       mIndicator.Menu = mAppIndicatorMenu;
 
       // when mouse cursor is over application indicator, scroll up will untray
@@ -194,12 +194,19 @@ namespace KeebuntuAppIndicator
       const string panelServiceBusName = "com.canonical.Unity.Panel.Service";
       const string panelServiceBusPath = "/com/canonical/Unity/Panel/Service";
       var panelServiceObjectPath = new DBus.ObjectPath(panelServiceBusPath);
-      var panelService =
+      mPanelService =
         sessionBus.GetObject<com.canonical.Unity.Panel.IService>(panelServiceBusName,
                                                                  panelServiceObjectPath);
-      // TODO - this could be improved by filtering on entry_id == ?
-      panelService.EntryActivated += (entry_id, entry_geometry) =>
+      mPanelService.EntryActivated += (panel_id, entry_id, entry_geometry) => {
+        if (mEntryId == null)
+          mEntryId = mPanelService.Sync().Where(args => args.name_hint == mIndicator.ID)
+            .SingleOrDefault().id;
+        else
+          mEntryId = string.Empty;
+        if (!String.IsNullOrEmpty(mEntryId) && mEntryId != entry_id)
+          return;
         OnAppIndicatorMenuShown(this, new EventArgs());
+      };
     }
 
     private void ConvertAndAddMenuItem(System.Windows.Forms.ToolStripItem item,

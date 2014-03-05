@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Keebuntu.DBus</RootNamespace>
     <AssemblyName>DBus</AssemblyName>
-    <ReleaseVersion>0.2.8</ReleaseVersion>
+    <ReleaseVersion>0.2.9</ReleaseVersion>
     <Description>Common DBus components for Keebuntu plugins</Description>
     <SynchReleaseVersion>False</SynchReleaseVersion>
   </PropertyGroup>
@@ -45,10 +45,6 @@
     <Compile Include="DBusBackgroundWorker.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="dbus-sharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=5675b0c3093115b5">
-      <Private>False</Private>
-      <Package>dbus-sharp-1.0</Package>
-    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Drawing" />
     <Reference Include="System" />
@@ -56,9 +52,13 @@
       <Private>False</Private>
       <Package>gtk-sharp-2.0</Package>
     </Reference>
-    <Reference Include="dbus-sharp-glib, Version=1.0.0.0, Culture=neutral, PublicKeyToken=5675b0c3093115b5">
+    <Reference Include="dbus-sharp, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5675b0c3093115b5">
       <Private>False</Private>
-      <Package>dbus-sharp-glib-1.0</Package>
+      <Package>dbus-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="dbus-sharp-glib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5675b0c3093115b5">
+      <Private>False</Private>
+      <Package>dbus-sharp-glib-2.0</Package>
     </Reference>
   </ItemGroup>
   <ProjectExtensions>

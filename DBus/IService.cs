@@ -1,45 +1,43 @@
 using System;
 using DBus;
 
-// TODO - find docs on this - only function tested/used is EntryActivated event
-
 // based on panel-main.c from unity
 
 namespace com.canonical.Unity.Panel
 {
   public struct ObjectInfo
   {
-    public string a;
-    public string b;
-    public string c;
-    public string d;
-    public byte e;
-    public byte f;
-    public uint g;
-    public string h;
-    public byte i;
-    public byte j;
-    public int k;
+    public string indicator_id;
+    public string id;
+    public string name_hint;
+    public string label_text;
+    public bool label_is_sensitive;
+    public bool label_is_visible;
+    public uint image_type;
+    public string image_data; // base64 encoded
+    public bool image_is_sensitive;
+    public bool image_is_visible;
+    public int priority;
   }
 
   public struct Geometry
   {
-    public string a;
-    public int b;
-    public int c;
-    public int d;
-    public int e;
+    public string entry_id;
+    public int x;
+    public int y;
+    public int width;
+    public int height;
   }
 
   public struct EntryGeometry
   {
-    public int a;
-    public int b;
-    public uint c;
-    public uint d;
+    public int x;
+    public int y;
+    public uint witdh;
+    public uint height;
   }
 
-  public delegate void EntryActivatedHandler(string entry_id,
+  public delegate void EntryActivatedHandler(string panel_id, string entry_id,
                                              EntryGeometry entry_geometry);
 
   public delegate void ReSyncHandler(string indicator_id);
