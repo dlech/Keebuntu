@@ -153,6 +153,9 @@ namespace KeebuntuAppIndicator
         ConvertAndAddMenuItem(item, mAppIndicatorMenu);
       }
 
+      // This only works on non-Unity desktops
+      mAppIndicatorMenu.Shown += OnAppIndicatorMenuShown;
+
       mIndicator.Menu = mAppIndicatorMenu;
 
       // when mouse cursor is over application indicator, scroll up will untray
@@ -191,22 +194,33 @@ namespace KeebuntuAppIndicator
 
       /* ApplicationIndicator dbus */
 
+      // This is a workaround for Unity. In Unity, the underlying GTK menu does
+      // not trigger the Shown event when the menu is shown. We can simulate
+      // this by using a private Unity API
+
+      // TODO: Since this is a private API, Unity does not care if they change
+      // it. In trusty, the parameters to EntryActivated changed, so this will
+      // not work pre-trusty. We need to add some code to detect the Unity
+      // version so that this will be backwards compatible.
+
       const string panelServiceBusName = "com.canonical.Unity.Panel.Service";
       const string panelServiceBusPath = "/com/canonical/Unity/Panel/Service";
       var panelServiceObjectPath = new DBus.ObjectPath(panelServiceBusPath);
       mPanelService =
         sessionBus.GetObject<com.canonical.Unity.Panel.IService>(panelServiceBusName,
                                                                  panelServiceObjectPath);
-      mPanelService.EntryActivated += (panel_id, entry_id, entry_geometry) => {
-        if (mEntryId == null)
-          mEntryId = mPanelService.Sync().Where(args => args.name_hint == mIndicator.ID)
-            .SingleOrDefault().id;
-        else
-          mEntryId = string.Empty;
-        if (!String.IsNullOrEmpty(mEntryId) && mEntryId != entry_id)
-          return;
-        OnAppIndicatorMenuShown(this, new EventArgs());
-      };
+      if (mPanelService != null) {
+        mPanelService.EntryActivated += (panel_id, entry_id, entry_geometry) => {
+          if (mEntryId == null)
+            mEntryId = mPanelService.Sync().Where(args => args.name_hint == mIndicator.ID)
+              .SingleOrDefault().id;
+          else
+            mEntryId = string.Empty;
+          if (!String.IsNullOrEmpty(mEntryId) && mEntryId != entry_id)
+            return;
+          OnAppIndicatorMenuShown(this, new EventArgs());
+        };
+      }
     }
 
     private void ConvertAndAddMenuItem(System.Windows.Forms.ToolStripItem item,
