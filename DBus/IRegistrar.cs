@@ -2,7 +2,7 @@ using System;
 using DBus;
 using System.Collections.Generic;
 
-namespace com.canonical.AppMenu
+namespace com.canonical.AppMenu.Registrar
 {
   /// <summary>
   /// Interface for dbus

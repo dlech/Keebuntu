@@ -2,7 +2,7 @@
 using System;
 using DBus;
 
-namespace org.ayatana.bamf
+namespace org.ayatana.bamf.matcher
 {
   public delegate void ActiveApplicationChangedHandler(string old_app, string new_app);
 

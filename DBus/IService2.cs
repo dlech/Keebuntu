@@ -1,9 +1,9 @@
 using System;
 using DBus;
 
-// based on panel-main.c from unity (pre-trusty)
+// based on panel-main.c from unity (trusty)
 
-namespace com.canonical.Unity.Panel.Service
+namespace com.canonical.Unity.Panel.Service.Desktop
 {
   public struct ObjectInfo
   {
@@ -37,7 +37,7 @@ namespace com.canonical.Unity.Panel.Service
     public uint height;
   }
 
-  public delegate void EntryActivatedHandler(string entry_id,
+  public delegate void EntryActivatedHandler(string panel_id, string entry_id,
                                              EntryGeometry entry_geometry);
 
   public delegate void ReSyncHandler(string indicator_id);
@@ -74,4 +74,3 @@ namespace com.canonical.Unity.Panel.Service
     event EntryShowNowChangedHaneler EntryShowNowChanged;
   }
 }
-

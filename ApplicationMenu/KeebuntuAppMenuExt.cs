@@ -75,8 +75,8 @@ namespace KeebuntuAppMenu
       const string registratBusName = "com.canonical.AppMenu.Registrar";
       var registrarObjectPath = new ObjectPath(registrarBusPath);
       var unityPanelServiceBus =
-        sessionBus.GetObject<com.canonical.AppMenu.IRegistrar>(registratBusName,
-                                                               registrarObjectPath);
+        sessionBus.GetObject<com.canonical.AppMenu.Registrar.IRegistrar>(registratBusName,
+                                                                         registrarObjectPath);
       var mainFormXid = GetWindowXid(mPluginHost.MainWindow);
       var mainFormObjectPath = new ObjectPath(string.Format(menuPath,
                                                             mainFormXid));

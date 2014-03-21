@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Keebuntu.DBus</RootNamespace>
     <AssemblyName>DBus</AssemblyName>
-    <ReleaseVersion>0.2.9</ReleaseVersion>
+    <ReleaseVersion>0.3.0</ReleaseVersion>
     <Description>Common DBus components for Keebuntu plugins</Description>
     <SynchReleaseVersion>False</SynchReleaseVersion>
   </PropertyGroup>
@@ -43,6 +43,7 @@
     <Compile Include="MenuStripProxy.cs" />
     <Compile Include="ToolStripItemProxy.cs" />
     <Compile Include="DBusBackgroundWorker.cs" />
+    <Compile Include="IService2.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Windows.Forms" />

@@ -28,7 +28,8 @@ namespace KeebuntuAppIndicator
     Gtk.Menu mAppIndicatorMenu;
     bool mActiveateWorkaroundNeeded;
     System.Windows.Forms.Timer mActivateWorkaroundTimer;
-    com.canonical.Unity.Panel.IService mPanelService;
+    com.canonical.Unity.Panel.Service.IService mPanelService;
+    com.canonical.Unity.Panel.Service.Desktop.IService mPanelService2;
 
     public override bool Initialize(IPluginHost host)
     {
@@ -198,21 +199,40 @@ namespace KeebuntuAppIndicator
       // not trigger the Shown event when the menu is shown. We can simulate
       // this by using a private Unity API
 
-      // TODO: Since this is a private API, Unity does not care if they change
-      // it. In trusty, the parameters to EntryActivated changed, so this will
-      // not work pre-trusty. We need to add some code to detect the Unity
-      // version so that this will be backwards compatible.
-
       const string panelServiceBusName = "com.canonical.Unity.Panel.Service";
       const string panelServiceBusPath = "/com/canonical/Unity/Panel/Service";
       var panelServiceObjectPath = new DBus.ObjectPath(panelServiceBusPath);
-      mPanelService =
-        sessionBus.GetObject<com.canonical.Unity.Panel.IService>(panelServiceBusName,
-                                                                 panelServiceObjectPath);
+      mPanelService = sessionBus
+        .GetObject<com.canonical.Unity.Panel.Service.IService>(
+          panelServiceBusName, panelServiceObjectPath);
       if (mPanelService != null) {
-        mPanelService.EntryActivated += (panel_id, entry_id, entry_geometry) => {
+        mPanelService.EntryActivated += (entry_id, entry_geometry) => {
           if (mEntryId == null)
-            mEntryId = mPanelService.Sync().Where(args => args.name_hint == mIndicator.ID)
+            mEntryId = mPanelService.Sync()
+              .Where(args => args.name_hint == mIndicator.ID)
+              .SingleOrDefault().id;
+          else
+            mEntryId = string.Empty;
+          if (!String.IsNullOrEmpty(mEntryId) && mEntryId != entry_id)
+            return;
+          OnAppIndicatorMenuShown(this, new EventArgs());
+        };
+      }
+
+      // Since this is a private API, Unity does not care about changing it,
+      // which was done in trusty. So, the very similar looking code above
+      // will work pre-trusty and this will work for trusty and beyond (until
+      // the API is changed again).
+      const string panelServiceDesktopBusName =
+      "com.canonical.Unity.Panel.Service.Desktop";
+      mPanelService2 = sessionBus
+        .GetObject<com.canonical.Unity.Panel.Service.Desktop.IService>(
+          panelServiceDesktopBusName, panelServiceObjectPath);
+      if (mPanelService2 != null) {
+        mPanelService2.EntryActivated += (panel_id, entry_id, entry_geometry) => {
+          if (mEntryId == null)
+            mEntryId = mPanelService2.Sync()
+              .Where(args => args.name_hint == mIndicator.ID)
               .SingleOrDefault().id;
           else
             mEntryId = string.Empty;
