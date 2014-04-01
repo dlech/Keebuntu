@@ -53,13 +53,23 @@
       <Private>False</Private>
       <Package>gtk-sharp-2.0</Package>
     </Reference>
-    <Reference Include="dbus-sharp, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5675b0c3093115b5">
+    <Reference Include="dbus-sharp" Condition=" '$(DBusVersion)' == '2.0' ">
       <Private>False</Private>
       <Package>dbus-sharp-2.0</Package>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="dbus-sharp-glib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5675b0c3093115b5">
+    <Reference Include="dbus-sharp" Condition=" '$(DBusVersion)' != '2.0' ">
+      <Private>False</Private>
+      <Package>dbus-sharp-1.0</Package>
+    </Reference>
+    <Reference Include="dbus-sharp-glib" Condition=" '$(DBusVersion)' == '2.0' ">
       <Private>False</Private>
       <Package>dbus-sharp-glib-2.0</Package>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="dbus-sharp-glib" Condition=" '$(DBusVersion)' != '2.0' ">
+      <Private>False</Private>
+      <Package>dbus-sharp-glib-1.0</Package>
     </Reference>
   </ItemGroup>
   <ProjectExtensions>
