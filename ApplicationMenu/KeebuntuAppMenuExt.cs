@@ -12,6 +12,8 @@ using KeePassLib;
 using Keebuntu.Dbus;
 using DBus;
 using Keebuntu.DBus;
+using KeePassLib.Utility;
+using System.Windows.Forms;
 
 namespace KeebuntuAppMenu
 {
@@ -81,9 +83,20 @@ namespace KeebuntuAppMenu
       var mainFormObjectPath = new ObjectPath(string.Format(menuPath,
                                                             mainFormXid));
       sessionBus.Register(mainFormObjectPath, mDBusMenu);
+      try {
       unityPanelServiceBus.RegisterWindow((uint)mainFormXid.ToInt32(),
                                           mainFormObjectPath);
-
+      } catch (Exception) {
+        mPluginHost.MainWindow.Invoke ((MethodInvoker) delegate {
+          MessageService.ShowInfo (new object[] {
+            "Could not register window for KeebuntuAppMenu plugin.",
+            "This plugin only works with Ubuntu Unity desktop."
+          });
+          mPluginHost.MainWindow.MainMenu.Visible = true;
+          Terminate ();
+        });
+        return;
+      }
       // have to re-register the window each time the main windows is shown
       // otherwise we lose the application menu
       mPluginHost.MainWindow.Activated += (sender, e) =>
