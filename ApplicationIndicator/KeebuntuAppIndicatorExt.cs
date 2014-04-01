@@ -202,21 +202,25 @@ namespace KeebuntuAppIndicator
       const string panelServiceBusName = "com.canonical.Unity.Panel.Service";
       const string panelServiceBusPath = "/com/canonical/Unity/Panel/Service";
       var panelServiceObjectPath = new DBus.ObjectPath(panelServiceBusPath);
-      mPanelService = sessionBus
-        .GetObject<com.canonical.Unity.Panel.Service.IService>(
-          panelServiceBusName, panelServiceObjectPath);
-      if (mPanelService != null) {
-        mPanelService.EntryActivated += (entry_id, entry_geometry) => {
-          if (mEntryId == null)
-            mEntryId = mPanelService.Sync()
-              .Where(args => args.name_hint == mIndicator.ID)
-              .SingleOrDefault().id;
-          else
-            mEntryId = string.Empty;
-          if (!String.IsNullOrEmpty(mEntryId) && mEntryId != entry_id)
-            return;
-          OnAppIndicatorMenuShown(this, new EventArgs());
-        };
+      try {
+        mPanelService = sessionBus
+          .GetObject<com.canonical.Unity.Panel.Service.IService>(
+            panelServiceBusName, panelServiceObjectPath);
+        if (mPanelService != null) {
+          mPanelService.EntryActivated += (entry_id, entry_geometry) => {
+            if (mEntryId == null)
+              mEntryId = mPanelService.Sync()
+                .Where(args => args.name_hint == mIndicator.ID)
+                .SingleOrDefault().id;
+            else
+              mEntryId = string.Empty;
+            if (!String.IsNullOrEmpty(mEntryId) && mEntryId != entry_id)
+              return;
+            OnAppIndicatorMenuShown(this, new EventArgs());
+          };
+        }
+      } catch (Exception) {
+        // ignored
       }
 
       // Since this is a private API, Unity does not care about changing it,
@@ -225,21 +229,25 @@ namespace KeebuntuAppIndicator
       // the API is changed again).
       const string panelServiceDesktopBusName =
       "com.canonical.Unity.Panel.Service.Desktop";
-      mPanelService2 = sessionBus
-        .GetObject<com.canonical.Unity.Panel.Service.Desktop.IService>(
-          panelServiceDesktopBusName, panelServiceObjectPath);
-      if (mPanelService2 != null) {
-        mPanelService2.EntryActivated += (panel_id, entry_id, entry_geometry) => {
-          if (mEntryId == null)
-            mEntryId = mPanelService2.Sync()
-              .Where(args => args.name_hint == mIndicator.ID)
-              .SingleOrDefault().id;
-          else
-            mEntryId = string.Empty;
-          if (!String.IsNullOrEmpty(mEntryId) && mEntryId != entry_id)
-            return;
-          OnAppIndicatorMenuShown(this, new EventArgs());
-        };
+      try {
+        mPanelService2 = sessionBus
+          .GetObject<com.canonical.Unity.Panel.Service.Desktop.IService>(
+            panelServiceDesktopBusName, panelServiceObjectPath);
+        if (mPanelService2 != null) {
+          mPanelService2.EntryActivated += (panel_id, entry_id, entry_geometry) => {
+            if (mEntryId == null)
+              mEntryId = mPanelService2.Sync()
+                .Where(args => args.name_hint == mIndicator.ID)
+                .SingleOrDefault().id;
+            else
+              mEntryId = string.Empty;
+            if (!String.IsNullOrEmpty(mEntryId) && mEntryId != entry_id)
+              return;
+            OnAppIndicatorMenuShown(this, new EventArgs());
+          };
+        }
+      } catch (Exception) {
+        // ignored
       }
     }
 
