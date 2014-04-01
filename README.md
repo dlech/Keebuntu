@@ -9,8 +9,13 @@ Includes two plugins:
 Application Indicator
 =====================
 
-Provides an application indicator tray icon for KeePass. 
+Provides an application indicator tray icon for KeePass.
 
+Tested with the following desktops:
+* Cinnamon
+* GNOME Shell (requires [appindicator plugin](https://extensions.gnome.org/extension/615/appindicator-support/))
+* Unity
+* Xfce
 
 Background:
 
@@ -27,7 +32,7 @@ scroll wheel will minimize KeePass to the tray. Scrolling up will resore KeePass
 Application Menu
 ================
 
-Shows the KeePass application menu in the panel instead of the application window.
+Shows the KeePass application menu in the panel instead of the application window. NOTE: This only works on Unity - not other desktops.
 
 
 Background:
@@ -38,5 +43,21 @@ than in the application window.
 
 Usage:
 
-Setting the environemnt variable APPMENU_DISPLAY_BOTH=1 before starting KeePass will show the menu both on the panel
+Setting the environemnt variable `APPMENU_DISPLAY_BOTH=1` before starting KeePass will show the menu both on the panel
 and in the KeePass application window.
+
+
+-----
+
+Binary Packages
+===============
+
+On Ubuntu and derivative systems, you can install via ppa:
+
+```
+$ sudo apt-add-repository ppa:dlech/keepass2-plugins
+$ sudo apt-get update
+$ sudo apt-get install keepass2-plugin-application-indicator keepass2-plugin-application-menu
+```
+
+On Arch Linux, you can try https://aur.archlinux.org/packages/keebuntu-git/
