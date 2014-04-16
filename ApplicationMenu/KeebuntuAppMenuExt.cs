@@ -21,12 +21,12 @@ namespace KeebuntuAppMenu
   {
     const string menuPath = "/com/canonical/menu/{0}";
 
-    private IPluginHost mPluginHost;
-    private MenuStripDBusMenu mDBusMenu;
+    IPluginHost pluginHost;
+    MenuStripDBusMenu dbusMenu;
 
     public override bool Initialize(IPluginHost host)
     {
-      mPluginHost = host;
+      pluginHost = host;
       var threadStarted = false;
       try {
         DBusBackgroundWorker.Start();
@@ -36,7 +36,7 @@ namespace KeebuntuAppMenu
         // mimmic behavior of other ubuntu apps
         if (Environment.GetEnvironmentVariable("APPMENU_DISPLAY_BOTH") != "1")
         {
-          mPluginHost.MainWindow.MainMenu.Visible = false;
+          pluginHost.MainWindow.MainMenu.Visible = false;
         }
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
@@ -57,11 +57,11 @@ namespace KeebuntuAppMenu
       }
     }
 
-    private void GtkDBusInit()
+    void GtkDBusInit()
     {
       /* setup ApplicationMenu */
 
-      mDBusMenu = new MenuStripDBusMenu(mPluginHost.MainWindow.MainMenu);
+      dbusMenu = new MenuStripDBusMenu(pluginHost.MainWindow.MainMenu);
 
       var sessionBus = Bus.Session;
 
@@ -79,10 +79,10 @@ namespace KeebuntuAppMenu
       var unityPanelServiceBus =
         sessionBus.GetObject<com.canonical.AppMenu.Registrar.IRegistrar>(registratBusName,
                                                                          registrarObjectPath);
-      var mainFormXid = GetWindowXid(mPluginHost.MainWindow);
+      var mainFormXid = GetWindowXid(pluginHost.MainWindow);
       var mainFormObjectPath = new ObjectPath(string.Format(menuPath,
                                                             mainFormXid));
-      sessionBus.Register(mainFormObjectPath, mDBusMenu);
+      sessionBus.Register(mainFormObjectPath, dbusMenu);
       try {
       unityPanelServiceBus.RegisterWindow((uint)mainFormXid.ToInt32(),
                                           mainFormObjectPath);
@@ -92,14 +92,14 @@ namespace KeebuntuAppMenu
             "Could not register window for KeebuntuAppMenu plugin.",
             "This plugin only works with Ubuntu Unity desktop."
           });
-          mPluginHost.MainWindow.MainMenu.Visible = true;
+          pluginHost.MainWindow.MainMenu.Visible = true;
           Terminate ();
         });
         return;
       }
       // have to re-register the window each time the main windows is shown
       // otherwise we lose the application menu
-      mPluginHost.MainWindow.Activated += (sender, e) =>
+      pluginHost.MainWindow.Activated += (sender, e) =>
       {
         // TODO - sometimes we invoke this unnessasarily. If there is a way to
         // test that we are still registered, that would proably be better.
@@ -110,7 +110,7 @@ namespace KeebuntuAppMenu
       };
     }
 
-    private IntPtr GetWindowXid(System.Windows.Forms.Form form)
+    IntPtr GetWindowXid(System.Windows.Forms.Form form)
     {
       var typeName = typeof(System.Windows.Forms.Control).AssemblyQualifiedName;
       var hwndTypeName = typeName.Replace("Control", "Hwnd");
