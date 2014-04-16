@@ -87,7 +87,7 @@ namespace KeebuntuAppMenu
       unityPanelServiceBus.RegisterWindow((uint)mainFormXid.ToInt32(),
                                           mainFormObjectPath);
       } catch (Exception) {
-        mPluginHost.MainWindow.Invoke ((MethodInvoker) delegate {
+        DBusBackgroundWorker.InvokeWinformsThread (delegate {
           MessageService.ShowInfo (new object[] {
             "Could not register window for KeebuntuAppMenu plugin.",
             "This plugin only works with Ubuntu Unity desktop."
