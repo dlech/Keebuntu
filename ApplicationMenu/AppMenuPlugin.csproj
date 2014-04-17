@@ -11,8 +11,8 @@
     <RootNamespace>KeebuntuAppMenu</RootNamespace>
     <AssemblyName>KeebuntuAppMenu</AssemblyName>
     <Description>Plugin for KeePass 2.x that add support for Ubuntu Application Menus</Description>
-    <ReleaseVersion>0.2.10</ReleaseVersion>
     <SynchReleaseVersion>False</SynchReleaseVersion>
+    <ReleaseVersion>0.2.11</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>

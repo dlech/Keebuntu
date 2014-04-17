@@ -20,6 +20,7 @@ namespace KeebuntuAppMenu
   public class KeebuntuAppMenuExt : Plugin
   {
     const string menuPath = "/com/canonical/menu/{0}";
+    const string keebuntuAppMenuWarningSeenId = "KeebuntuAppMenu.WarningSeen";
 
     IPluginHost pluginHost;
     MenuStripDBusMenu dbusMenu;
@@ -87,14 +88,27 @@ namespace KeebuntuAppMenu
       unityPanelServiceBus.RegisterWindow((uint)mainFormXid.ToInt32(),
                                           mainFormObjectPath);
       } catch (Exception) {
-        DBusBackgroundWorker.InvokeWinformsThread (delegate {
-          MessageService.ShowInfo (new object[] {
-            "Could not register window for KeebuntuAppMenu plugin.",
-            "This plugin only works with Ubuntu Unity desktop."
-          });
-          pluginHost.MainWindow.MainMenu.Visible = true;
-          Terminate ();
-        });
+        if (!pluginHost.CustomConfig.GetBool(keebuntuAppMenuWarningSeenId, false)) {
+          using (var dialog = new Gtk.Dialog()) {
+            dialog.Title = "KeebuntuAppMenu Plugin";
+            dialog.AddButton("OK", Gtk.ResponseType.Ok);
+            dialog.AddButton("Don't show this again", Gtk.ResponseType.Accept);
+            var message = "Could not register window with Unity panel service.\n\n"
+              + "This plugin only works with Ubuntu Unity desktop.";
+            var label = new Gtk.Label(message);
+            label.SetPadding(20, 20);
+            dialog.VBox.PackStart(label);
+            dialog.Response += (o, args) => {
+              dialog.Destroy();
+              if (args.ResponseId == Gtk.ResponseType.Accept)
+                pluginHost.CustomConfig.SetBool(keebuntuAppMenuWarningSeenId, true);
+            };
+            dialog.ShowAll();
+            dialog.KeepAbove = true;
+            dialog.Run();
+          }
+        }
+        Terminate ();
         return;
       }
       // have to re-register the window each time the main windows is shown
