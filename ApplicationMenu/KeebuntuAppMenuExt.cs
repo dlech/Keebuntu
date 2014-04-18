@@ -90,14 +90,30 @@ namespace KeebuntuAppMenu
       } catch (Exception) {
         if (!pluginHost.CustomConfig.GetBool(keebuntuAppMenuWarningSeenId, false)) {
           using (var dialog = new Gtk.Dialog()) {
-            dialog.Title = "KeebuntuAppMenu Plugin";
-            dialog.AddButton("OK", Gtk.ResponseType.Ok);
-            dialog.AddButton("Don't show this again", Gtk.ResponseType.Accept);
-            var message = "Could not register window with Unity panel service.\n\n"
-              + "This plugin only works with Ubuntu Unity desktop.";
+            dialog.BorderWidth = 6;
+            dialog.Resizable = false;
+            dialog.HasSeparator = false;
+            var message = "<span weight=\"bold\"size=\"larger\">"
+              + "Could not register KeebuntuAppMenu with Unity panel service."
+              + "</span>\n\n"
+              + "This plugin only works with Ubuntu Unity desktop."
+              + " If you do not use Unity, you should uninstall the KeebuntuAppMenu plugin."
+              + "\n";
             var label = new Gtk.Label(message);
-            label.SetPadding(20, 20);
-            dialog.VBox.PackStart(label);
+            label.UseMarkup = true;
+            label.Wrap = true;
+            label.Yalign = 0;
+            var icon = new Gtk.Image(Gtk.Stock.DialogError, Gtk.IconSize.Dialog);
+            icon.Yalign = 0;
+            var contentBox = new Gtk.HBox();
+            contentBox.Spacing = 12;
+            contentBox.BorderWidth = 6;
+            contentBox.PackStart(icon);
+            contentBox.PackEnd(label);
+            dialog.VBox.PackStart(contentBox);
+            dialog.AddButton("Don't show this again", Gtk.ResponseType.Accept);
+            dialog.AddButton("OK", Gtk.ResponseType.Ok);
+            dialog.DefaultResponse = Gtk.ResponseType.Ok;
             dialog.Response += (o, args) => {
               dialog.Destroy();
               if (args.ResponseId == Gtk.ResponseType.Accept)
