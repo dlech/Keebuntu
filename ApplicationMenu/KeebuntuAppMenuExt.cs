@@ -124,7 +124,10 @@ namespace KeebuntuAppMenu
             dialog.Run();
           }
         }
-        Terminate ();
+        DBusBackgroundWorker.InvokeWinformsThread(() => {
+          pluginHost.MainWindow.MainMenu.Visible = true;
+          Terminate ();
+        });
         return;
       }
       // have to re-register the window each time the main windows is shown
