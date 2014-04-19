@@ -64,6 +64,18 @@
       <Private>False</Private>
       <Package>gtk-sharp-2.0</Package>
     </Reference>
+    <Reference Include="atk-sharp">
+      <Private>False</Private>
+      <Package>atk-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="gdk-sharp">
+      <Private>False</Private>
+      <Package>gdk-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="glib-sharp">
+      <Private>False</Private>
+      <Package>glib-sharp-2.0</Package>
+    </Reference>
     <Reference Include="dbus-sharp" Condition=" '$(DBusVersion)' == '2.0' ">
       <Private>False</Private>
       <Package>dbus-sharp-2.0</Package>
