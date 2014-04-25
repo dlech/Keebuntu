@@ -24,21 +24,25 @@ namespace KeebuntuAppMenu
 
     IPluginHost pluginHost;
     MenuStripDBusMenu dbusMenu;
+    bool hideMenuInApp;
 
     public override bool Initialize(IPluginHost host)
     {
       pluginHost = host;
+      // mimmic behavior of other ubuntu apps
+      hideMenuInApp =
+        Environment.GetEnvironmentVariable("APPMENU_DISPLAY_BOTH") != "1";
       var threadStarted = false;
       try {
         DBusBackgroundWorker.Start();
         threadStarted = true;
         DBusBackgroundWorker.InvokeGtkThread(() => GtkDBusInit());
 
-        // mimmic behavior of other ubuntu apps
-        if (Environment.GetEnvironmentVariable("APPMENU_DISPLAY_BOTH") != "1")
+        if (hideMenuInApp)
         {
           pluginHost.MainWindow.MainMenu.Visible = false;
         }
+        pluginHost.MainWindow.Activated += MainWindow_Activated;
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
         if (threadStarted) {
@@ -52,9 +56,21 @@ namespace KeebuntuAppMenu
     public override void Terminate()
     {
       try {
+        pluginHost.MainWindow.Activated -= MainWindow_Activated;
+        DBusBackgroundWorker.InvokeWinformsThread(() => {
+          pluginHost.MainWindow.MainMenu.Visible = true;
+        });
         DBusBackgroundWorker.Stop();
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
+      }
+    }
+
+    void MainWindow_Activated(object sender, EventArgs e)
+    {
+      if (hideMenuInApp)
+      {
+        pluginHost.MainWindow.MainMenu.Visible = false;
       }
     }
 
@@ -124,10 +140,7 @@ namespace KeebuntuAppMenu
             dialog.Run();
           }
         }
-        DBusBackgroundWorker.InvokeWinformsThread(() => {
-          pluginHost.MainWindow.MainMenu.Visible = true;
-          Terminate ();
-        });
+        Terminate ();
         return;
       }
       // have to re-register the window each time the main windows is shown
