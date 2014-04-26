@@ -22,7 +22,8 @@ namespace KeebuntuAppIndicator
   {
     static int instanceCount = 0;
 
-    IPluginHost mPluginHost;
+    IPluginHost pluginHost;
+    System.Drawing.Icon notifyIcon;
     ApplicationIndicator mIndicator;
     string mEntryId;
     Gtk.Menu mAppIndicatorMenu;
@@ -33,7 +34,10 @@ namespace KeebuntuAppIndicator
 
     public override bool Initialize(IPluginHost host)
     {
-      mPluginHost = host;
+      pluginHost = host;
+      notifyIcon = pluginHost.MainWindow.MainNotifyIcon.Icon;
+      // the prevents the System.Windows.Forms.NotifyIcon from being shown.
+      pluginHost.MainWindow.MainNotifyIcon.Icon = null;
       mActivateWorkaroundTimer = new System.Windows.Forms.Timer();
       mActivateWorkaroundTimer.Interval = 100;
       mActivateWorkaroundTimer.Tick += OnActivateWorkaroundTimerTick;
@@ -44,7 +48,7 @@ namespace KeebuntuAppIndicator
         threadStarted = true;
         DBusBackgroundWorker.InvokeGtkThread(() => GtkDBusInit());
 
-        mPluginHost.MainWindow.Activated += (sender, e) =>
+        pluginHost.MainWindow.Activated += (sender, e) =>
         {
           if (mActiveateWorkaroundNeeded) {
             // see explanation in OnActivateWorkaroundTimerTick()
@@ -53,16 +57,17 @@ namespace KeebuntuAppIndicator
           }
         };
 
-        mPluginHost.MainWindow.Resize += (sender, e) =>
+        pluginHost.MainWindow.Resize += (sender, e) =>
         {
-          if (!mPluginHost.MainWindow.Visible &&
-              mPluginHost.MainWindow.WindowState ==
+          if (!pluginHost.MainWindow.Visible &&
+              pluginHost.MainWindow.WindowState ==
               System.Windows.Forms.FormWindowState.Minimized)
           {
             // see explanation in OnActivateWorkaroundTimerTick()
             mActiveateWorkaroundNeeded = true;
           }
         };
+        pluginHost.MainWindow.UIStateUpdated += MainWindow_UIStateUpdated;
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
         if (threadStarted) {
@@ -74,7 +79,9 @@ namespace KeebuntuAppIndicator
     }
 
     public override void Terminate()
-    {
+    {      
+      pluginHost.MainWindow.UIStateUpdated -= MainWindow_UIStateUpdated;
+      pluginHost.MainWindow.MainNotifyIcon.Icon = notifyIcon;
       try {
         DBusBackgroundWorker.Stop();
         // Mono tends to lock up sometimes when trying to hide/remove the
@@ -82,21 +89,28 @@ namespace KeebuntuAppIndicator
         // not our ApplicationIndicator). We fake the private variable so
         // that mono does not call the HideSystray() method since it is not
         // shown anyway.
-        var notifyIconType = mPluginHost.MainWindow.MainNotifyIcon.GetType();
+        var notifyIconType = pluginHost.MainWindow.MainNotifyIcon.GetType();
         var notifyIconVisibleField =
           notifyIconType.GetField("visible", BindingFlags.Instance |
                                              BindingFlags.NonPublic);
-        notifyIconVisibleField.SetValue(mPluginHost.MainWindow.MainNotifyIcon,
+        notifyIconVisibleField.SetValue(pluginHost.MainWindow.MainNotifyIcon,
                                         false);
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
       }
     }
 
+    void MainWindow_UIStateUpdated(object sender, EventArgs e)
+    {
+      // remove the tooltip from the notify icon because it causes issues
+      // with Unity app menus
+      pluginHost.MainWindow.MainNotifyIcon.Text = string.Empty;
+    }
+
     private void OnAppIndicatorMenuShown(object sender, EventArgs e)
     {
       try {
-        var mainWindowType = mPluginHost.MainWindow.GetType();
+        var mainWindowType = pluginHost.MainWindow.GetType();
         var onCtxTrayOpeningMethodInfo =
           mainWindowType.GetMethod("OnCtxTrayOpening",
                                     System.Reflection.BindingFlags.Instance |
@@ -109,7 +123,7 @@ namespace KeebuntuAppIndicator
                                     null);
         if (onCtxTrayOpeningMethodInfo != null) {
           DBusBackgroundWorker.InvokeWinformsThread
-            (() => onCtxTrayOpeningMethodInfo.Invoke(mPluginHost.MainWindow,
+            (() => onCtxTrayOpeningMethodInfo.Invoke(pluginHost.MainWindow,
                                                      new[] {
                                                        sender,
                                                        new CancelEventArgs()
@@ -141,7 +155,7 @@ namespace KeebuntuAppIndicator
 
       mAppIndicatorMenu = new Gtk.Menu();
 
-      var trayContextMenu = mPluginHost.MainWindow.TrayContextMenu;
+      var trayContextMenu = pluginHost.MainWindow.TrayContextMenu;
       // make copy of item list to prevent list changed exception when iterating
       var menuItems =
         new System.Windows.Forms.ToolStripItem[trayContextMenu.Items.Count];
@@ -175,7 +189,7 @@ namespace KeebuntuAppIndicator
 
         var trayMenuItem = trayContextMenu.Items["m_ctxTrayTray"];
         if (trayMenuItem.Enabled && (scrollDirection == Gdk.ScrollDirection.Up ^
-                                     mPluginHost.MainWindow.Visible ))
+                                     pluginHost.MainWindow.Visible ))
         {
           DBusBackgroundWorker.InvokeWinformsThread
             (() => trayMenuItem.PerformClick());
@@ -275,7 +289,7 @@ namespace KeebuntuAppIndicator
           gtkMenuItem.Image = new Gtk.Image(memStream);
         }
 
-        gtkMenuItem.TooltipText = winformMenuItem.ToolTipText;
+        //gtkMenuItem.TooltipText = winformMenuItem.ToolTipText;
         gtkMenuItem.Visible = winformMenuItem.Visible;
         gtkMenuItem.Sensitive = winformMenuItem.Enabled;
 
@@ -334,7 +348,7 @@ namespace KeebuntuAppIndicator
 
       mActivateWorkaroundTimer.Stop();
       DBusBackgroundWorker.InvokeWinformsThread
-        (() => mPluginHost.MainWindow.Activate());
+        (() => pluginHost.MainWindow.Activate());
     }
 
     private byte[] ResizeImage(System.Drawing.Image image, int width, int height)
