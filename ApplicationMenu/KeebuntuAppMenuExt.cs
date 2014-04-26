@@ -1,19 +1,21 @@
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
-using System.Threading;
 using System.Drawing.Imaging;
 using System.IO;
-using System.ComponentModel;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using System.Linq;
 using System.Reflection;
-using KeePass.Plugins;
-using KeePassLib;
-using Keebuntu.Dbus;
-using DBus;
-using Keebuntu.DBus;
-using KeePassLib.Utility;
+using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
+using DBus;
+using KeePass.Plugins;
+using KeePass.UI;
+using KeePassLib;
+using KeePassLib.Utility;
+using Keebuntu.DBus;
+using Keebuntu.Dbus;
 
 namespace KeebuntuAppMenu
 {
@@ -24,11 +26,16 @@ namespace KeebuntuAppMenu
 
     IPluginHost pluginHost;
     MenuStripDBusMenu dbusMenu;
+    MenuStripDBusMenu emptyDBusMenu;
+    com.canonical.AppMenu.Registrar.IRegistrar unityPanelServiceBus;
+    IntPtr mainFormXid;
+    ObjectPath mainFormObjectPath;
     bool hideMenuInApp;
 
     public override bool Initialize(IPluginHost host)
     {
       pluginHost = host;
+
       // mimmic behavior of other ubuntu apps
       hideMenuInApp =
         Environment.GetEnvironmentVariable("APPMENU_DISPLAY_BOTH") != "1";
@@ -43,6 +50,8 @@ namespace KeebuntuAppMenu
           pluginHost.MainWindow.MainMenu.Visible = false;
         }
         pluginHost.MainWindow.Activated += MainWindow_Activated;
+        GlobalWindowManager.WindowAdded += GlobalWindowManager_WindowAdded;
+        GlobalWindowManager.WindowRemoved += GlobalWindowManager_WindowRemoved;
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
         if (threadStarted) {
@@ -57,6 +66,8 @@ namespace KeebuntuAppMenu
     {
       try {
         pluginHost.MainWindow.Activated -= MainWindow_Activated;
+        GlobalWindowManager.WindowAdded -= GlobalWindowManager_WindowAdded;
+        GlobalWindowManager.WindowRemoved -= GlobalWindowManager_WindowRemoved;
         DBusBackgroundWorker.InvokeWinformsThread(() => {
           pluginHost.MainWindow.MainMenu.Visible = true;
         });
@@ -72,6 +83,14 @@ namespace KeebuntuAppMenu
       {
         pluginHost.MainWindow.MainMenu.Visible = false;
       }
+      // have to re-register the window each time the main windows is shown
+      // otherwise we lose the application menu
+      // TODO - sometimes we invoke this unnessasarily. If there is a way to
+      // test that we are still registered, that would proably be better.
+      // For now, it does not seem to hurt anything.
+      DBusBackgroundWorker.InvokeGtkThread(
+        () => unityPanelServiceBus.RegisterWindow((uint)mainFormXid.ToInt32(),
+                                                   mainFormObjectPath));
     }
 
     void GtkDBusInit()
@@ -79,6 +98,7 @@ namespace KeebuntuAppMenu
       /* setup ApplicationMenu */
 
       dbusMenu = new MenuStripDBusMenu(pluginHost.MainWindow.MainMenu);
+      emptyDBusMenu = new MenuStripDBusMenu(new MenuStrip());
 
       var sessionBus = Bus.Session;
 
@@ -93,12 +113,12 @@ namespace KeebuntuAppMenu
       const string registrarBusPath = "/com/canonical/AppMenu/Registrar";
       const string registratBusName = "com.canonical.AppMenu.Registrar";
       var registrarObjectPath = new ObjectPath(registrarBusPath);
-      var unityPanelServiceBus =
+      unityPanelServiceBus =
         sessionBus.GetObject<com.canonical.AppMenu.Registrar.IRegistrar>(registratBusName,
                                                                          registrarObjectPath);
-      var mainFormXid = GetWindowXid(pluginHost.MainWindow);
-      var mainFormObjectPath = new ObjectPath(string.Format(menuPath,
-                                                            mainFormXid));
+      mainFormXid = GetWindowXid(pluginHost.MainWindow);
+      mainFormObjectPath = new ObjectPath(string.Format(menuPath,
+                                                        mainFormXid));
       sessionBus.Register(mainFormObjectPath, dbusMenu);
       try {
       unityPanelServiceBus.RegisterWindow((uint)mainFormXid.ToInt32(),
@@ -143,24 +163,36 @@ namespace KeebuntuAppMenu
         Terminate ();
         return;
       }
-      // have to re-register the window each time the main windows is shown
-      // otherwise we lose the application menu
-      pluginHost.MainWindow.Activated += (sender, e) =>
-      {
-        // TODO - sometimes we invoke this unnessasarily. If there is a way to
-        // test that we are still registered, that would proably be better.
-        // For now, it does not seem to hurt anything.
+    }
+
+    void GlobalWindowManager_WindowAdded(object sender, GwmWindowEventArgs e)
+    {
+      var xid = (uint)GetWindowXid(e.Form);
+      var objectPath = new ObjectPath(string.Format(menuPath, xid));
+      DBusBackgroundWorker.InvokeGtkThread(() => {
+        Bus.Session.Register(objectPath, emptyDBusMenu);
+        unityPanelServiceBus.RegisterWindow(xid, objectPath);
+      });
+    }
+
+    void GlobalWindowManager_WindowRemoved(object sender, GwmWindowEventArgs e)
+    {
+      var xid = (uint)GetWindowXid(e.Form);
+      var objectPath = new ObjectPath(string.Format(menuPath, xid));
+      DBusBackgroundWorker.InvokeGtkThread(() => {
+        unityPanelServiceBus.UnregisterWindow(xid);
+        Bus.Session.Unregister(objectPath);
+      });
+      if (GlobalWindowManager.WindowCount <= 1)
         DBusBackgroundWorker.InvokeGtkThread(
           () => unityPanelServiceBus.RegisterWindow((uint)mainFormXid.ToInt32(),
-                                                    mainFormObjectPath));
-      };
+                                                     mainFormObjectPath));
     }
 
     IntPtr GetWindowXid(System.Windows.Forms.Form form)
     {
-      var typeName = typeof(System.Windows.Forms.Control).AssemblyQualifiedName;
-      var hwndTypeName = typeName.Replace("Control", "Hwnd");
-      var hwndType = Type.GetType(hwndTypeName);
+      var winformsAssm = typeof(System.Windows.Forms.Control).Assembly;
+      var hwndType = winformsAssm.GetType("System.Windows.Forms.Hwnd");
       var objectFromHandleMethod =
         hwndType.GetMethod("ObjectFromHandle", BindingFlags.Public | BindingFlags.Static);
       var hwnd =
@@ -171,4 +203,3 @@ namespace KeebuntuAppMenu
     }
   }
 }
-
