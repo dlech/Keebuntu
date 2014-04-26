@@ -23,24 +23,29 @@ namespace KeebuntuAppIndicator
     static int instanceCount = 0;
 
     IPluginHost pluginHost;
-    System.Drawing.Icon notifyIcon;
-    ApplicationIndicator mIndicator;
-    string mEntryId;
-    Gtk.Menu mAppIndicatorMenu;
-    bool mActiveateWorkaroundNeeded;
-    System.Windows.Forms.Timer mActivateWorkaroundTimer;
-    com.canonical.Unity.Panel.Service.IService mPanelService;
-    com.canonical.Unity.Panel.Service.Desktop.IService mPanelService2;
+    ApplicationIndicator indicator;
+    string entryId;
+    Gtk.Menu appIndicatorMenu;
+    bool activateWorkaroundNeeded;
+    System.Windows.Forms.Timer activateWorkaroundTimer;
+    com.canonical.Unity.Panel.Service.IService panelService;
+    com.canonical.Unity.Panel.Service.Desktop.IService panelService2;
 
     public override bool Initialize(IPluginHost host)
     {
       pluginHost = host;
-      notifyIcon = pluginHost.MainWindow.MainNotifyIcon.Icon;
-      // the prevents the System.Windows.Forms.NotifyIcon from being shown.
-      pluginHost.MainWindow.MainNotifyIcon.Icon = null;
-      mActivateWorkaroundTimer = new System.Windows.Forms.Timer();
-      mActivateWorkaroundTimer.Interval = 100;
-      mActivateWorkaroundTimer.Tick += OnActivateWorkaroundTimerTick;
+
+      // purposely break the winforms tray icon so it is not displayed
+      var mainWindowType = pluginHost.MainWindow.GetType();
+      var ntfTrayField = mainWindowType.GetField("m_ntfTray",
+                               BindingFlags.Instance | BindingFlags.NonPublic);
+      var ntfField = ntfTrayField.FieldType.GetField("m_ntf",
+                               BindingFlags.Instance | BindingFlags.NonPublic);
+      ntfField.SetValue(ntfTrayField.GetValue(pluginHost.MainWindow), null);
+
+      activateWorkaroundTimer = new System.Windows.Forms.Timer();
+      activateWorkaroundTimer.Interval = 100;
+      activateWorkaroundTimer.Tick += OnActivateWorkaroundTimerTick;
 
       var threadStarted = false;
       try {
@@ -48,26 +53,8 @@ namespace KeebuntuAppIndicator
         threadStarted = true;
         DBusBackgroundWorker.InvokeGtkThread(() => GtkDBusInit());
 
-        pluginHost.MainWindow.Activated += (sender, e) =>
-        {
-          if (mActiveateWorkaroundNeeded) {
-            // see explanation in OnActivateWorkaroundTimerTick()
-            mActivateWorkaroundTimer.Start();
-            mActiveateWorkaroundNeeded = false;
-          }
-        };
-
-        pluginHost.MainWindow.Resize += (sender, e) =>
-        {
-          if (!pluginHost.MainWindow.Visible &&
-              pluginHost.MainWindow.WindowState ==
-              System.Windows.Forms.FormWindowState.Minimized)
-          {
-            // see explanation in OnActivateWorkaroundTimerTick()
-            mActiveateWorkaroundNeeded = true;
-          }
-        };
-        pluginHost.MainWindow.UIStateUpdated += MainWindow_UIStateUpdated;
+        pluginHost.MainWindow.Activated += MainWindow_Activated;
+        pluginHost.MainWindow.Resize += MainWindow_Resize;
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
         if (threadStarted) {
@@ -79,32 +66,34 @@ namespace KeebuntuAppIndicator
     }
 
     public override void Terminate()
-    {      
-      pluginHost.MainWindow.UIStateUpdated -= MainWindow_UIStateUpdated;
-      pluginHost.MainWindow.MainNotifyIcon.Icon = notifyIcon;
+    {
+      pluginHost.MainWindow.Activated += MainWindow_Activated;
+      pluginHost.MainWindow.Resize -= MainWindow_Resize;
       try {
         DBusBackgroundWorker.Stop();
-        // Mono tends to lock up sometimes when trying to hide/remove the
-        // notification icon on shutdown (the System.Windows.Forms.NotifyIcon,
-        // not our ApplicationIndicator). We fake the private variable so
-        // that mono does not call the HideSystray() method since it is not
-        // shown anyway.
-        var notifyIconType = pluginHost.MainWindow.MainNotifyIcon.GetType();
-        var notifyIconVisibleField =
-          notifyIconType.GetField("visible", BindingFlags.Instance |
-                                             BindingFlags.NonPublic);
-        notifyIconVisibleField.SetValue(pluginHost.MainWindow.MainNotifyIcon,
-                                        false);
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
       }
     }
 
-    void MainWindow_UIStateUpdated(object sender, EventArgs e)
+    void MainWindow_Activated(object sender, EventArgs e)
     {
-      // remove the tooltip from the notify icon because it causes issues
-      // with Unity app menus
-      pluginHost.MainWindow.MainNotifyIcon.Text = string.Empty;
+      if (activateWorkaroundNeeded) {
+        // see explanation in OnActivateWorkaroundTimerTick()
+        activateWorkaroundTimer.Start();
+        activateWorkaroundNeeded = false;
+      }
+    }
+
+    void MainWindow_Resize(object sender, EventArgs e)
+    {
+      if (!pluginHost.MainWindow.Visible &&
+          pluginHost.MainWindow.WindowState ==
+          System.Windows.Forms.FormWindowState.Minimized)
+      {
+        // see explanation in OnActivateWorkaroundTimerTick()
+        activateWorkaroundNeeded = true;
+      }
     }
 
     private void OnAppIndicatorMenuShown(object sender, EventArgs e)
@@ -143,17 +132,17 @@ namespace KeebuntuAppIndicator
     {
       /* setup ApplicationIndicator */
 
-      mIndicator =
+      indicator =
         new ApplicationIndicator("keepass2-plugin-appindicator" + instanceCount++,
                                  "keepass2-locked",
                                  AppIndicator.Category.ApplicationStatus);
 #if DEBUG
-      mIndicator.IconThemePath = Path.GetFullPath("Resources/icons");
+      indicator.IconThemePath = Path.GetFullPath("Resources/icons");
 #endif
-      mIndicator.Title = PwDefs.ProductName;
-      mIndicator.Status = AppIndicator.Status.Active;
+      indicator.Title = PwDefs.ProductName;
+      indicator.Status = AppIndicator.Status.Active;
 
-      mAppIndicatorMenu = new Gtk.Menu();
+      appIndicatorMenu = new Gtk.Menu();
 
       var trayContextMenu = pluginHost.MainWindow.TrayContextMenu;
       // make copy of item list to prevent list changed exception when iterating
@@ -162,20 +151,20 @@ namespace KeebuntuAppIndicator
       trayContextMenu.Items.CopyTo(menuItems, 0);
       trayContextMenu.ItemAdded += (sender, e) =>
         DBusBackgroundWorker.InvokeGtkThread
-          (() => ConvertAndAddMenuItem(e.Item, mAppIndicatorMenu));
+          (() => ConvertAndAddMenuItem(e.Item, appIndicatorMenu));
 
       foreach (System.Windows.Forms.ToolStripItem item in menuItems) {
-        ConvertAndAddMenuItem(item, mAppIndicatorMenu);
+        ConvertAndAddMenuItem(item, appIndicatorMenu);
       }
 
       // This only works on non-Unity desktops
-      mAppIndicatorMenu.Shown += OnAppIndicatorMenuShown;
+      appIndicatorMenu.Shown += OnAppIndicatorMenuShown;
 
-      mIndicator.Menu = mAppIndicatorMenu;
+      indicator.Menu = appIndicatorMenu;
 
       // when mouse cursor is over application indicator, scroll up will untray
       // and scroll down will tray KeePass
-      mIndicator.ScrollEvent += (o, args) =>
+      indicator.ScrollEvent += (o, args) =>
       {
         /* Workaround for bug in mono/appindicator-sharp.
          *
@@ -217,18 +206,18 @@ namespace KeebuntuAppIndicator
       const string panelServiceBusPath = "/com/canonical/Unity/Panel/Service";
       var panelServiceObjectPath = new DBus.ObjectPath(panelServiceBusPath);
       try {
-        mPanelService = sessionBus
+        panelService = sessionBus
           .GetObject<com.canonical.Unity.Panel.Service.IService>(
             panelServiceBusName, panelServiceObjectPath);
-        if (mPanelService != null) {
-          mPanelService.EntryActivated += (entry_id, entry_geometry) => {
-            if (mEntryId == null)
-              mEntryId = mPanelService.Sync()
-                .Where(args => args.name_hint == mIndicator.ID)
+        if (panelService != null) {
+          panelService.EntryActivated += (entry_id, entry_geometry) => {
+            if (entryId == null)
+              entryId = panelService.Sync()
+                .Where(args => args.name_hint == indicator.ID)
                 .SingleOrDefault().id;
             else
-              mEntryId = string.Empty;
-            if (!String.IsNullOrEmpty(mEntryId) && mEntryId != entry_id)
+              entryId = string.Empty;
+            if (!String.IsNullOrEmpty(entryId) && entryId != entry_id)
               return;
             OnAppIndicatorMenuShown(this, new EventArgs());
           };
@@ -244,18 +233,18 @@ namespace KeebuntuAppIndicator
       const string panelServiceDesktopBusName =
       "com.canonical.Unity.Panel.Service.Desktop";
       try {
-        mPanelService2 = sessionBus
+        panelService2 = sessionBus
           .GetObject<com.canonical.Unity.Panel.Service.Desktop.IService>(
             panelServiceDesktopBusName, panelServiceObjectPath);
-        if (mPanelService2 != null) {
-          mPanelService2.EntryActivated += (panel_id, entry_id, entry_geometry) => {
-            if (mEntryId == null)
-              mEntryId = mPanelService2.Sync()
-                .Where(args => args.name_hint == mIndicator.ID)
+        if (panelService2 != null) {
+          panelService2.EntryActivated += (panel_id, entry_id, entry_geometry) => {
+            if (entryId == null)
+              entryId = panelService2.Sync()
+                .Where(args => args.name_hint == indicator.ID)
                 .SingleOrDefault().id;
             else
-              mEntryId = string.Empty;
-            if (!String.IsNullOrEmpty(mEntryId) && mEntryId != entry_id)
+              entryId = string.Empty;
+            if (!String.IsNullOrEmpty(entryId) && entryId != entry_id)
               return;
             OnAppIndicatorMenuShown(this, new EventArgs());
           };
@@ -289,7 +278,7 @@ namespace KeebuntuAppIndicator
           gtkMenuItem.Image = new Gtk.Image(memStream);
         }
 
-        //gtkMenuItem.TooltipText = winformMenuItem.ToolTipText;
+        gtkMenuItem.TooltipText = winformMenuItem.ToolTipText;
         gtkMenuItem.Visible = winformMenuItem.Visible;
         gtkMenuItem.Sensitive = winformMenuItem.Enabled;
 
@@ -346,7 +335,7 @@ namespace KeebuntuAppIndicator
       // is resored, but the window is not shown. To work around this, we use a
       // timer to invoke Activate() a second time to get the window to show.
 
-      mActivateWorkaroundTimer.Stop();
+      activateWorkaroundTimer.Stop();
       DBusBackgroundWorker.InvokeWinformsThread
         (() => pluginHost.MainWindow.Activate());
     }
