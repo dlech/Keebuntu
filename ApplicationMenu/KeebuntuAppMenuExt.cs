@@ -31,6 +31,8 @@ namespace KeebuntuAppMenu
     IntPtr mainFormXid;
     ObjectPath mainFormObjectPath;
     bool hideMenuInApp;
+    AutoResetEvent gtkInitDoneEvent;
+    bool gtkInitOk = false;
 
     public override bool Initialize(IPluginHost host)
     {
@@ -39,11 +41,14 @@ namespace KeebuntuAppMenu
       // mimmic behavior of other ubuntu apps
       hideMenuInApp =
         Environment.GetEnvironmentVariable("APPMENU_DISPLAY_BOTH") != "1";
-      var threadStarted = false;
       try {
         DBusBackgroundWorker.Start();
-        threadStarted = true;
+        gtkInitDoneEvent = new AutoResetEvent(false);
         DBusBackgroundWorker.InvokeGtkThread(() => GtkDBusInit());
+        if (!gtkInitDoneEvent.WaitOne(1000))
+          throw new TimeoutException("Timed out waiting for GTK thread.");
+        if (!gtkInitOk)
+          throw new Exception("GTK init failed.");
 
         if (hideMenuInApp)
         {
@@ -54,9 +59,8 @@ namespace KeebuntuAppMenu
         GlobalWindowManager.WindowRemoved += GlobalWindowManager_WindowRemoved;
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
-        if (threadStarted) {
+        if (gtkInitOk)
           Terminate();
-        }
         return false;
       }
       return true;
@@ -121,9 +125,12 @@ namespace KeebuntuAppMenu
                                                         mainFormXid));
       sessionBus.Register(mainFormObjectPath, dbusMenu);
       try {
-      unityPanelServiceBus.RegisterWindow((uint)mainFormXid.ToInt32(),
-                                          mainFormObjectPath);
+        unityPanelServiceBus.RegisterWindow((uint)mainFormXid.ToInt32(),
+                                            mainFormObjectPath);
+        gtkInitOk = true;
+        gtkInitDoneEvent.Set();
       } catch (Exception) {
+        gtkInitDoneEvent.Set();
         if (!pluginHost.CustomConfig.GetBool(keebuntuAppMenuWarningSeenId, false)) {
           using (var dialog = new Gtk.Dialog()) {
             dialog.BorderWidth = 6;
@@ -159,9 +166,8 @@ namespace KeebuntuAppMenu
             dialog.KeepAbove = true;
             dialog.Run();
           }
+          DBusBackgroundWorker.Stop();
         }
-        Terminate ();
-        return;
       }
     }
 
