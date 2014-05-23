@@ -8,13 +8,13 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
+
 using AppIndicator;
 using ImageMagick.MagickCore;
 using ImageMagick.MagickWand;
 using KeePass.Plugins;
 using KeePassLib;
 using Keebuntu.DBus;
-using Keebuntu.Dbus;
 
 namespace KeebuntuAppIndicator
 {
@@ -24,12 +24,10 @@ namespace KeebuntuAppIndicator
 
     IPluginHost pluginHost;
     ApplicationIndicator indicator;
-    string entryId;
     Gtk.Menu appIndicatorMenu;
+    GLib.Signal aboutToShowSignal;
     bool activateWorkaroundNeeded;
     System.Windows.Forms.Timer activateWorkaroundTimer;
-    com.canonical.Unity.Panel.Service.IService panelService;
-    com.canonical.Unity.Panel.Service.Desktop.IService panelService2;
 
     public override bool Initialize(IPluginHost host)
     {
@@ -69,6 +67,8 @@ namespace KeebuntuAppIndicator
     {
       pluginHost.MainWindow.Activated += MainWindow_Activated;
       pluginHost.MainWindow.Resize -= MainWindow_Resize;
+      aboutToShowSignal.RemoveDelegate((EventHandler)OnAppIndicatorMenuShown);
+      appIndicatorMenu.Shown -= OnAppIndicatorMenuShown;
       try {
         DBusBackgroundWorker.Stop();
       } catch (Exception ex) {
@@ -157,10 +157,28 @@ namespace KeebuntuAppIndicator
         ConvertAndAddMenuItem(item, appIndicatorMenu);
       }
 
-      // This only works on non-Unity desktops
-      appIndicatorMenu.Shown += OnAppIndicatorMenuShown;
-
       indicator.Menu = appIndicatorMenu;
+      try {
+        // This is a hack to get the about-to-show event from the dbusmenu
+        // that is created by the appindicator.
+        var getPropertyMethod =
+          typeof(GLib.Object).GetMethod("GetProperty",
+                                        BindingFlags.NonPublic | BindingFlags.Instance);
+        var dbusMenuServer =
+          (GLib.Value)getPropertyMethod.Invoke(indicator,
+                                               new object[] { "dbus-menu-server" });
+        var rootNode =
+          (GLib.Value)getPropertyMethod.Invoke(dbusMenuServer.Val,
+                                               new object[] { "root-node" });
+        aboutToShowSignal =
+          GLib.Signal.Lookup((GLib.Object)rootNode.Val, "about-to-show");
+        aboutToShowSignal.AddDelegate((EventHandler)OnAppIndicatorMenuShown);
+      } catch (Exception ex) {
+        Debug.Fail(ex.Message);
+        // On desktops that don't support application indicators, libappinidicator
+        // creates a fallback GtkStatusIcon. This event only fires in that case.
+        appIndicatorMenu.Shown += OnAppIndicatorMenuShown;
+      }
 
       // when mouse cursor is over application indicator, scroll up will untray
       // and scroll down will tray KeePass
@@ -184,74 +202,6 @@ namespace KeebuntuAppIndicator
             (() => trayMenuItem.PerformClick());
         }
       };
-
-      var sessionBus = DBus.Bus.Session;
-
-#if DEBUG
-      const string dbusBusPath = "/org/freedesktop/DBus";
-      const string dbusBusName = "org.freedesktop.DBus";
-      var dbusObjectPath = new DBus.ObjectPath(dbusBusPath);
-      var dbusService =
-        sessionBus.GetObject<org.freedesktop.DBus.IBus>(dbusBusName, dbusObjectPath);
-      dbusService.NameAcquired += (name) => Console.WriteLine ("NameAcquired: " + name);
-#endif
-
-      /* ApplicationIndicator dbus */
-
-      // This is a workaround for Unity. In Unity, the underlying GTK menu does
-      // not trigger the Shown event when the menu is shown. We can simulate
-      // this by using a private Unity API
-
-      const string panelServiceBusName = "com.canonical.Unity.Panel.Service";
-      const string panelServiceBusPath = "/com/canonical/Unity/Panel/Service";
-      var panelServiceObjectPath = new DBus.ObjectPath(panelServiceBusPath);
-      try {
-        panelService = sessionBus
-          .GetObject<com.canonical.Unity.Panel.Service.IService>(
-            panelServiceBusName, panelServiceObjectPath);
-        if (panelService != null) {
-          panelService.EntryActivated += (entry_id, entry_geometry) => {
-            if (entryId == null)
-              entryId = panelService.Sync()
-                .Where(args => args.name_hint == indicator.ID)
-                .SingleOrDefault().id;
-            else
-              entryId = string.Empty;
-            if (!String.IsNullOrEmpty(entryId) && entryId != entry_id)
-              return;
-            OnAppIndicatorMenuShown(this, new EventArgs());
-          };
-        }
-      } catch (Exception) {
-        // ignored
-      }
-
-      // Since this is a private API, Unity does not care about changing it,
-      // which was done in trusty. So, the very similar looking code above
-      // will work pre-trusty and this will work for trusty and beyond (until
-      // the API is changed again).
-      const string panelServiceDesktopBusName =
-      "com.canonical.Unity.Panel.Service.Desktop";
-      try {
-        panelService2 = sessionBus
-          .GetObject<com.canonical.Unity.Panel.Service.Desktop.IService>(
-            panelServiceDesktopBusName, panelServiceObjectPath);
-        if (panelService2 != null) {
-          panelService2.EntryActivated += (panel_id, entry_id, entry_geometry) => {
-            if (entryId == null)
-              entryId = panelService2.Sync()
-                .Where(args => args.name_hint == indicator.ID)
-                .SingleOrDefault().id;
-            else
-              entryId = string.Empty;
-            if (!String.IsNullOrEmpty(entryId) && entryId != entry_id)
-              return;
-            OnAppIndicatorMenuShown(this, new EventArgs());
-          };
-        }
-      } catch (Exception) {
-        // ignored
-      }
     }
 
     private void ConvertAndAddMenuItem(System.Windows.Forms.ToolStripItem item,
