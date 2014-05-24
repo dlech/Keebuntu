@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppIndicatorPlugin", "Appli
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageMagick", "ImageMagick\ImageMagick.csproj", "{00BB4233-A62B-4B5F-9022-1C87157C9B37}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GtkStatusIconPlugin", "GtkStatusIcon\GtkStatusIconPlugin.csproj", "{AC6540EF-EDD0-4C47-9F29-3E919EFF6C62}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +25,10 @@ Global
 		{12ED99CD-CE00-4AC2-A0B6-3B9714597927}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{12ED99CD-CE00-4AC2-A0B6-3B9714597927}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{12ED99CD-CE00-4AC2-A0B6-3B9714597927}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC6540EF-EDD0-4C47-9F29-3E919EFF6C62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC6540EF-EDD0-4C47-9F29-3E919EFF6C62}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC6540EF-EDD0-4C47-9F29-3E919EFF6C62}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC6540EF-EDD0-4C47-9F29-3E919EFF6C62}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AF47CF84-8823-4A58-9E79-543970D5BCA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AF47CF84-8823-4A58-9E79-543970D5BCA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF47CF84-8823-4A58-9E79-543970D5BCA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
