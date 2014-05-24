@@ -1,83 +1,126 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Threading;
 using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Keebuntu.DBus
 {
   /// <summary>
-  /// Runs Gtk Application loop for non-Gtk programs
+  /// Runs a GTK Application loop for use in Winforms applications.
   /// </summary>
   public static class DBusBackgroundWorker
   {
-    static BackgroundWorker mWorker;
-    static Thread mGtkThread;
+    static BackgroundWorker worker;
+    static Thread gtkThread;
+    static List<TaskCompletionSource<object>> taskList =
+      new List<TaskCompletionSource<object>> ();
 
-    public static int UserCount { get; set; }
+    public static int ReferenceCount { get; private set; }
 
     /// <summary>
-    /// Starts the the thread if it is not already running, otherwise, just
-    /// increases the count of users of this thread.
+    /// Notifies DBusBackgroundWorker that we are using it.
     /// </summary>
-    public static void Start()
+    /// <remarks>
+    /// Starts the GTK thread if it is not already running, otherwise, just
+    /// increases the reference count.
+    /// </remarks>
+    public static void Request()
     {
-      if (mWorker == null) {
-        mWorker = new System.ComponentModel.BackgroundWorker();
-        mWorker.WorkerReportsProgress = true;
-        mWorker.DoWork += mWorker_DoWork;
-        mWorker.ProgressChanged += mWorker_ReportProgress;
+      if (worker == null) {
+        worker = new System.ComponentModel.BackgroundWorker();
+        worker.WorkerReportsProgress = true;
+        worker.DoWork += mWorker_DoWork;
+        worker.ProgressChanged += mWorker_ReportProgress;
       }
-      if (!mWorker.IsBusy) {
-        mWorker.RunWorkerAsync();
+      if (!worker.IsBusy) {
+        worker.RunWorkerAsync();
       }
-      UserCount++;
+      ReferenceCount++;
     }
 
     /// <summary>
-    /// Stop the thread if this is the last user to call for the thread to stop,
-    /// otherwise, just decreases the count of users of this thread
+    /// Notifies DBusBackgroundWorker that we are done using it.
     /// </summary>
-    public static void Stop()
+    /// <remarks>
+    /// Decreases the reference count. If the reference count is 0, the GTK
+    /// thread is stopped.
+    /// </remarks>
+    public static void Release()
     {
-      if (UserCount <= 0) {
+      if (ReferenceCount <= 0) {
         // TODO - should this be an error/exception?
+        Debug.Fail("DBusBackgroundWorker was released without being requested.");
         return;
       }
-      UserCount--;
-      if (UserCount > 0) {
+      ReferenceCount--;
+      if (ReferenceCount > 0) {
         return;
       }
       InvokeGtkThread(() => Gtk.Application.Quit());
     }
 
-    public static void InvokeGtkThread(Action action)
+    public static Task InvokeGtkThread(Action action)
     {
-      if (mWorker == null || !mWorker.IsBusy)
+      Func<object> func = () => {
+        action.Invoke();
+        return null;
+      };
+      return InvokeGtkThread(func);
+    }
+
+    public static Task<object> InvokeGtkThread(Func<object> func)
+    {
+      if (worker == null || !worker.IsBusy)
       {
         throw new Exception("DBusBackgroundWorker not running.");
       }
-      if (ReferenceEquals(Thread.CurrentThread, mGtkThread)) {
-        action.Invoke();
+      var completionSource = new TaskCompletionSource<object>();
+      taskList.Add(completionSource);
+      Gtk.ReadyEvent readyEvent = () => {
+        try {
+          completionSource.TrySetResult(func.Invoke());
+        } catch (Exception ex) {
+          completionSource.TrySetException(ex);
+        } finally {
+          taskList.Remove(completionSource);
+        }
+      };
+      if (ReferenceEquals(Thread.CurrentThread, gtkThread)) {
+        readyEvent.Invoke();
       } else {
-        Gtk.ReadyEvent readyEvent = () => action.Invoke();
         var threadNotify = new Gtk.ThreadNotify(readyEvent);
         threadNotify.WakeupMain();
       }
+      return completionSource.Task;
     }
 
-    public static void InvokeWinformsThread(Action action)
+    public static Task InvokeWinformsThread(Action action)
     {
-      if (mWorker == null || !mWorker.IsBusy)
+      Func<object> func = () => {
+        action.Invoke();
+        return null;
+      };
+      return InvokeWinformsThread(func);
+    }
+
+    public static Task<object> InvokeWinformsThread(Func<object> func)
+    {
+      if (worker == null || !worker.IsBusy)
       {
         throw new Exception("DBusBackgroundWorker not running.");
       }
-      mWorker.ReportProgress(0, action);
+      var completionSource = new TaskCompletionSource<object>(func);
+      taskList.Add(completionSource);
+      worker.ReportProgress(0, completionSource);
+      return completionSource.Task;
     }
 
     private static void mWorker_DoWork(object sender, DoWorkEventArgs e)
     {
       try {
-        mGtkThread = Thread.CurrentThread;
+        gtkThread = Thread.CurrentThread;
 
         global::DBus.BusG.Init();
         Gtk.Application.Init();
@@ -94,9 +137,19 @@ namespace Keebuntu.DBus
     private static void mWorker_ReportProgress(object sender,
                                                ProgressChangedEventArgs e)
     {
-      var action = e.UserState as Action;
-      if (action != null) {
-        action.Invoke();
+      var completionSource = e.UserState as TaskCompletionSource<object>;
+      if (completionSource == null)
+        return;
+      var func = completionSource.Task.AsyncState as Func<object>;
+      if (func == null)
+        return;
+
+      try {
+        completionSource.TrySetResult(func.Invoke());
+      } catch (Exception ex) {
+        completionSource.TrySetException(ex);
+      } finally {
+        taskList.Remove(completionSource);
       }
     }
   }

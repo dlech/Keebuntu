@@ -43,9 +43,9 @@ namespace GtkStatusIcon
 
       var threadStarted = false;
       try {
-        DBusBackgroundWorker.Start();
+        DBusBackgroundWorker.Request();
         threadStarted = true;
-        DBusBackgroundWorker.InvokeGtkThread(() => GtkDBusInit());
+        DBusBackgroundWorker.InvokeGtkThread((Action)GtkDBusInit).Wait();
 
         pluginHost.MainWindow.Activated += MainWindow_Activated;
         pluginHost.MainWindow.Resize += MainWindow_Resize;
@@ -65,7 +65,7 @@ namespace GtkStatusIcon
       pluginHost.MainWindow.Resize -= MainWindow_Resize;
       statusIcon.PopupMenu -= OnPopupMenu;
       try {
-        DBusBackgroundWorker.Stop();
+        DBusBackgroundWorker.Release();
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
       }
@@ -187,7 +187,7 @@ namespace GtkStatusIcon
         gtkMenuItem.Sensitive = winformMenuItem.Enabled;
 
         gtkMenuItem.Activated += (sender, e) =>
-          DBusBackgroundWorker.InvokeWinformsThread(winformMenuItem.PerformClick);
+          DBusBackgroundWorker.InvokeWinformsThread((Action)winformMenuItem.PerformClick);
 
         winformMenuItem.TextChanged +=
           (sender, e) => DBusBackgroundWorker.InvokeGtkThread(() =>
@@ -241,7 +241,7 @@ namespace GtkStatusIcon
 
       activateWorkaroundTimer.Stop();
       DBusBackgroundWorker.InvokeWinformsThread
-        (() => pluginHost.MainWindow.Activate());
+        ((Action)pluginHost.MainWindow.Activate);
     }
 
     private byte[] ResizeImage(System.Drawing.Image image, int width, int height)

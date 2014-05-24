@@ -47,9 +47,9 @@ namespace KeebuntuAppIndicator
 
       var threadStarted = false;
       try {
-        DBusBackgroundWorker.Start();
+        DBusBackgroundWorker.Request();
         threadStarted = true;
-        DBusBackgroundWorker.InvokeGtkThread(() => GtkDBusInit());
+        DBusBackgroundWorker.InvokeGtkThread((Action)GtkDBusInit).Wait();
 
         pluginHost.MainWindow.Activated += MainWindow_Activated;
         pluginHost.MainWindow.Resize += MainWindow_Resize;
@@ -70,7 +70,7 @@ namespace KeebuntuAppIndicator
       aboutToShowSignal.RemoveDelegate((EventHandler)OnAppIndicatorMenuShown);
       appIndicatorMenu.Shown -= OnAppIndicatorMenuShown;
       try {
-        DBusBackgroundWorker.Stop();
+        DBusBackgroundWorker.Release();
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
       }
@@ -199,7 +199,7 @@ namespace KeebuntuAppIndicator
                                      pluginHost.MainWindow.Visible ))
         {
           DBusBackgroundWorker.InvokeWinformsThread
-            (() => trayMenuItem.PerformClick());
+            ((Action)trayMenuItem.PerformClick);
         }
       };
     }
@@ -233,7 +233,7 @@ namespace KeebuntuAppIndicator
         gtkMenuItem.Sensitive = winformMenuItem.Enabled;
 
         gtkMenuItem.Activated += (sender, e) =>
-          DBusBackgroundWorker.InvokeWinformsThread(winformMenuItem.PerformClick);
+          DBusBackgroundWorker.InvokeWinformsThread((Action)winformMenuItem.PerformClick);
 
         winformMenuItem.TextChanged +=
           (sender, e) => DBusBackgroundWorker.InvokeGtkThread(() =>
@@ -287,7 +287,7 @@ namespace KeebuntuAppIndicator
 
       activateWorkaroundTimer.Stop();
       DBusBackgroundWorker.InvokeWinformsThread
-        (() => pluginHost.MainWindow.Activate());
+        ((Action)pluginHost.MainWindow.Activate);
     }
 
     private byte[] ResizeImage(System.Drawing.Image image, int width, int height)

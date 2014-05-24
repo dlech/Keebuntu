@@ -8,14 +8,15 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+
 using DBus;
 using KeePass.Plugins;
 using KeePass.UI;
 using KeePassLib;
 using KeePassLib.Utility;
 using Keebuntu.DBus;
-using Keebuntu.Dbus;
 
 namespace KeebuntuAppMenu
 {
@@ -31,8 +32,6 @@ namespace KeebuntuAppMenu
     IntPtr mainFormXid;
     ObjectPath mainFormObjectPath;
     bool hideMenuInApp;
-    AutoResetEvent gtkInitDoneEvent;
-    bool gtkInitOk = false;
 
     public override bool Initialize(IPluginHost host)
     {
@@ -41,14 +40,11 @@ namespace KeebuntuAppMenu
       // mimmic behavior of other ubuntu apps
       hideMenuInApp =
         Environment.GetEnvironmentVariable("APPMENU_DISPLAY_BOTH") != "1";
+      bool threadStarted = false;
       try {
-        DBusBackgroundWorker.Start();
-        gtkInitDoneEvent = new AutoResetEvent(false);
-        DBusBackgroundWorker.InvokeGtkThread(() => GtkDBusInit());
-        if (!gtkInitDoneEvent.WaitOne(1000))
-          throw new TimeoutException("Timed out waiting for GTK thread.");
-        if (!gtkInitOk)
-          throw new Exception("GTK init failed.");
+        DBusBackgroundWorker.Request();
+        threadStarted = true;
+        DBusBackgroundWorker.InvokeGtkThread((Action)GtkDBusInit).Wait();
 
         if (hideMenuInApp)
         {
@@ -59,7 +55,7 @@ namespace KeebuntuAppMenu
         GlobalWindowManager.WindowRemoved += GlobalWindowManager_WindowRemoved;
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
-        if (gtkInitOk)
+        if (threadStarted)
           Terminate();
         return false;
       }
@@ -75,7 +71,7 @@ namespace KeebuntuAppMenu
         DBusBackgroundWorker.InvokeWinformsThread(() => {
           pluginHost.MainWindow.MainMenu.Visible = true;
         });
-        DBusBackgroundWorker.Stop();
+        DBusBackgroundWorker.Release();
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
       }
@@ -127,48 +123,52 @@ namespace KeebuntuAppMenu
       try {
         unityPanelServiceBus.RegisterWindow((uint)mainFormXid.ToInt32(),
                                             mainFormObjectPath);
-        gtkInitOk = true;
-        gtkInitDoneEvent.Set();
       } catch (Exception) {
-        gtkInitDoneEvent.Set();
-        if (!pluginHost.CustomConfig.GetBool(keebuntuAppMenuWarningSeenId, false)) {
-          using (var dialog = new Gtk.Dialog()) {
-            dialog.BorderWidth = 6;
-            dialog.Resizable = false;
-            dialog.HasSeparator = false;
-            var message = "<span weight=\"bold\"size=\"larger\">"
-              + "Could not register KeebuntuAppMenu with Unity panel service."
+        if (!pluginHost.CustomConfig.GetBool(keebuntuAppMenuWarningSeenId, false))
+          Task.Run((Action)ShowErrorMessage);
+      }
+    }
+
+    void ShowErrorMessage()
+    {
+      DBusBackgroundWorker.Request();
+      DBusBackgroundWorker.InvokeGtkThread(() => {
+        using (var dialog = new Gtk.Dialog()) {
+          dialog.BorderWidth = 6;
+          dialog.Resizable = false;
+          dialog.HasSeparator = false;
+          var message = "<span weight=\"bold\"size=\"larger\">"
+            + "Could not register KeebuntuAppMenu with Unity panel service."
               + "</span>\n\n"
               + "This plugin only works with Ubuntu Unity desktop."
               + " If you do not use Unity, you should uninstall the KeebuntuAppMenu plugin."
               + "\n";
-            var label = new Gtk.Label(message);
-            label.UseMarkup = true;
-            label.Wrap = true;
-            label.Yalign = 0;
-            var icon = new Gtk.Image(Gtk.Stock.DialogError, Gtk.IconSize.Dialog);
-            icon.Yalign = 0;
-            var contentBox = new Gtk.HBox();
-            contentBox.Spacing = 12;
-            contentBox.BorderWidth = 6;
-            contentBox.PackStart(icon);
-            contentBox.PackEnd(label);
-            dialog.VBox.PackStart(contentBox);
-            dialog.AddButton("Don't show this again", Gtk.ResponseType.Accept);
-            dialog.AddButton("OK", Gtk.ResponseType.Ok);
-            dialog.DefaultResponse = Gtk.ResponseType.Ok;
-            dialog.Response += (o, args) => {
-              dialog.Destroy();
-              if (args.ResponseId == Gtk.ResponseType.Accept)
-                pluginHost.CustomConfig.SetBool(keebuntuAppMenuWarningSeenId, true);
-            };
-            dialog.ShowAll();
-            dialog.KeepAbove = true;
-            dialog.Run();
-          }
-          DBusBackgroundWorker.Stop();
+          var label = new Gtk.Label(message);
+          label.UseMarkup = true;
+          label.Wrap = true;
+          label.Yalign = 0;
+          var icon = new Gtk.Image(Gtk.Stock.DialogError, Gtk.IconSize.Dialog);
+          icon.Yalign = 0;
+          var contentBox = new Gtk.HBox();
+          contentBox.Spacing = 12;
+          contentBox.BorderWidth = 6;
+          contentBox.PackStart(icon);
+          contentBox.PackEnd(label);
+          dialog.VBox.PackStart(contentBox);
+          dialog.AddButton("Don't show this again", Gtk.ResponseType.Accept);
+          dialog.AddButton("OK", Gtk.ResponseType.Ok);
+          dialog.DefaultResponse = Gtk.ResponseType.Ok;
+          dialog.Response += (o, args) => {
+            dialog.Destroy();
+            if (args.ResponseId == Gtk.ResponseType.Accept)
+              pluginHost.CustomConfig.SetBool(keebuntuAppMenuWarningSeenId, true);
+          };
+          dialog.ShowAll();
+          dialog.KeepAbove = true;
+          dialog.Run();
         }
-      }
+      }).Wait();
+      DBusBackgroundWorker.Release();
     }
 
     void GlobalWindowManager_WindowAdded(object sender, GwmWindowEventArgs e)
