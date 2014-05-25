@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<gapi-parser-input>
+  <api filename="./libunity-api.raw">
+    <library name="libunity.dll">
+      <namespace name="Unity">
+        <file>/usr/include/unity/unity/unity.h</file>
+      </namespace>
+    </library>
+  </api>
+ </gapi-parser-input>
