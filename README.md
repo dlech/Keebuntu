@@ -49,7 +49,7 @@ and in the KeePass application window.
 
 ####Known Issues
 
-* Causes KeePassHttp to crash. I have submitted a patch to KeePassHttp to fix this, but it seams that it is no longer being maintained. So, I have packaged a patched version of KeePassHttp which can be obtained by running `sudo apt-get install keepass2-plugin-keepasshttp`. Be sure to uninstall any old version of KeePassHttp first. See below on how to setup the ppa.
+* Causes KeePassHttp to crash. I have submitted a patch to KeePassHttp to fix this, but it seems that it is no longer being maintained. So, I have packaged a patched version of KeePassHttp which can be obtained by running `sudo apt-get install keepass2-plugin-keepasshttp`. Be sure to uninstall any old version of KeePassHttp first. See below on how to setup the ppa.
 
 -----
 
