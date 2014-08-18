@@ -44,7 +44,7 @@ than in the application window.
 
 ####Usage
 
-Setting the environemnt variable `APPMENU_DISPLAY_BOTH=1` before starting KeePass will show the menu both on the panel
+Setting the environment variable `APPMENU_DISPLAY_BOTH=1` before starting KeePass will show the menu both on the panel
 and in the KeePass application window.
 
 ####Known Issues
