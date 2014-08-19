@@ -22,16 +22,24 @@ namespace KeebuntuUnityLauncher
   public class KeebuntuUnityLauncherExt : Plugin
   {
     IPluginHost pluginHost;
+    LauncherEntry launcher;
+    System.Windows.Forms.Timer updateUITimer;
+    System.Windows.Forms.Timer finishInitDelaytimer;
 
     public override bool Initialize(IPluginHost host)
     {
       pluginHost = host;
+      updateUITimer = new System.Windows.Forms.Timer();
+      updateUITimer.Interval = 500;
+      updateUITimer.Tick += On_updateUITimer_Tick;
+      finishInitDelaytimer = new System.Windows.Forms.Timer();
 
       var threadStarted = false;
       try {
         DBusBackgroundWorker.Request();
         threadStarted = true;
         DBusBackgroundWorker.InvokeGtkThread((Action)GtkDBusInit).Wait();
+        pluginHost.MainWindow.UIStateUpdated += On_MainWindow_UIStateUpdated;
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
         if (threadStarted) {
@@ -44,6 +52,7 @@ namespace KeebuntuUnityLauncher
 
     public override void Terminate()
     {
+      pluginHost.MainWindow.UIStateUpdated -= On_MainWindow_UIStateUpdated;
       try {
         DBusBackgroundWorker.Release();
       } catch (Exception ex) {
@@ -51,32 +60,31 @@ namespace KeebuntuUnityLauncher
       }
     }
 
-    private void OnAppIndicatorMenuShown(object sender, EventArgs e)
+    void On_MainWindow_UIStateUpdated(object sender, System.EventArgs e)
+    {
+      // Calling OnCtyTrayOpening triggers a UIStateUpdated event, so we use
+      // a timer to throttle calls.
+      updateUITimer.Start();
+    }
+
+    void On_updateUITimer_Tick(object sender, System.EventArgs e)
     {
       try {
         var mainWindowType = pluginHost.MainWindow.GetType();
         var onCtxTrayOpeningMethodInfo =
           mainWindowType.GetMethod("OnCtxTrayOpening",
-                                    System.Reflection.BindingFlags.Instance |
-                                      System.Reflection.BindingFlags.NonPublic,
-                                    null,
-                                    new[] {
-                                      typeof(object),
-                                      typeof(CancelEventArgs)
-                                    },
-                                    null);
+            System.Reflection.BindingFlags.Instance |
+            System.Reflection.BindingFlags.NonPublic, null,
+            new[] { typeof(object), typeof(CancelEventArgs) }, null);
         if (onCtxTrayOpeningMethodInfo != null) {
-          DBusBackgroundWorker.InvokeWinformsThread
-            (() => onCtxTrayOpeningMethodInfo.Invoke(pluginHost.MainWindow,
-                                                     new[] {
-                                                       sender,
-                                                       new CancelEventArgs()
-                                                     }
-          )
-          );
+          DBusBackgroundWorker.InvokeWinformsThread(() =>
+            onCtxTrayOpeningMethodInfo.Invoke(pluginHost.MainWindow,
+            new[] { sender, new CancelEventArgs() }));
         }
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
+      } finally {
+        updateUITimer.Stop();
       }
     }
 
@@ -85,129 +93,69 @@ namespace KeebuntuUnityLauncher
     /// </summary>
     private void GtkDBusInit()
     {
-      var launcher = LauncherEntry.GetForDesktopId("keepass2.desktop");
+      launcher = LauncherEntry.GetForDesktopId("keepass2.desktop");
       var rootMenuItem = new DbusmenuMenuitem();
       rootMenuItem.Root = true;
-      rootMenuItem.PropertySet("label", "label");
-      rootMenuItem.AboutToShow += (o, args) => {
-        var x = 1;
+      rootMenuItem.PropertySet("label", "dummy");
+      var trayContextMenu = pluginHost.MainWindow.TrayContextMenu;
+      // make copy of item list to prevent list changed exception when iterating
+      var menuItems =
+        new System.Windows.Forms.ToolStripItem[trayContextMenu.Items.Count];
+      trayContextMenu.Items.CopyTo(menuItems, 0);
+      trayContextMenu.ItemAdded += (sender, e) =>
+        DBusBackgroundWorker.InvokeGtkThread(() =>
+          ConvertAndAddMenuItem(e.Item, rootMenuItem));
+      foreach (System.Windows.Forms.ToolStripItem item in menuItems) {
+        if (item.Name == "m_ctxTrayTray" || item.Name == "m_ctxTrayFileExit")
+          continue;
+        ConvertAndAddMenuItem(item, rootMenuItem);
+      }
+      // the launcher may not be listening yet, so we delay setting the properties
+      // to give it extra time
+      finishInitDelaytimer.Tick += (sender, e) =>
+      {
+        finishInitDelaytimer.Stop();
+        DBusBackgroundWorker.InvokeGtkThread(() =>
+          launcher.Quicklist = rootMenuItem);
       };
-      rootMenuItem.ItemActivated += (o, args) => {
-        var x = 1;
-      };
-      rootMenuItem.Realized += (o, args) => {
-        var x = 1;
-      };
-      rootMenuItem.ShowedToUser += (o, args) => {
-        var x = 1;
-      };
-      var child1 = new DbusmenuMenuitem();
-      child1.PropertySet("label", "child1");
-      child1.AboutToShow += (o, args) => {
-        var x = 1;
-      };
-      child1.ItemActivated += (o, args) => {
-        var x = 1;
-      };
-      child1.Realized += (o, args) => {
-        var x = 1;
-      };
-      child1.ShowedToUser += (o, args) => {
-        var x = 1;
-      };
-      rootMenuItem.ChildAppend(child1);
-      launcher.Quicklist = rootMenuItem;
-      launcher.Count = 5;
-      launcher.CountVisible = true;
-      launcher.Urgent = true;
+      finishInitDelaytimer.Interval = 500;
+      finishInitDelaytimer.Start();
     }
 
     private void ConvertAndAddMenuItem(System.Windows.Forms.ToolStripItem item,
-                                       Gtk.MenuShell gtkMenuShell)
+                                        DbusmenuMenuitem parent)
     {
       if (item is System.Windows.Forms.ToolStripMenuItem) {
 
         var winformMenuItem = item as System.Windows.Forms.ToolStripMenuItem;
 
-        // windows forms use '&' for mneumonic, gtk uses '_'
-        var gtkMenuItem = new Gtk.ImageMenuItem(winformMenuItem.Text.Replace("&", "_"));
+        var dbusMenuItem = new DbusmenuMenuitem();
+        dbusMenuItem.PropertySet("label", winformMenuItem.Text.Replace("&", ""));
+        dbusMenuItem.PropertySetBool("visible", winformMenuItem.Visible);
+        dbusMenuItem.PropertySetBool("enabled", winformMenuItem.Enabled);
 
-        if (winformMenuItem.Image != null) {
-          MemoryStream memStream;
-          var image = winformMenuItem.Image;
-          if (image.Width != 16 || image.Height != 16) {
-            var newImage = ResizeImage(image, 16, 16);
-            memStream = new MemoryStream(newImage);
-          } else {
-            memStream = new MemoryStream();
-            image.Save(memStream, ImageFormat.Png);
-            memStream.Position = 0;
-          }
-          gtkMenuItem.Image = new Gtk.Image(memStream);
-        }
-
-        gtkMenuItem.TooltipText = winformMenuItem.ToolTipText;
-        gtkMenuItem.Visible = winformMenuItem.Visible;
-        gtkMenuItem.Sensitive = winformMenuItem.Enabled;
-
-        gtkMenuItem.Activated += (sender, e) =>
+        dbusMenuItem.ItemActivated += (sender, e) =>
           DBusBackgroundWorker.InvokeWinformsThread((Action)winformMenuItem.PerformClick);
 
         winformMenuItem.TextChanged +=
           (sender, e) => DBusBackgroundWorker.InvokeGtkThread(() =>
-        {
-          var label = gtkMenuItem.Child as Gtk.Label;
-          if (label != null) {
-            label.Text = winformMenuItem.Text;
-          }
-        }
-        );
+            dbusMenuItem.PropertySet("label", winformMenuItem.Text.Replace("&", "")));
         winformMenuItem.EnabledChanged += (sender, e) =>
-          DBusBackgroundWorker.InvokeGtkThread
-            (() => gtkMenuItem.Sensitive = winformMenuItem.Enabled);
+          DBusBackgroundWorker.InvokeGtkThread(() =>
+            dbusMenuItem.PropertySetBool("enabled", winformMenuItem.Enabled));
         winformMenuItem.VisibleChanged += (sender, e) =>
-          DBusBackgroundWorker.InvokeGtkThread
-            (() => gtkMenuItem.Visible = winformMenuItem.Visible);
+          DBusBackgroundWorker.InvokeGtkThread(() =>
+            dbusMenuItem.PropertySetBool("visible", winformMenuItem.Visible));
 
-        gtkMenuItem.Show();
-        gtkMenuShell.Insert(gtkMenuItem,
-                            winformMenuItem.Owner.Items.IndexOf(winformMenuItem));
-
-        if (winformMenuItem.HasDropDownItems) {
-          var subMenu = new Gtk.Menu();
-          foreach(System.Windows.Forms.ToolStripItem dropDownItem in
-                  winformMenuItem.DropDownItems)
-          {
-            ConvertAndAddMenuItem (dropDownItem, subMenu);
-          }
-          gtkMenuItem.Submenu = subMenu;
-
-          winformMenuItem.DropDown.ItemAdded += (sender, e) =>
-            DBusBackgroundWorker.InvokeGtkThread
-              (() => ConvertAndAddMenuItem (e.Item, subMenu));
-        }
+        parent.ChildAppend(dbusMenuItem);
       } else if (item is System.Windows.Forms.ToolStripSeparator) {
-        var gtkSeparator = new Gtk.SeparatorMenuItem();
-        gtkSeparator.Show ();
-        gtkMenuShell.Insert(gtkSeparator, item.Owner.Items.IndexOf(item));
+        // Ignore separator for now because there are too many of them
+//        var dbusMenuItem = new DbusmenuMenuitem();
+//        dbusMenuItem.PropertySet("type", "separator");
+//        parent.ChildAppend(dbusMenuItem);
       } else {
         Debug.Fail("Unexpected menu item");
       }
-    }
-
-    private byte[] ResizeImage(System.Drawing.Image image, int width, int height)
-    {
-      var stream = new MemoryStream();
-      image.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
-      try {
-        var wand = new MagickWand();
-        wand.ReadImageBlob(stream.ToArray());
-        wand.ResizeImage(width, height, FilterType.Mitchell, 0.5);
-        return wand.GetImageBlob();
-      } catch (Exception ex) {
-        Debug.Fail(ex.ToString());
-      }
-      return stream.ToArray();
     }
   }
 }
