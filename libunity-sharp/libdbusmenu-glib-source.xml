@@ -2,7 +2,7 @@
 <gapi-parser-input>
   <api filename="./libdbusmenu-glib-api.raw">
     <library name="dbusmenu-glib.dll">
-      <namespace name="DBusMenu.Glib">
+      <namespace name="Dbusmenu">
         <dir>/usr/include/libdbusmenu-glib-0.4/libdbusmenu-glib/</dir>
       </namespace>
     </library>

@@ -15,7 +15,7 @@ using KeePass.Plugins;
 using KeePassLib;
 using Keebuntu.DBus;
 using Unity;
-using DBusMenu.Glib;
+using Dbusmenu;
 
 namespace KeebuntuUnityLauncher
 {
@@ -94,9 +94,7 @@ namespace KeebuntuUnityLauncher
     private void GtkDBusInit()
     {
       launcher = LauncherEntry.GetForDesktopId("keepass2.desktop");
-      var rootMenuItem = new DbusmenuMenuitem();
-      rootMenuItem.Root = true;
-      rootMenuItem.PropertySet("label", "dummy");
+      var rootMenuItem = new Dbusmenu.Menuitem();
       var trayContextMenu = pluginHost.MainWindow.TrayContextMenu;
       // make copy of item list to prevent list changed exception when iterating
       var menuItems =
@@ -118,20 +116,21 @@ namespace KeebuntuUnityLauncher
         DBusBackgroundWorker.InvokeGtkThread(() =>
           launcher.Quicklist = rootMenuItem);
       };
-      finishInitDelaytimer.Interval = 500;
+      finishInitDelaytimer.Interval = 1000;
       finishInitDelaytimer.Start();
     }
 
     private void ConvertAndAddMenuItem(System.Windows.Forms.ToolStripItem item,
-                                        DbusmenuMenuitem parent)
+      Dbusmenu.Menuitem parent)
     {
       if (item is System.Windows.Forms.ToolStripMenuItem) {
 
         var winformMenuItem = item as System.Windows.Forms.ToolStripMenuItem;
 
-        var dbusMenuItem = new DbusmenuMenuitem();
+        var dbusMenuItem = new Dbusmenu.Menuitem();
         dbusMenuItem.PropertySet("label", winformMenuItem.Text.Replace("&", ""));
-        dbusMenuItem.PropertySetBool("visible", winformMenuItem.Visible);
+        // VisibleChanged does not seem to be firing, so make everything visible for now
+        //dbusMenuItem.PropertySetBool("visible", winformMenuItem.Visible);
         dbusMenuItem.PropertySetBool("enabled", winformMenuItem.Enabled);
 
         dbusMenuItem.ItemActivated += (sender, e) =>
