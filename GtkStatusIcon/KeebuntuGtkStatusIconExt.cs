@@ -9,23 +9,19 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-using AppIndicator;
 using ImageMagick.MagickCore;
 using ImageMagick.MagickWand;
 using KeePass.Plugins;
 using KeePassLib;
 using Keebuntu.DBus;
 
-namespace KeebuntuAppIndicator
+namespace GtkStatusIcon
 {
-  public class KeebuntuAppIndicatorExt : Plugin
+  public class GtkStatusIconExt : Plugin
   {
-    static int instanceCount = 0;
-
     IPluginHost pluginHost;
-    ApplicationIndicator indicator;
-    Gtk.Menu appIndicatorMenu;
-    GLib.Signal aboutToShowSignal;
+    Gtk.StatusIcon statusIcon;
+    Gtk.Menu statusIconMenu;
     bool activateWorkaroundNeeded;
     System.Windows.Forms.Timer activateWorkaroundTimer;
 
@@ -67,8 +63,7 @@ namespace KeebuntuAppIndicator
     {
       pluginHost.MainWindow.Activated += MainWindow_Activated;
       pluginHost.MainWindow.Resize -= MainWindow_Resize;
-      aboutToShowSignal.RemoveDelegate((EventHandler)OnAppIndicatorMenuShown);
-      appIndicatorMenu.Shown -= OnAppIndicatorMenuShown;
+      statusIcon.PopupMenu -= OnPopupMenu;
       try {
         DBusBackgroundWorker.Release();
       } catch (Exception ex) {
@@ -96,7 +91,7 @@ namespace KeebuntuAppIndicator
       }
     }
 
-    private void OnAppIndicatorMenuShown(object sender, EventArgs e)
+    private void OnPopupMenu(object sender, Gtk.PopupMenuArgs e)
     {
       try {
         var mainWindowType = pluginHost.MainWindow.GetType();
@@ -120,6 +115,7 @@ namespace KeebuntuAppIndicator
           )
           );
         }
+        statusIconMenu.Popup(null, null, null, (uint)e.Args[0], (uint)e.Args[1]);
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
       }
@@ -132,17 +128,14 @@ namespace KeebuntuAppIndicator
     {
       /* setup ApplicationIndicator */
 
-      indicator =
-        new ApplicationIndicator("keepass2-plugin-appindicator" + instanceCount++,
-                                 "keepass2-locked",
-                                 AppIndicator.Category.ApplicationStatus);
+      statusIcon = new Gtk.StatusIcon();
+      statusIcon.IconName = "keepass2-locked";
 #if DEBUG
-      indicator.IconThemePath = Path.GetFullPath("Resources/icons");
+      statusIcon.File = Path.GetFullPath("Resources/icons/hicolor/256x256/apps/keepass2-locked.png");
 #endif
-      indicator.Title = PwDefs.ProductName;
-      indicator.Status = AppIndicator.Status.Active;
+      statusIcon.Tooltip = PwDefs.ProductName;
 
-      appIndicatorMenu = new Gtk.Menu();
+      statusIconMenu = new Gtk.Menu();
 
       var trayContextMenu = pluginHost.MainWindow.TrayContextMenu;
       // make copy of item list to prevent list changed exception when iterating
@@ -151,56 +144,17 @@ namespace KeebuntuAppIndicator
       trayContextMenu.Items.CopyTo(menuItems, 0);
       trayContextMenu.ItemAdded += (sender, e) =>
         DBusBackgroundWorker.InvokeGtkThread
-          (() => ConvertAndAddMenuItem(e.Item, appIndicatorMenu));
+          (() => ConvertAndAddMenuItem(e.Item, statusIconMenu));
 
       foreach (System.Windows.Forms.ToolStripItem item in menuItems) {
-        ConvertAndAddMenuItem(item, appIndicatorMenu);
+        ConvertAndAddMenuItem(item, statusIconMenu);
       }
 
-      indicator.Menu = appIndicatorMenu;
-      try {
-        // This is a hack to get the about-to-show event from the dbusmenu
-        // that is created by the appindicator.
-        var getPropertyMethod =
-          typeof(GLib.Object).GetMethod("GetProperty",
-                                        BindingFlags.NonPublic | BindingFlags.Instance);
-        var dbusMenuServer =
-          (GLib.Value)getPropertyMethod.Invoke(indicator,
-                                               new object[] { "dbus-menu-server" });
-        var rootNode =
-          (GLib.Value)getPropertyMethod.Invoke(dbusMenuServer.Val,
-                                               new object[] { "root-node" });
-        aboutToShowSignal =
-          GLib.Signal.Lookup((GLib.Object)rootNode.Val, "about-to-show");
-        aboutToShowSignal.AddDelegate((EventHandler)OnAppIndicatorMenuShown);
-      } catch (Exception ex) {
-        Debug.Fail(ex.Message);
-        // On desktops that don't support application indicators, libappinidicator
-        // creates a fallback GtkStatusIcon. This event only fires in that case.
-        appIndicatorMenu.Shown += OnAppIndicatorMenuShown;
-      }
-
-      // when mouse cursor is over application indicator, scroll up will untray
-      // and scroll down will tray KeePass
-      indicator.ScrollEvent += (o, args) =>
-      {
-        /* Workaround for bug in mono/appindicator-sharp.
-         *
-         * args.Direction throws InvalidCastException
-         * Can't cast args.Arg[1] to Gdk.ScrollDirection for some reason, so we
-         * have to cast to uint first (that is the underlying data type) and
-         * then cast to Gdk.ScrollDirection
-         */
-        var scrollDirectionUint = (uint)args.Args[1];
-        var scrollDirection = (Gdk.ScrollDirection)scrollDirectionUint;
-
+      statusIcon.PopupMenu += OnPopupMenu;
+      statusIcon.Activate += (sender, e) => {
         var trayMenuItem = trayContextMenu.Items["m_ctxTrayTray"];
-        if (trayMenuItem.Enabled && (scrollDirection == Gdk.ScrollDirection.Up ^
-                                     pluginHost.MainWindow.Visible ))
-        {
-          DBusBackgroundWorker.InvokeWinformsThread
-            ((Action)trayMenuItem.PerformClick);
-        }
+        DBusBackgroundWorker.InvokeWinformsThread
+          (() => trayMenuItem.PerformClick());
       };
     }
 

@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<metadata>
+	<!--- Signals are not picked up by the parser -->
+
+	<add-node path="/api/namespace/object[@cname='DbusmenuClient']">
+		<signal when="LAST" field_name="layout_updated" cname="layout-updated" name="LayoutUpdated">
+			<return-type type="void" />
+			<parameters>
+				<parameter type="DbusmenuClient" name="client" />
+			</parameters>
+		</signal>
+	</add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuClient']">
+		<signal when="LAST" field_name="root_changed" cname="root-changed" name="RootChanged">
+			<return-type type="void" />
+			<parameters>
+				<parameter type="DbusmenuClient" name="client" />
+				<parameter type="DbusmenuMenuitem*" name="newroot" />
+			</parameters>
+		</signal>
+	</add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuClient']">
+		<signal when="LAST" field_name="new_menuitem" cname="new-menuitem" name="NewMenuitem">
+			<return-type type="void" />
+			<parameters>
+				<parameter type="DbusmenuClient" name="client" />
+				<parameter type="DbusmenuMenuitem*" name="newitem" />
+			</parameters>
+		</signal>
+	</add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuClient']">
+		<signal when="LAST" field_name="item_activate" cname="item-activate" name="ItemActivate">
+			<return-type type="void" />
+			<parameters>
+				<parameter type="DbusmenuClient" name="client" />
+				<parameter type="DbusmenuMenuitem*" name="item" />
+				<parameter type="guint" name="timestamp" />
+			</parameters>
+		</signal>
+	</add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuClient']">
+		<signal when="LAST" manual="true" field_name="event_result" cname="event-result" name="EventResult">
+			<return-type type="void" />
+			<parameters>
+				<parameter type="DbusmenuClient" name="client" />
+				<parameter type="DbusmenuMenuitem*" name="item" />
+				<parameter type="gchar*" name="event" />
+				<parameter type="GVariant*" name="data" />
+				<parameter type="guint" name="timestamp" />
+				<parameter type="GError*" name="error" />
+			</parameters>
+		</signal>
+	</add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuClient']">
+		<signal when="LAST" manual="true" field_name="icon_theme_dirs" cname="icon-theme-dirs-changed" name="IconThemeDirsChanged">
+			<return-type type="void" />
+			<parameters>
+				<parameter type="DbusmenuClient" name="client" />
+				<parameter type="DbusmenuMenuitem*" name="item" />
+				<parameter type="gpointer" name="theme_dirs" />
+				<parameter type="GError*" name="error" />
+			</parameters>
+		</signal>
+	</add-node>
+
+	<add-node path="/api/namespace/object[@cname='DbusmenuMenuitem']">
+		<signal when="LAST" field_name="property_changed" cname="property-changed" name="PropertyChanged">
+			<return-type type="void" />
+			<parameters>
+				<parameter type="DbusmenuMenuitem" name="menuitem" />
+				<parameter type="gchar*" name="property" />
+				<parameter type="GVariant*" name="value" />
+			</parameters>
+		</signal>
+	</add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuMenuitem']">
+		<signal when="LAST" field_name="item_activated" cname="item-activated" name="ItemActivated">
+			<return-type type="void" />
+			<parameters>
+				<parameter type="DbusmenuMenuitem" name="menuitem" />
+				<parameter type="guint" name="timestamp" />
+			</parameters>
+		</signal>
+	</add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuMenuitem']">
+		<signal when="LAST" field_name="child_added" cname="child-added" name="ChildAdded">
+			<return-type type="void" />
+			<parameters>
+				<parameter type="DbusmenuMenuitem" name="menuitem" />
+				<parameter type="DbusmenuMenuitem*" name="child" />
+				<parameter type="guint" name="position" />
+			</parameters>
+		</signal>
+	</add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuMenuitem']">
+		<signal when="LAST" field_name="child_removed" cname="child-removed" name="ChildRemoved">
+			<return-type type="void" />
+			<parameters>
+				<parameter type="DbusmenuMenuitem" name="menuitem" />
+				<parameter type="DbusmenuMenuitem*" name="child" />
+			</parameters>
+		</signal>
+	</add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuMenuitem']">
+		<signal when="LAST" field_name="child_moved" cname="child-moved" name="ChildMoved">
+			<return-type type="void" />
+			<parameters>
+				<parameter type="DbusmenuMenuitem" name="menuitem" />
+				<parameter type="DbusmenuMenuitem*" name="child" />
+				<parameter type="guint" name="newpos" />
+				<parameter type="guint" name="oldpos" />
+			</parameters>
+		</signal>
+	</add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuMenuitem']">
+		<signal when="LAST" field_name="realized" cname="realized" name="Realized">
+			<return-type type="void" />
+			<parameters>
+				<parameter type="DbusmenuMenuitem" name="menuitem" />
+			</parameters>
+		</signal>
+	</add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuMenuitem']">
+		<signal when="LAST" field_name="show_to_user" cname="show-to-user" name="ShowedToUser">
+			<return-type type="void" />
+			<parameters>
+				<parameter type="DbusmenuMenuitem" name="menuitem" />
+				<parameter type="DbusmenuMenuitem*" name="mi" />
+				<parameter type="guint" name="timestamp" />
+				<parameter type="gpointer" name="cb_data" />
+			</parameters>
+		</signal>
+	</add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuMenuitem']">
+		<signal when="LAST" field_name="about_to_show" cname="about-to-show" name="AboutToShow">
+			<return-type type="gboolean" />
+			<parameters>
+				<parameter type="DbusmenuMenuitem" name="menuitem" />
+			</parameters>
+		</signal>
+	</add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuMenuitem']">
+		<signal when="LAST" field_name="event" cname="event" name="Event">
+			<return-type type="void" />
+			<parameters>
+				<parameter type="DbusmenuMenuitem" name="menuitem" />
+				<parameter type="const-gchar*" name="name" />
+				<parameter type="GVariant*" name="value" />
+				<parameter type="guint" name="timestamp" />
+			</parameters>
+		</signal>
+	</add-node>
+
+	<add-node path="/api/namespace/object[@cname='DbusmenuServer']">
+		<signal when="LAST" field_name="id_prop_update" cname="item-property-updated" name="ItemPropertyUpdated">
+			<return-type type="void" />
+			<parameters>
+				<parameter type="DbusmenuServer" name="server" />
+				<parameter type="gint" name="id" />
+				<parameter type="gchar*" name="property" />
+				<parameter type="gchar*" name="value" />
+			</parameters>
+		</signal>
+	</add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuServer']">
+		<signal when="LAST" field_name="id_update" cname="item-updated" name="ItemUpdated">
+			<return-type type="void" />
+			<parameters>
+				<parameter type="DbusmenuServer" name="server" />
+				<parameter type="gint" name="id" />
+			</parameters>
+		</signal>
+	</add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuServer']">
+		<signal when="LAST" field_name="layout_updated" cname="layout-updated" name="LayoutUpdated">
+			<return-type type="void" />
+			<parameters>
+				 <parameter type="DbusmenuServer" name="server" />
+				<parameter type="gint" name="revision" />
+			</parameters>
+		</signal>
+	</add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuServer']">
+		<signal when="LAST" field_name="item_activation" cname="item-activation-requested" name="ItemActivationRequested">
+			<return-type type="void" />
+			<parameters>
+				<parameter type="DbusmenuServer" name="server" />
+				<parameter type="guint" name="timestamp" />
+				<parameter type="gint" name="id" />
+			</parameters>
+		</signal>
+	</add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuServer']">
+		<property name="DbusObject" cname="dbus-object" type="gchar*" readable="true" writeable="true" construct-only="true" />
+	</add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuServer']">
+		<property name="RootNode" cname="root-node" type="DbusmenuMenuitem" readable="true" writeable="true" />
+	</add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuServer']">
+		<property name="Version" cname="version" type="guint" readable="true" />
+	</add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuServer']">
+		<property name="TextDirection" cname="text-direction" type="DbusmenuTextDirection" readable="true" writeable="true" />
+	</add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuServer']">
+		<property name="Status" cname="status" type="DbusmenuStatus" readable="true" writeable="true" />
+	</add-node>
+
+	<!--- signals are not parsed correctly, so there is lots of fixing up to do -->
+<!---
+	<add-node path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='layout_updated']"><parameters></parameters></add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuClient']/signal/parameters"><parameter type="DbusmenuClient" name="client" /></add-node>
+	<attr path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='layout_updated']" name="cname">layout-updated</attr>
+	<attr path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='layout_updated']" name="name">LayoutUpdated</attr>
+	<attr path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='root_changed']" name="cname">root-changed</attr>
+	<attr path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='root_changed']" name="name">RootChanged</attr>
+	<move-node path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='root_changed']/parameters/parameter[@name!='client']">/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='root_changed']/parameters</move-node>
+	<attr path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='new_menuitem']" name="cname">new-menuitem</attr>
+	<attr path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='new_menuitem']" name="name">NewMenuitem</attr>
+	<move-node path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='new_menuitem']/parameters/parameter[@name!='client']">/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='new_menuitem']/parameters</move-node>
+	<attr path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='item_activate']" name="cname">item-activate</attr>
+	<attr path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='item_activate']" name="name">ItemActivate</attr>
+	<move-node path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='item_activate']/parameters/parameter[@name!='client']">/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='item_activate']/parameters</move-node>
+	<move-node path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='item_activate']/parameters/parameter[@name!='client']">/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='item_activate']/parameters</move-node>
+	<attr path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='event_result']" name="cname">event-result</attr>
+	<attr path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='event_result']" name="name">EventResult</attr>
+	<move-node path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='event_result']/parameters/parameter[@name!='client']">/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='event_result']/parameters</move-node>
+	<move-node path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='event_result']/parameters/parameter[@name!='client']">/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='event_result']/parameters</move-node>
+	<move-node path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='event_result']/parameters/parameter[@name!='client']">/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='event_result']/parameters</move-node>
+	<move-node path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='event_result']/parameters/parameter[@name!='client']">/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='event_result']/parameters</move-node>
+	<move-node path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='event_result']/parameters/parameter[@name!='client']">/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='event_result']/parameters</move-node>
+	<attr path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='icon_theme_dirs']" name="cname">icon-theme-dirs-changed</attr>
+	<attr path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='icon_theme_dirs']" name="name">IconThemeDirsChanged</attr>
+	<move-node path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='icon_theme_dirs']/parameters/parameter[@name!='client']">/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='icon_theme_dirs']/parameters</move-node>
+	<move-node path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='icon_theme_dirs']/parameters/parameter[@name!='client']">/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='icon_theme_dirs']/parameters</move-node>
+	<move-node path="/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='icon_theme_dirs']/parameters/parameter[@name!='client']">/api/namespace/object[@cname='DbusmenuClient']/signal[@field_name='icon_theme_dirs']/parameters</move-node>
+
+	<add-node path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='realized']"><parameters></parameters></add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='about_to_show']"><parameters></parameters></add-node>
+	<add-node path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal/parameters"><parameter type="DbusmenuMenuitem" name="menuitem" /></add-node>
+	<attr path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='property_changed']" name="cname">property-changed</attr>
+	<attr path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='property_changed']" name="name">PropertyChanged</attr>
+	<move-node path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='property_changed']/parameters/parameter[@name!='menuitem']">/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='property_changed']/parameters</move-node>
+	<move-node path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='property_changed']/parameters/parameter[@name!='menuitem']">/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='property_changed']/parameters</move-node>
+	<attr path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='item_activated']" name="cname">item-activated</attr>
+	<attr path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='item_activated']" name="name">ItemActivated</attr>
+	<move-node path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='item_activated']/parameters/parameter[@name!='menuitem']">/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='item_activated']/parameters</move-node>
+	<attr path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='child_added']" name="cname">child-added</attr>
+	<attr path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='child_added']" name="name">ChildAdded</attr>
+	<move-node path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='child_added']/parameters/parameter[@name!='menuitem']">/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='child_added']/parameters</move-node>
+	<move-node path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='child_added']/parameters/parameter[@name!='menuitem']">/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='child_added']/parameters</move-node>
+	<attr path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='child_removed']" name="cname">child-removed</attr>
+	<attr path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='child_removed']" name="name">ChildRemoved</attr>
+	<move-node path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='child_removed']/parameters/parameter[@name!='menuitem']">/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='child_removed']/parameters</move-node>
+	<attr path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='child_moved']" name="cname">child-moved</attr>
+	<attr path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='child_moved']" name="name">ChildMoved</attr>
+	<move-node path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='child_moved']/parameters/parameter[@name!='menuitem']">/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='child_moved']/parameters</move-node>
+	<move-node path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='child_moved']/parameters/parameter[@name!='menuitem']">/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='child_moved']/parameters</move-node>
+	<move-node path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='child_moved']/parameters/parameter[@name!='menuitem']">/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='child_moved']/parameters</move-node>
+	<attr path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='realized']" name="cname">realized</attr>
+	<attr path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='realized']" name="name">Realized</attr>
+	<attr path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='show_to_user']" name="cname">show-to-user</attr>
+	<attr path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='show_to_user']" name="name">ShowedToUser</attr>
+	<move-node path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='show_to_user']/parameters/parameter[@name!='menuitem']">/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='show_to_user']/parameters</move-node>
+	<move-node path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='show_to_user']/parameters/parameter[@name!='menuitem']">/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='show_to_user']/parameters</move-node>
+	<move-node path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='show_to_user']/parameters/parameter[@name!='menuitem']">/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='show_to_user']/parameters</move-node>
+	<attr path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='about_to_show']" name="cname">about-to-show</attr>
+	<attr path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='about_to_show']" name="name">AboutToShow</attr>
+	<attr path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='event']" name="cname">event</attr>
+	<attr path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='event']" name="name">Event</attr>
+	<move-node path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='event']/parameters/parameter[@name!='menuitem']">/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='event']/parameters</move-node>
+	<move-node path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='event']/parameters/parameter[@name!='menuitem']">/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='event']/parameters</move-node>
+	<move-node path="/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='event']/parameters/parameter[@name!='menuitem']">/api/namespace/object[@cname='DbusmenuMenuitem']/signal[@field_name='event']/parameters</move-node>
+
+	<add-node path="/api/namespace/object[@cname='DbusmenuServer']/signal/parameters"><parameter type="DbusmenuServer" name="server" /></add-node>
+	<attr path="/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='id_prop_update']" name="cname">item-property-updated</attr>
+	<attr path="/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='id_prop_update']" name="name">ItemPropertyUpdated</attr>
+	<move-node path="/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='id_prop_update']/parameters/parameter[@name!='server']">/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='id_prop_update']/parameters</move-node>
+	<move-node path="/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='id_prop_update']/parameters/parameter[@name!='server']">/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='id_prop_update']/parameters</move-node>
+	<move-node path="/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='id_prop_update']/parameters/parameter[@name!='server']">/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='id_prop_update']/parameters</move-node>
+	<attr path="/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='id_update']" name="cname">item-updated</attr>
+	<attr path="/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='id_update']" name="name">ItemUpdated</attr>
+	<move-node path="/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='id_update']/parameters/parameter[@name!='server']">/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='id_update']/parameters</move-node>
+	<attr path="/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='layout_updated']" name="cname">layout-updated</attr>
+	<attr path="/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='layout_updated']" name="name">LayoutUpdated</attr>
+	<move-node path="/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='layout_updated']/parameters/parameter[@name!='server']">/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='layout_updated']/parameters</move-node>
+	<attr path="/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='item_activation']" name="cname">item-activation-requested</attr>
+	<attr path="/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='item_activation']" name="name">ItemActivationRequested</attr>
+	<move-node path="/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='item_activation']/parameters/parameter[@name!='server']">/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='item_activation']/parameters</move-node>
+	<move-node path="/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='item_activation']/parameters/parameter[@name!='server']">/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='item_activation']/parameters</move-node>
+	<move-node path="/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='item_activation']/parameters/parameter[@name!='server']">/api/namespace/object[@cname='DbusmenuServer']/signal[@field_name='item_activation']/parameters</move-node>
+-->
+</metadata>

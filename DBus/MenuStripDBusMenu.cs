@@ -1,15 +1,15 @@
 using System;
-using System.Reflection;
 using System.Collections.Generic;
-using System.Windows.Forms;
 using System.Diagnostics;
-using System.IO;
 using System.Drawing.Imaging;
+using System.IO;
+using System.Reflection;
+using System.Windows.Forms;
+
 using DBus;
-using Keebuntu.DBus;
 using com.canonical.dbusmenu;
 
-namespace Keebuntu.Dbus
+namespace Keebuntu.DBus
 {
   public class MenuStripDBusMenu : com.canonical.dbusmenu.IDbusMenu
   {

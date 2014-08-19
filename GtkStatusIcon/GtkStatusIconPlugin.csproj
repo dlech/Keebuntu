@@ -6,14 +6,13 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.0</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{AF47CF84-8823-4A58-9E79-543970D5BCA1}</ProjectGuid>
+    <ProjectGuid>{AC6540EF-EDD0-4C47-9F29-3E919EFF6C62}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>KeebuntuAppMenu</RootNamespace>
-    <AssemblyName>KeebuntuAppMenu</AssemblyName>
-    <Description>Plugin for KeePass 2.x that add support for Ubuntu Application Menus</Description>
+    <RootNamespace>GtkStatusIcon</RootNamespace>
+    <AssemblyName>GtkStatusIcon</AssemblyName>
+    <Description>Plugin for KeePass 2.x that add support for GTK status icons</Description>
+    <ReleaseVersion>0.1.0</ReleaseVersion>
     <SynchReleaseVersion>False</SynchReleaseVersion>
-    <ReleaseVersion>0.2.13</ReleaseVersion>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -33,6 +32,7 @@
       <EnvironmentVariables>
         <Variable name="MONO_TRACE_LISTENER" value="Console.Error" />
         <Variable name="UBUNTU_MENUPROXY" value="libappmenu.so" />
+        <Variable name="MONO_GAC_PREFIX" value="/usr" />
       </EnvironmentVariables>
     </EnvironmentVariables>
   </PropertyGroup>
@@ -43,7 +43,7 @@
     <WarningLevel>4</WarningLevel>
     <CustomCommands>
       <CustomCommands>
-        <Command type="Execute" command="bin/Release/KeePass.exe" />
+        <Command type="Execute" command="bin/Debug/KeePass.exe" />
       </CustomCommands>
     </CustomCommands>
   </PropertyGroup>
@@ -65,10 +65,6 @@
       <Private>False</Private>
       <Package>gtk-sharp-2.0</Package>
     </Reference>
-    <Reference Include="glib-sharp">
-      <Private>False</Private>
-      <Package>glib-sharp-2.0</Package>
-    </Reference>
     <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <Private>False</Private>
       <Package>gtk-sharp-2.0</Package>
@@ -76,6 +72,10 @@
     <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <Private>False</Private>
       <Package>gtk-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Private>False</Private>
+      <Package>glib-sharp-2.0</Package>
     </Reference>
     <Reference Include="dbus-sharp, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5675b0c3093115b5">
       <Private>False</Private>
@@ -96,7 +96,7 @@
   </ProjectExtensions>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="KeebuntuAppMenuExt.cs" />
+    <Compile Include="KeebuntuGtkStatusIconExt.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="KeePass.config.xml">
@@ -107,6 +107,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <ExcludeFromPlgx />
     </None>
+    <None Include="Resources\icons\hicolor\256x256\apps\keepass2-locked.png" />
     <None Include="..\ImageMagick\ImageMagick.dll.config">
       <Link>ImageMagick.dll.config</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -120,6 +121,10 @@
     <ProjectReference Include="..\DBus\DBus.csproj">
       <Project>{B20055CC-0AD7-4DCB-BA74-8DC54DEF6B6B}</Project>
       <Name>DBus</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ImageMagick\ImageMagick.csproj">
+      <Project>{00BB4233-A62B-4B5F-9022-1C87157C9B37}</Project>
+      <Name>ImageMagick</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

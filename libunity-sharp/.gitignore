@@ -1,0 +1,4 @@
+*.raw
+*-api.xml
+*-generated/
+*.dll
