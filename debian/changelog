@@ -1,3 +1,9 @@
+keepass2-plugin-ubuntu (0.5.2) trusty; urgency=medium
+
+  * fix launcher package missing version suffix
+
+ -- David Lechner <david@lechnology.com>  Tue, 19 Aug 2014 23:05:02 -0500
+
 keepass2-plugin-ubuntu (0.5.1) trusty; urgency=medium
 
   * [appmenu] fix menus not showning in GNOME Shell
