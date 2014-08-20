@@ -1,0 +1,89 @@
+Source: keepass2-plugin-ubuntu
+Section: utils
+Priority: optional
+Maintainer: David Lechner <david@lechnology.com>
+Build-Depends: debhelper (>= 9.0.0)
+Build-Depends-Indep: cli-common-dev (>= 0.8),
+                     keepass2,
+                     libappindicator0.1-cil-dev,
+                     libdbus2.0-cil-dev,
+                     libdbus-glib2.0-cil-dev,
+                     libgtk2.0-cil-dev,
+                     libglib3.0-cil-dev,
+                     libgio3.0-cil-dev,
+                     libunity-dev,
+                     libdbusmenu-glib-dev,
+                     gtk-sharp3-gapi
+Standards-Version: 3.9.5
+Homepage: https://github.com/dlech/Keebuntu
+Vcs-Git: git://github.com/dlech/Keebuntu
+Vcs-Browser: https://github.com/dlech/Keebuntu
+
+Package: keepass2-plugin-libdbus
+Architecture: all
+Depends: keepass2,
+         ${cli:Depends},
+         ${misc:Depends}
+Description: Shared library for DBus for serveral KeePass 2.x plugins
+ Provides DBus interop.
+
+Package: keepass2-plugin-libimagemagick
+Architecture: all
+Depends: keepass2,
+         libmagickwand5,
+         ${cli:Depends},
+         ${misc:Depends}
+Description: Shared library for ImageMagick for serveral KeePass 2.x plugins
+ Provides ImageMagick interop.
+
+Package: keepass2-plugin-libunity
+Architecture: all
+Depends: keepass2,
+         libunity9,
+         keepass2-plugin-libdbusmenu (= ${libdbusmenu:Version}),
+         ${cli:Depends},
+         ${misc:Depends}
+Description: Shared library for Unity Desktop for serveral KeePass 2.x plugins
+ Provides libunity interop.
+
+Package: keepass2-plugin-libdbusmenu
+Architecture: all
+Depends: keepass2,
+         libdbusmenu-glib4,
+         ${cli:Depends},
+         ${misc:Depends}
+Description: Shared library for DBus menus for serveral KeePass 2.x plugins
+ Provides libdbusmenu-glib interop.
+
+Package: keepass2-plugin-application-indicator
+Architecture: all
+Depends: keepass2,
+         keepass2-plugin-libdbus (= ${libdbus:Version}),
+         keepass2-plugin-libimagemagick (= ${libimagemagick:Version}),
+         ${cli:Depends},
+         ${misc:Depends}
+Description: Adds an Application Indicator to KeePass 2.x
+ Adds an Applicaton Indicator that provides the same menu as the notification/
+ tray icon as the Windows version of KeePass.
+
+Package: keepass2-plugin-application-menu
+Architecture: all
+Depends: keepass2,
+         keepass2-plugin-libdbus (= ${libdbus:Version}),
+         keepass2-plugin-libimagemagick (= ${libimagemagick:Version}),
+         ${cli:Depends},
+         ${misc:Depends}
+Description: Adds Ubuntu-style application menu to KeePass 2.x
+ Shows the KeePass menu in the panel instead of in the application (for use with
+ Ubuntu Unity desktop).
+
+Package: keepass2-plugin-launcher
+Architecture: all
+Depends: keepass2,
+         keepass2-plugin-libdbus (= ${libdbus:Version}),
+         keepass2-plugin-libunity (= ${libunity:Version}),
+         ${cli:Depends},
+         ${misc:Depends}
+Description: Adds Unity Launcher integration to KeePass 2.x
+ Shows the KeePass notification menu items in the launcher quicklist.
+

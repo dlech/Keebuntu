@@ -3,13 +3,14 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>10.0.0</ProductVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{2B2FC573-4597-4F9E-8C46-6ED102EFA12A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>libunitysharp</RootNamespace>
     <AssemblyName>libunity-sharp</AssemblyName>
-    <ReleaseVersion>0.4.7</ReleaseVersion>
+    <ReleaseVersion>0.1.0</ReleaseVersion>
+    <SynchReleaseVersion>false</SynchReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -34,11 +35,23 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
+    <CustomCommands>
+      <CustomCommands>
+        <Command type="Build" command="make" />
+        <Command type="Clean" command="make clean" />
+      </CustomCommands>
+    </CustomCommands>
   </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Target Name="Build">
+    <Exec command="make" />
+  </Target>
+  <Target Name="Clean">
+    <Exec command="make clean" />
+  </Target>
   <ItemGroup>
     <Reference Include="System" />
   </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <None Include="Makefile" />
     <None Include="libdbusmenu-glib-source.xml" />
