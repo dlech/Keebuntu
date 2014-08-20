@@ -126,6 +126,7 @@ namespace KeebuntuAppMenu
       } catch (Exception) {
         if (!pluginHost.CustomConfig.GetBool(keebuntuAppMenuWarningSeenId, false))
           Task.Run((Action)ShowErrorMessage);
+        DBusBackgroundWorker.InvokeWinformsThread (() => Terminate ());
       }
     }
 

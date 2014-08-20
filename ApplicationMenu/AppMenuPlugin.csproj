@@ -12,7 +12,7 @@
     <AssemblyName>KeebuntuAppMenu</AssemblyName>
     <Description>Plugin for KeePass 2.x that add support for Ubuntu Application Menus</Description>
     <SynchReleaseVersion>False</SynchReleaseVersion>
-    <ReleaseVersion>0.2.13</ReleaseVersion>
+    <ReleaseVersion>0.2.14</ReleaseVersion>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -73,8 +73,12 @@
     <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <Package>gtk-sharp-2.0</Package>
     </Reference>
-    <Reference Include="dbus-sharp, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5675b0c3093115b5" />
-    <Reference Include="dbus-sharp-glib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5675b0c3093115b5" />
+    <Reference Include="dbus-sharp, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5675b0c3093115b5">
+      <Package>dbus-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="dbus-sharp-glib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5675b0c3093115b5">
+      <Package>dbus-sharp-glib-2.0</Package>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
