@@ -85,9 +85,9 @@ sudo apt-get install keepass2-plugin-application-indicator keepass2-plugin-appli
 
 The latest versions are in the beta ppa:
 ```
-$ sudo apt-add-repository ppa:dlech/keepass2-plugins-beta
-$ sudo apt-get update
-$ sudo apt-get install keepass2-plugin-launcher keepass2-plugin-application-indicator keepass2-plugin-application-menu
+sudo apt-add-repository ppa:dlech/keepass2-plugins-beta
+sudo apt-get update
+sudo apt-get install keepass2-plugin-launcher keepass2-plugin-application-indicator keepass2-plugin-application-menu
 ```
 
 On Arch Linux, you can try https://aur.archlinux.org/packages/keebuntu-git/ (outdated)
