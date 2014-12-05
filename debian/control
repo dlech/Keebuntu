@@ -9,7 +9,7 @@ Build-Depends-Indep: cli-common-dev (>= 0.8),
                      libdbus2.0-cil-dev,
                      libdbus-glib2.0-cil-dev,
                      libgtk2.0-cil-dev
-Standards-Version: 3.9.4
+Standards-Version: 3.9.5
 Homepage: https://github.com/dlech/Keebuntu
 #Vcs-Git: git://git.debian.org/collab-maint/keepass2-plugin-ubuntu-unity.git
 #Vcs-Browser: http://git.debian.org/?p=collab-maint/keepass2-plugin-ubuntu-unity.git;a=summary

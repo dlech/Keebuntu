@@ -9,12 +9,12 @@
 # Uncomment this to turn on verbose mode.
 export DH_VERBOSE=1
 
-VERSION_SUFFIX=$(shell dpkg-parsechangelog | sed -rne 's,^Version: ([^-\+~]+)(.*),\2,p')
+SOURCE_VERSION=$(shell dpkg-parsechangelog | sed -rne 's,^Version: (.*),\1,p')
 
-appindicator_version := $(shell debian/scripts/get-proj-version.sh ApplicationIndicator/AppIndicatorPlugin.csproj)$(VERSION_SUFFIX)
-appmenu_version := $(shell debian/scripts/get-proj-version.sh ApplicationMenu/AppMenuPlugin.csproj)$(VERSION_SUFFIX)
-libdbus_version := $(shell debian/scripts/get-proj-version.sh DBus/DBus.csproj)$(VERSION_SUFFIX)
-libimagemagick_version := $(shell debian/scripts/get-proj-version.sh ImageMagick/ImageMagick.csproj)$(VERSION_SUFFIX)
+appindicator_version := $(shell debian/scripts/get-proj-version.sh ApplicationIndicator/AppIndicatorPlugin.csproj)+$(SOURCE_VERSION)
+appmenu_version := $(shell debian/scripts/get-proj-version.sh ApplicationMenu/AppMenuPlugin.csproj)+$(SOURCE_VERSION)
+libdbus_version := $(shell debian/scripts/get-proj-version.sh DBus/DBus.csproj)+$(SOURCE_VERSION)
+libimagemagick_version := $(shell debian/scripts/get-proj-version.sh ImageMagick/ImageMagick.csproj)+$(SOURCE_VERSION)
 
 %:
 	dh $@ --with cli
