@@ -1,3 +1,9 @@
+keepass2-plugin-ubuntu (0.4.8) trusty; urgency=medium
+
+  * Fix crash when scrolling application indicator. (dlech/Keebuntu#20)
+
+ -- David Lechner <david@lechnology.com>  Thu, 04 Dec 2014 20:55:23 -0600
+
 keepass2-plugin-ubuntu (0.4.7-8~ppa1~trusty1) trusty; urgency=medium
 
   * New upstream release.
