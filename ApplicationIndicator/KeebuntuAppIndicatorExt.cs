@@ -184,15 +184,17 @@ namespace KeebuntuAppIndicator
       // and scroll down will tray KeePass
       indicator.ScrollEvent += (o, args) =>
       {
-        /* Workaround for bug in mono/appindicator-sharp.
-         *
-         * args.Direction throws InvalidCastException
-         * Can't cast args.Arg[1] to Gdk.ScrollDirection for some reason, so we
-         * have to cast to uint first (that is the underlying data type) and
-         * then cast to Gdk.ScrollDirection
-         */
-        var scrollDirectionUint = (uint)args.Args[1];
-        var scrollDirection = (Gdk.ScrollDirection)scrollDirectionUint;
+        // Workaround for bug in libappindicator
+        // https://bugs.launchpad.net/ubuntu/+source/libappindicator/+bug/1071738
+        Gdk.ScrollDirection scrollDirection;
+        try {
+          // this works for versions >= 12.10.1+13.10.20130920-0ubuntu4.1
+          scrollDirection = (Gdk.ScrollDirection)args.Args[1];
+        } catch (InvalidCastException) {
+          // older versions will throw exception because the old type was uint
+          var scrollDirectionUint = (uint)args.Args[1];
+          scrollDirection = (Gdk.ScrollDirection)scrollDirectionUint;
+        }
 
         var trayMenuItem = trayContextMenu.Items["m_ctxTrayTray"];
         if (trayMenuItem.Enabled && (scrollDirection == Gdk.ScrollDirection.Up ^
