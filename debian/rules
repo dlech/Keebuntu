@@ -1,0 +1,39 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+
+VERSION_SUFFIX=$(shell dpkg-parsechangelog | sed -rne 's,^Version: ([^-\+~]+)(.*),\2,p')
+
+appindicator_version := $(shell debian/scripts/get-proj-version.sh ApplicationIndicator/AppIndicatorPlugin.csproj)$(VERSION_SUFFIX)
+appmenu_version := $(shell debian/scripts/get-proj-version.sh ApplicationMenu/AppMenuPlugin.csproj)$(VERSION_SUFFIX)
+libdbus_version := $(shell debian/scripts/get-proj-version.sh DBus/DBus.csproj)$(VERSION_SUFFIX)
+libimagemagick_version := $(shell debian/scripts/get-proj-version.sh ImageMagick/ImageMagick.csproj)$(VERSION_SUFFIX)
+
+%:
+	dh $@ --with cli
+
+override_dh_auto_clean:
+	xbuild /target:Clean /property:Configuration=Release Keebuntu.sln
+	dh_auto_clean
+
+override_dh_auto_build:
+	xbuild /property:Configuration=Release Keebuntu.sln /property:DBusVersion=2.0
+
+override_dh_install:
+	dh_install --exclude=.mdb --exclude=KeePass
+
+override_dh_clideps:
+	dh_clideps --exclude-moduleref=libMagickWand
+
+override_dh_gencontrol:
+	dh_gencontrol -pkeepass2-plugin-application-indicator -- -v$(appindicator_version) -Vlibdbus:Version="$(libdbus_version)" -Vlibimagemagick:Version="$(libimagemagick_version)"
+	dh_gencontrol -pkeepass2-plugin-application-menu -- -v$(appmenu_version) -Vlibdbus:Version="$(libdbus_version)" -Vlibimagemagick:Version="$(libimagemagick_version)"
+	dh_gencontrol -pkeepass2-plugin-libdbus -- -v$(libdbus_version)
+	dh_gencontrol -pkeepass2-plugin-libimagemagick -- -v$(libimagemagick_version)

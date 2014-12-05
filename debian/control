@@ -1,0 +1,55 @@
+Source: keepass2-plugin-ubuntu
+Section: utils
+Priority: optional
+Maintainer: David Lechner <david@lechnology.com>
+Build-Depends: debhelper (>= 8.0.0)
+Build-Depends-Indep: cli-common-dev (>= 0.8),
+                     keepass2,
+                     libappindicator0.1-cil-dev,
+                     libdbus2.0-cil-dev,
+                     libdbus-glib2.0-cil-dev,
+                     libgtk2.0-cil-dev
+Standards-Version: 3.9.4
+Homepage: https://github.com/dlech/Keebuntu
+#Vcs-Git: git://git.debian.org/collab-maint/keepass2-plugin-ubuntu-unity.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/keepass2-plugin-ubuntu-unity.git;a=summary
+
+Package: keepass2-plugin-libdbus
+Architecture: all
+Depends: keepass2,
+         ${cli:Depends},
+         ${misc:Depends}
+Description: Shared library for DBus for serveral KeePass 2.x plugins
+ Provides DBus interop.
+
+Package: keepass2-plugin-libimagemagick
+Architecture: all
+Depends: keepass2,
+         libmagickwand5,
+         ${cli:Depends},
+         ${misc:Depends}
+Description: Shared library for ImageMagick for serveral KeePass 2.x plugins
+ Provides ImageMagick interop.
+
+Package: keepass2-plugin-application-indicator
+Architecture: all
+Depends: keepass2,
+         keepass2-plugin-libdbus (= ${libdbus:Version}),
+         keepass2-plugin-libimagemagick (= ${libimagemagick:Version}),
+         ${cli:Depends},
+         ${misc:Depends}
+Description: Adds an Application Indicator to KeePass 2.x
+ Adds an Applicaton Indicator that provides the same menu as the notification/
+ tray icon as the Windows version of KeePass.
+
+Package: keepass2-plugin-application-menu
+Architecture: all
+Depends: keepass2,
+         keepass2-plugin-libdbus (= ${libdbus:Version}),
+         keepass2-plugin-libimagemagick (= ${libimagemagick:Version}),
+         ${cli:Depends},
+         ${misc:Depends}
+Description: Adds Ubuntu-style application menu to KeePass 2.x
+ Shows the KeePass menu in the panel instead of in the application (for use with
+ Ubuntu Unity desktop).
+

@@ -1,0 +1,135 @@
+keepass2-plugin-ubuntu (0.4.7-8~ppa1~trusty1) trusty; urgency=medium
+
+  * New upstream release.
+  * Fixes Application Indicator plugin not working with non-Unity desktops
+    (e.g. Gnome Shell)
+
+ -- David Lechner <david@lechnology.com>  Fri, 23 May 2014 12:59:58 -0500
+
+keepass2-plugin-ubuntu (0.4.6-7~ppa1~trusty1) trusty; urgency=medium
+
+  * New upstream release.
+  * [AppIndicator] Disables build-in mono tray icon. (Fixes tooltips showing
+    in Unity global application menu)
+  * Fixes issues with app menus in title bars in Unity (trusty)
+  * Fixes native app menu showing after minimize and restore
+  * Fix threading issues in appmenu plugin
+
+ -- David Lechner <david@lechnology.com>  Sun, 27 Apr 2014 23:38:53 -0500
+
+keepass2-plugin-ubuntu (0.4.4-6~ppa1~trusty1) trusty; urgency=medium
+
+  * New upstream release.
+
+ -- David Lechner <david@lechnology.com>  Fri, 18 Apr 2014 10:49:46 -0500
+
+keepass2-plugin-ubuntu (0.4.1-4~ppa1~trusty1) trusty; urgency=medium
+
+  * New upstream release.
+  * Fixes application indicator breakage on non-Unity desktops.
+
+ -- David Lechner <david@lechnology.com>  Tue, 11 Mar 2014 12:25:07 -0500
+
+keepass2-plugin-ubuntu (0.4.0-3~ppa1~trusty1) trusty; urgency=low
+
+  * Bump version to make launchpad happy. 
+
+ -- David Lechner <david@lechnology.com>  Fri, 07 Mar 2014 16:04:46 -0600
+
+keepass2-plugin-ubuntu (0.4.0-0~ppa1~trusty1) trusty; urgency=low
+
+  * New upstream release.
+  * Fix application indicator breakage for Unity desktop.
+
+ -- David Lechner <david@lechnology.com>  Wed, 05 Mar 2014 18:07:04 -0600
+
+keepass2-plugin-ubuntu (0.3.2-2~ppa1~trusty1) trusty; urgency=low
+
+  * Create new version for trusty.
+  * Fix libdbusX.X-cil depends. 
+
+ -- David Lechner <david@lechnology.com>  Tue, 18 Feb 2014 11:05:34 -0600
+
+keepass2-plugin-ubuntu (0.3.2-2~ppa1~saucy1) saucy; urgency=low
+
+  * Create new versioning scheme for individual distros
+
+ -- David Lechner <david@lechnology.com>  Wed, 29 May 2013 16:33:21 -0500
+
+keepass2-plugin-ubuntu (0.3.2-1) raring; urgency=low
+
+  * New upstream release.
+
+ -- David Lechner <david@lechnology.com>  Tue, 28 May 2013 17:23:56 -0500
+
+keepass2-plugin-ubuntu (0.3.1-1) raring; urgency=low
+
+  * New upstream release.
+
+ -- David Lechner <david@lechnology.com>  Tue, 28 May 2013 17:17:52 -0500
+
+keepass2-plugin-ubuntu (0.3.0-2) raring; urgency=low
+
+  * Fix build errors
+
+ -- David Lechner <david@lechnology.com>  Thu, 16 May 2013 23:15:50 -0500
+
+keepass2-plugin-ubuntu (0.3.0-1) raring; urgency=low
+
+  * New upstream release.
+
+ -- David Lechner <david@lechnology.com>  Wed, 15 May 2013 22:04:25 -0500
+
+keepass2-plugin-ubuntu (0.2.7-1) raring; urgency=low
+
+  * New upstream release.
+
+ -- David Lechner <david@lechnology.com>  Wed, 15 May 2013 00:53:42 -0500
+
+keepass2-plugin-ubuntu (0.2.6-1) raring; urgency=low
+
+  * New upstream release.
+
+ -- David Lechner <david@lechnology.com>  Tue, 14 May 2013 23:02:27 -0500
+
+keepass2-plugin-ubuntu (0.2.3-0ubuntu2) raring; urgency=low
+
+  * Fix build error
+
+ -- David Lechner <david@lechnology.com>  Sun, 28 Apr 2013 13:07:52 -0500
+
+keepass2-plugin-ubuntu (0.2.3-0ubuntu1) raring; urgency=low
+
+  * New upstream release.
+
+ -- David Lechner <david@lechnology.com>  Sat, 27 Apr 2013 23:33:29 -0500
+
+keepass2-plugin-ubuntu (0.2.2-0ubuntu1) raring; urgency=low
+
+  * New upstream release.
+
+ -- David Lechner <david@lechnology.com>  Fri, 26 Apr 2013 01:35:07 -0500
+
+keepass2-plugin-ubuntu (0.2.1-0ubuntu1) raring; urgency=low
+
+  * New upstream release.
+
+ -- David Lechner <david@lechnology.com>  Thu, 25 Apr 2013 20:43:16 -0500
+
+keepass2-plugin-ubuntu (0.2.0-0ubuntu1) raring; urgency=low
+
+  * New upstream release.
+
+ -- David Lechner <david@lechnology.com>  Wed, 24 Apr 2013 19:49:38 -0500
+
+keepass2-plugin-ubuntu-unity (0.1.1-0ubuntu1) raring; urgency=low
+
+  * New upstream release.
+
+ -- David Lechner <david@lechnology.com>  Tue, 23 Apr 2013 12:02:22 -0500
+
+keepass2-plugin-ubuntu-unity (0.1.0-1) raring; urgency=low
+
+  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+
+ -- David Lechner <david@lechnology.com>  Tue, 23 Apr 2013 00:12:34 -0500
