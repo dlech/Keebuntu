@@ -1,3 +1,9 @@
+keepass2-plugin-ubuntu (0.5.4+b1) trusty; urgency=medium
+
+  * fix build error
+
+ -- David Lechner <david@lechnology.com>  Sun, 21 Dec 2014 00:42:01 -0600
+
 keepass2-plugin-ubuntu (0.5.4) trusty; urgency=medium
 
   * Add Gtk notification tray icon plugin 
