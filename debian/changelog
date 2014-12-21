@@ -1,3 +1,9 @@
+keepass2-plugin-ubuntu (0.5.4) trusty; urgency=medium
+
+  * Add Gtk notification tray icon plugin 
+
+ -- David Lechner <david@lechnology.com>  Sun, 21 Dec 2014 00:25:05 -0600
+
 keepass2-plugin-ubuntu (0.5.3) trusty; urgency=medium
 
   * Fix crash when scrolling application indicator. (dlech/Keebuntu#20)

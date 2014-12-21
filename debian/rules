@@ -13,6 +13,7 @@ VERSION_SUFFIX=$(shell dpkg-parsechangelog | sed -rne 's,^Version: (.*),+\1,p')
 
 appindicator_version := $(shell debian/scripts/get-proj-version.sh ApplicationIndicator/AppIndicatorPlugin.csproj)$(VERSION_SUFFIX)
 appmenu_version := $(shell debian/scripts/get-proj-version.sh ApplicationMenu/AppMenuPlugin.csproj)$(VERSION_SUFFIX)
+trayicon_version := $(shell debian/scripts/get-proj-version.sh GtkStatusIcon/GtkStatusIconPlugin.csproj)$(VERSION_SUFFIX)
 launcher_version := $(shell debian/scripts/get-proj-version.sh UnityLauncherPlugin/UnityLauncherPlugin.csproj)$(VERSION_SUFFIX)
 libdbus_version := $(shell debian/scripts/get-proj-version.sh DBus/DBus.csproj)$(VERSION_SUFFIX)
 libimagemagick_version := $(shell debian/scripts/get-proj-version.sh ImageMagick/ImageMagick.csproj)$(VERSION_SUFFIX)
@@ -37,6 +38,7 @@ override_dh_clideps:
 override_dh_gencontrol:
 	dh_gencontrol -pkeepass2-plugin-application-indicator -- -v$(appindicator_version) -Vlibdbus:Version=$(libdbus_version) -Vlibimagemagick:Version=$(libimagemagick_version)
 	dh_gencontrol -pkeepass2-plugin-application-menu -- -v$(appmenu_version) -Vlibdbus:Version=$(libdbus_version) -Vlibimagemagick:Version=$(libimagemagick_version)
+	dh_gencontrol -pkeepass2-plugin-tray-icon -- -v$(trayicon_version) -Vlibdbus:Version=$(libdbus_version) -Vlibimagemagick:Version=$(libimagemagick_version)
 	dh_gencontrol -pkeepass2-plugin-launcher -- -v$(launcher_version) -Vlibdbus:Version=$(libdbus_version) -Vlibunity:Version=$(libunity_version)
 	dh_gencontrol -pkeepass2-plugin-libdbus -- -v$(libdbus_version)
 	dh_gencontrol -pkeepass2-plugin-libimagemagick -- -v$(libimagemagick_version)

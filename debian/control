@@ -24,7 +24,7 @@ Architecture: all
 Depends: keepass2,
          ${cli:Depends},
          ${misc:Depends}
-Description: Shared library for DBus for serveral KeePass 2.x plugins
+Description: Shared library for DBus for several KeePass 2.x plugins
  Provides DBus interop.
 
 Package: keepass2-plugin-libimagemagick
@@ -33,7 +33,7 @@ Depends: keepass2,
          libmagickwand5,
          ${cli:Depends},
          ${misc:Depends}
-Description: Shared library for ImageMagick for serveral KeePass 2.x plugins
+Description: Shared library for ImageMagick for several KeePass 2.x plugins
  Provides ImageMagick interop.
 
 Package: keepass2-plugin-libunity
@@ -43,7 +43,7 @@ Depends: keepass2,
          keepass2-plugin-libdbusmenu (= ${libdbusmenu:Version}),
          ${cli:Depends},
          ${misc:Depends}
-Description: Shared library for Unity Desktop for serveral KeePass 2.x plugins
+Description: Shared library for Unity Desktop for several KeePass 2.x plugins
  Provides libunity interop.
 
 Package: keepass2-plugin-libdbusmenu
@@ -52,7 +52,7 @@ Depends: keepass2,
          libdbusmenu-glib4,
          ${cli:Depends},
          ${misc:Depends}
-Description: Shared library for DBus menus for serveral KeePass 2.x plugins
+Description: Shared library for DBus menus for several KeePass 2.x plugins
  Provides libdbusmenu-glib interop.
 
 Package: keepass2-plugin-application-indicator
@@ -62,9 +62,21 @@ Depends: keepass2,
          keepass2-plugin-libimagemagick (= ${libimagemagick:Version}),
          ${cli:Depends},
          ${misc:Depends}
+Conflicts: keepass2-plugin-tray-icon
 Description: Adds an Application Indicator to KeePass 2.x
- Adds an Applicaton Indicator that provides the same menu as the notification/
+ Adds an Applicaton Indicator that provides the same menu as the notification
  tray icon as the Windows version of KeePass.
+
+Package: keepass2-plugin-tray-icon
+Architecture: all
+Depends: keepass2,
+         keepass2-plugin-libdbus (= ${libdbus:Version}),
+         keepass2-plugin-libimagemagick (= ${libimagemagick:Version}),
+         ${cli:Depends},
+         ${misc:Depends}
+Conflicts: keepass2-plugin-application-indicator
+ Adds a notification tray icon (Gtk StatusIcon) that provides the same menu
+ as the notification tray icon as the Windows version of KeePass.
 
 Package: keepass2-plugin-application-menu
 Architecture: all
@@ -86,4 +98,3 @@ Depends: keepass2,
          ${misc:Depends}
 Description: Adds Unity Launcher integration to KeePass 2.x
  Shows the KeePass notification menu items in the launcher quicklist.
-
