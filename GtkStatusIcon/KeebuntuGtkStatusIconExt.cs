@@ -152,9 +152,8 @@ namespace GtkStatusIcon
 
       statusIcon.PopupMenu += OnPopupMenu;
       statusIcon.Activate += (sender, e) => {
-        var trayMenuItem = trayContextMenu.Items["m_ctxTrayTray"];
         DBusBackgroundWorker.InvokeWinformsThread
-          (() => trayMenuItem.PerformClick());
+        (() => pluginHost.MainWindow.EnsureVisibleForegroundWindow(true, true));
       };
     }
 
