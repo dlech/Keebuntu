@@ -75,6 +75,7 @@ Depends: keepass2,
          ${cli:Depends},
          ${misc:Depends}
 Conflicts: keepass2-plugin-application-indicator
+Description: Adds a notification tray icon to KeePass 2.x
  Adds a notification tray icon (Gtk StatusIcon) that provides the same menu
  as the notification tray icon as the Windows version of KeePass.
 
