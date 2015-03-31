@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>libunitysharp</RootNamespace>
     <AssemblyName>libunity-sharp</AssemblyName>
-    <ReleaseVersion>0.1.0</ReleaseVersion>
+    <ReleaseVersion>0.1.1</ReleaseVersion>
     <SynchReleaseVersion>false</SynchReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

@@ -9,12 +9,12 @@ Build-Depends-Indep: cli-common-dev (>= 0.8),
                      libdbus2.0-cil-dev,
                      libdbus-glib2.0-cil-dev,
                      libgtk2.0-cil-dev,
-                     libglib3.0-cil-dev,
-                     libgio3.0-cil-dev,
+                     libglib2.0-cil-dev,
+                     libgio2.0-cil-dev,
                      libunity-dev,
                      libdbusmenu-glib-dev,
-                     gtk-sharp3-gapi
-Standards-Version: 3.9.5
+                     gtk-sharp2-gapi
+Standards-Version: 3.9.6
 Homepage: https://github.com/dlech/Keebuntu
 Vcs-Git: git://github.com/dlech/Keebuntu
 Vcs-Browser: https://github.com/dlech/Keebuntu
