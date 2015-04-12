@@ -1,3 +1,9 @@
+keepass2-plugin-ubuntu (0.5.6.1) vivid; urgency=medium
+
+  * Fix dependency in debian/control for new version of libmagickwand.
+
+ -- David Lechner <david@lechnology.com>  Sun, 12 Apr 2015 14:30:28 -0500
+
 keepass2-plugin-ubuntu (0.5.6) vivid; urgency=medium
 
   * Update imagemagick dll name for vivid.

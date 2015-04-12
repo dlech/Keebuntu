@@ -30,7 +30,7 @@ Description: Shared library for DBus for several KeePass 2.x plugins
 Package: keepass2-plugin-libimagemagick
 Architecture: all
 Depends: keepass2,
-         libmagickwand5,
+         libmagickwand-6.q16-2,
          ${cli:Depends},
          ${misc:Depends}
 Description: Shared library for ImageMagick for several KeePass 2.x plugins
