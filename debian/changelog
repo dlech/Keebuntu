@@ -1,3 +1,9 @@
+keepass2-plugin-ubuntu (0.5.6) vivid; urgency=medium
+
+  * Update imagemagick dll name for vivid.
+
+ -- David Lechner <david@lechnology.com>  Sun, 12 Apr 2015 14:24:12 -0500
+
 keepass2-plugin-ubuntu (0.5.5) vivid; urgency=medium
 
   * Fix discrepencies with Gtk#3 vs. Gtk#2. Using Gtk#2 everywhere.
