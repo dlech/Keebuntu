@@ -1,3 +1,9 @@
+keepass2-plugin-ubuntu (0.5.5trusty1) trusty; urgency=medium
+
+  * Add icon for elementary os.
+
+ -- David Lechner <david@lechnology.com>  Sun, 31 May 2015 22:35:20 -0500
+
 keepass2-plugin-ubuntu (0.5.4+b1) trusty; urgency=medium
 
   * fix build error
