@@ -1,3 +1,9 @@
+keepass2-plugin-ubuntu (0.5.7) vivid; urgency=medium
+
+  * Add more icon sizes for tray icons.
+
+ -- David Lechner <david@lechnology.com>  Sun, 19 Jul 2015 15:44:45 -0500
+
 keepass2-plugin-ubuntu (0.5.6.1) vivid; urgency=medium
 
   * Fix dependency in debian/control for new version of libmagickwand.
