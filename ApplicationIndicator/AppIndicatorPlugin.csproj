@@ -111,6 +111,9 @@
       <Link>ImageMagick.dll.config</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Resources\icons\hicolor\16x16\apps\keepass2-locked.png" />
+    <None Include="Resources\icons\hicolor\32x32\apps\keepass2-locked.png" />
+    <None Include="Resources\icons\hicolor\48x48\apps\keepass2-locked.png" />
   </ItemGroup>
   <Target Name="AfterBuild" Condition="'$(Configuration)' == 'ReleasePlgx'">
     <CallTarget Targets="BuildPlgx" />
@@ -125,5 +128,10 @@
       <Project>{00BB4233-A62B-4B5F-9022-1C87157C9B37}</Project>
       <Name>ImageMagick</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\icons\hicolor\16x16\" />
+    <Folder Include="Resources\icons\hicolor\32x32\" />
+    <Folder Include="Resources\icons\hicolor\48x48\" />
   </ItemGroup>
 </Project>
