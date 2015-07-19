@@ -126,12 +126,12 @@ namespace GtkStatusIcon
     /// </summary>
     private void GtkDBusInit()
     {
-      /* setup ApplicationIndicator */
+      /* setup StatusIcon */
 
       statusIcon = new Gtk.StatusIcon();
       statusIcon.IconName = "keepass2-locked";
 #if DEBUG
-      statusIcon.File = Path.GetFullPath("Resources/icons/hicolor/256x256/apps/keepass2-locked.png");
+      statusIcon.File = Path.GetFullPath("Resources/icons/hicolor/16x16/apps/keepass2-locked.png");
 #endif
       statusIcon.Tooltip = PwDefs.ProductName;
 
