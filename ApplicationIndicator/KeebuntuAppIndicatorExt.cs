@@ -15,6 +15,7 @@ using ImageMagick.MagickWand;
 using KeePass.Plugins;
 using KeePassLib;
 using Keebuntu.DBus;
+using KeePassLib.Utility;
 
 namespace KeebuntuAppIndicator
 {
@@ -54,7 +55,9 @@ namespace KeebuntuAppIndicator
         pluginHost.MainWindow.Activated += MainWindow_Activated;
         pluginHost.MainWindow.Resize += MainWindow_Resize;
       } catch (Exception ex) {
-        Debug.Fail(ex.ToString());
+        MessageService.ShowWarning(
+          "KeebuntuAppIndicator plugin failed to start.",
+          ex.ToString());
         if (threadStarted) {
           Terminate();
         }
@@ -67,8 +70,12 @@ namespace KeebuntuAppIndicator
     {
       pluginHost.MainWindow.Activated += MainWindow_Activated;
       pluginHost.MainWindow.Resize -= MainWindow_Resize;
-      aboutToShowSignal.RemoveDelegate((EventHandler)OnAppIndicatorMenuShown);
-      appIndicatorMenu.Shown -= OnAppIndicatorMenuShown;
+      if (aboutToShowSignal != null) {
+        aboutToShowSignal.RemoveDelegate((EventHandler)OnAppIndicatorMenuShown);
+      }
+      if (appIndicatorMenu != null) {
+        appIndicatorMenu.Shown -= OnAppIndicatorMenuShown;
+      }
       try {
         DBusBackgroundWorker.Release();
       } catch (Exception ex) {
