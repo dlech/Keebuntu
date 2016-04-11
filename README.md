@@ -35,6 +35,7 @@ Provides a notification tray icon for KeePass.
 
 Tested with the following desktops:
 * Cinnamon
+* MATE
 
 Does not work with:
 * Ubuntu Unity
@@ -64,6 +65,7 @@ Tested with the following desktops:
 * Cinnamon
 * GNOME Shell (requires [appindicator plugin](https://extensions.gnome.org/extension/615/appindicator-support/))
 * KDE
+* MATE
 * Unity
 * Xfce
 
