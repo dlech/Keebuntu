@@ -1,3 +1,9 @@
+keepass2-plugin-ubuntu (0.5.8) xenial; urgency=medium
+
+  * Fix package conflict on upgrade from trusty to xenial
+
+ -- David Lechner <david@lechnology.com>  Sat, 16 Apr 2016 23:48:12 -0500
+
 keepass2-plugin-ubuntu (0.5.7) vivid; urgency=medium
 
   * Add more icon sizes for tray icons.
