@@ -43,7 +43,7 @@ Depends: keepass2,
          keepass2-plugin-libdbusmenu (= ${libdbusmenu:Version}),
          ${cli:Depends},
          ${misc:Depends}
-Conflicts: keepass2-plugin-libdbusmenu (<< 0.1.1)
+Breaks: keepass2-plugin-libdbusmenu (<< 0.1.1)
 Description: Shared library for Unity Desktop for several KeePass 2.x plugins
  Provides libunity interop.
 
@@ -53,6 +53,7 @@ Depends: keepass2,
          libdbusmenu-glib4,
          ${cli:Depends},
          ${misc:Depends}
+Breaks: keepass2-plugin-libunity (<< 0.1.1)
 Description: Shared library for DBus menus for several KeePass 2.x plugins
  Provides libdbusmenu-glib interop.
 
