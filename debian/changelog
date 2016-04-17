@@ -1,3 +1,9 @@
+keepass2-plugin-ubuntu (0.5.9) xenial; urgency=medium
+
+  * Fix package conflict on upgrade from trusty to xenial (for real this time)
+
+ -- David Lechner <david@lechnology.com>  Sun, 17 Apr 2016 00:26:48 -0500
+
 keepass2-plugin-ubuntu (0.5.8) xenial; urgency=medium
 
   * Fix package conflict on upgrade from trusty to xenial
