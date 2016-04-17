@@ -91,31 +91,28 @@ namespace GtkStatusIcon
       }
     }
 
-    private void OnPopupMenu(object sender, Gtk.PopupMenuArgs e)
+    void OnPopupMenu(object sender, Gtk.PopupMenuArgs e)
     {
       try {
         var mainWindowType = pluginHost.MainWindow.GetType();
-        var onCtxTrayOpeningMethodInfo =
-          mainWindowType.GetMethod("OnCtxTrayOpening",
-                                    System.Reflection.BindingFlags.Instance |
-                                      System.Reflection.BindingFlags.NonPublic,
-                                    null,
-                                    new[] {
-                                      typeof(object),
-                                      typeof(CancelEventArgs)
-                                    },
-                                    null);
-        if (onCtxTrayOpeningMethodInfo != null) {
-          DBusBackgroundWorker.InvokeWinformsThread
-            (() => onCtxTrayOpeningMethodInfo.Invoke(pluginHost.MainWindow,
-                                                     new[] {
-                                                       sender,
-                                                       new CancelEventArgs()
-                                                     }
-          )
-          );
-        }
+        var cxtTrayField = mainWindowType.GetField("m_ctxTray",
+          BindingFlags.Instance | BindingFlags.NonPublic);
+        var ctxTray = cxtTrayField.GetValue(pluginHost.MainWindow);
+
+        // Synthesize menu open events. These are expected by KeePass and
+        // other plugins
+
+        var onOpening = ctxTray.GetType().GetMethod("OnOpening",
+          BindingFlags.Instance | BindingFlags.NonPublic);
+        DBusBackgroundWorker.InvokeWinformsThread(() =>
+          onOpening.Invoke(ctxTray, new[] { new CancelEventArgs() }));
+
         statusIconMenu.Popup(null, null, null, (uint)e.Args[0], (uint)e.Args[1]);
+
+        var onOpened = ctxTray.GetType().GetMethod("OnOpened",
+          BindingFlags.Instance | BindingFlags.NonPublic);
+        DBusBackgroundWorker.InvokeWinformsThread(() =>
+          onOpened.Invoke(ctxTray, new[] { new CancelEventArgs() }));
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
       }
