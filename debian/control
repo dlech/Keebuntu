@@ -44,6 +44,7 @@ Depends: keepass2,
          ${cli:Depends},
          ${misc:Depends}
 Breaks: keepass2-plugin-libdbusmenu (<< 0.1.1)
+Replaces: keepass2-plugin-libdbusmenu (<< 0.1.1)
 Description: Shared library for Unity Desktop for several KeePass 2.x plugins
  Provides libunity interop.
 
@@ -54,6 +55,7 @@ Depends: keepass2,
          ${cli:Depends},
          ${misc:Depends}
 Breaks: keepass2-plugin-libunity (<< 0.1.1)
+Replaces: keepass2-plugin-libunity (<< 0.1.1)
 Description: Shared library for DBus menus for several KeePass 2.x plugins
  Provides libdbusmenu-glib interop.
 
