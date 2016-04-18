@@ -1,0 +1,2 @@
+StatusNotifierPlugin/bin/Release/KeebuntuStatusNotifier.dll usr/lib/keepass2/plugins/keebuntu
+StatusNotifierPlugin/Resources/* usr/share

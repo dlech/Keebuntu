@@ -18,6 +18,7 @@ launcher_version := $(shell debian/scripts/get-proj-version.sh UnityLauncherPlug
 libdbus_version := $(shell debian/scripts/get-proj-version.sh DBus/DBus.csproj)$(VERSION_SUFFIX)
 libimagemagick_version := $(shell debian/scripts/get-proj-version.sh ImageMagick/ImageMagick.csproj)$(VERSION_SUFFIX)
 libunity_version := $(shell debian/scripts/get-proj-version.sh libunity-sharp/libunity-sharp.csproj)$(VERSION_SUFFIX)
+stausnotifier_version := $(shell debian/scripts/get-proj-version.sh StatusNotifierPlugin/StatusNotifierPlugin.csproj)$(VERSION_SUFFIX)
 
 %:
 	dh $@ --with cli
@@ -44,3 +45,4 @@ override_dh_gencontrol:
 	dh_gencontrol -pkeepass2-plugin-libimagemagick -- -v$(libimagemagick_version)
 	dh_gencontrol -pkeepass2-plugin-libunity -- -v$(libunity_version) -Vlibdbusmenu:Version=$(libunity_version)
 	dh_gencontrol -pkeepass2-plugin-libdbusmenu -- -v$(libunity_version)
+	dh_gencontrol -pkeepass2-plugin-status-notifier -- -v$(stausnotifier_version) -Vlibdbus:Version=$(libdbus_version) -Vlibimagemagick:Version=$(libimagemagick_version)

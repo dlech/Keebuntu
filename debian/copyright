@@ -3,7 +3,7 @@ Upstream-Name: Keebuntu
 Source: <https://github.com/dlech/Keebuntu>
 
 Files: *
-Copyright: 2013-2015 David Lechner <david@lechnology.com>
+Copyright: 2013-2016 David Lechner <david@lechnology.com>
 License: GPL-2+
  This package is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
