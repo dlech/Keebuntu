@@ -74,5 +74,14 @@
     <None Include="KeePass.config.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Resources\icons\hicolor\16x16\apps\keepass2-locked.png" />
+    <None Include="Resources\icons\hicolor\256x256\apps\keepass2-locked.png" />
+    <None Include="Resources\icons\hicolor\32x32\apps\keepass2-locked.png" />
+    <None Include="Resources\icons\hicolor\48x48\apps\keepass2-locked.png" />
+    <None Include="Resources\icons\breeze\status\22\keepass2-locked.svg" />
+    <None Include="Resources\icons\breeze-dark\status\22\keepass2-locked.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\" />
   </ItemGroup>
 </Project>
