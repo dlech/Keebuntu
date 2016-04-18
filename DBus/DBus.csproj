@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Keebuntu.DBus</RootNamespace>
     <AssemblyName>DBus</AssemblyName>
-    <ReleaseVersion>0.3.1</ReleaseVersion>
+    <ReleaseVersion>0.4.0</ReleaseVersion>
     <Description>Common DBus components for Keebuntu plugins</Description>
     <SynchReleaseVersion>False</SynchReleaseVersion>
   </PropertyGroup>
