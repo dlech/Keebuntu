@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -240,10 +242,10 @@ namespace GtkStatusIcon
         ((Action)pluginHost.MainWindow.Activate);
     }
 
-    private byte[] ResizeImage(System.Drawing.Image image, int width, int height)
+    byte[] ResizeImage(Image image, int width, int height)
     {
       var stream = new MemoryStream();
-      image.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+      image.Save(stream, ImageFormat.Png);
       try {
         var wand = new MagickWand();
         wand.ReadImageBlob(stream.ToArray());
@@ -251,6 +253,31 @@ namespace GtkStatusIcon
         return wand.GetImageBlob();
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
+
+        // http://stackoverflow.com/a/24199315/1976323
+
+        var destRect = new Rectangle(0, 0, width, height);
+        var destImage = new Bitmap(width, height);
+
+        destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
+
+        using (var graphics = Graphics.FromImage(destImage))
+        {
+          graphics.CompositingMode = CompositingMode.SourceCopy;
+          graphics.CompositingQuality = CompositingQuality.HighQuality;
+          graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+          graphics.SmoothingMode = SmoothingMode.HighQuality;
+          graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+          using (var wrapMode = new ImageAttributes())
+          {
+            wrapMode.SetWrapMode(WrapMode.TileFlipXY);
+            graphics.DrawImage(image, destRect, 0, 0, image.Width,image.Height, GraphicsUnit.Pixel, wrapMode);
+          }
+        }
+
+        stream.Seek(0, SeekOrigin.Begin);
+        destImage.Save(stream, ImageFormat.Png);
       }
       return stream.ToArray();
     }
