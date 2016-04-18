@@ -1,8 +1,10 @@
-keepass2-plugin-ubuntu (0.5.10ubuntu1) UNRELEASED; urgency=medium
+keepass2-plugin-ubuntu (0.6.0) xenial; urgency=medium
 
-  * 
+  * Add StatusNotifier plugin for Plasma/KDE5
+  * Fix Opening/Opened events not firing for tray context menu replacements
+  * Added fallback for image resizing when ImageMagick fails or is not present
 
- -- David Lechner <david@lechnology.com>  Mon, 18 Apr 2016 16:34:55 -0500
+ -- David Lechner <david@lechnology.com>  Mon, 18 Apr 2016 18:24:46 -0500
 
 keepass2-plugin-ubuntu (0.5.10) xenial; urgency=medium
 
