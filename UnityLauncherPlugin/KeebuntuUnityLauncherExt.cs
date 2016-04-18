@@ -62,7 +62,7 @@ namespace KeebuntuUnityLauncher
 
     void On_MainWindow_UIStateUpdated(object sender, System.EventArgs e)
     {
-      // Calling OnCtyTrayOpening triggers a UIStateUpdated event, so we use
+      // Calling OnOpening triggers a UIStateUpdated event, so we use
       // a timer to throttle calls.
       updateUITimer.Start();
     }
@@ -71,16 +71,22 @@ namespace KeebuntuUnityLauncher
     {
       try {
         var mainWindowType = pluginHost.MainWindow.GetType();
-        var onCtxTrayOpeningMethodInfo =
-          mainWindowType.GetMethod("OnCtxTrayOpening",
-            System.Reflection.BindingFlags.Instance |
-            System.Reflection.BindingFlags.NonPublic, null,
-            new[] { typeof(object), typeof(CancelEventArgs) }, null);
-        if (onCtxTrayOpeningMethodInfo != null) {
-          DBusBackgroundWorker.InvokeWinformsThread(() =>
-            onCtxTrayOpeningMethodInfo.Invoke(pluginHost.MainWindow,
-            new[] { sender, new CancelEventArgs() }));
-        }
+        var cxtTrayField = mainWindowType.GetField("m_ctxTray",
+          BindingFlags.Instance | BindingFlags.NonPublic);
+        var ctxTray = cxtTrayField.GetValue(pluginHost.MainWindow);
+
+        // Synthesize menu open events. These are expected by KeePass and
+        // other plugins
+
+        var onOpening = ctxTray.GetType().GetMethod("OnOpening",
+          BindingFlags.Instance | BindingFlags.NonPublic);
+        DBusBackgroundWorker.InvokeWinformsThread(() =>
+          onOpening.Invoke(ctxTray, new[] { new CancelEventArgs() }));
+
+        var onOpened = ctxTray.GetType().GetMethod("OnOpened",
+          BindingFlags.Instance | BindingFlags.NonPublic);
+        DBusBackgroundWorker.InvokeWinformsThread(() =>
+          onOpened.Invoke(ctxTray, new[] { new CancelEventArgs() }));
       } catch (Exception ex) {
         Debug.Fail(ex.ToString());
       } finally {
