@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libunity-sharp", "libunity-
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityLauncherPlugin", "UnityLauncherPlugin\UnityLauncherPlugin.csproj", "{D2B6BD2D-5B25-4B76-AB15-6B1916F1A91B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatusNotifierPlugin", "StatusNotifierPlugin\StatusNotifierPlugin.csproj", "{67EEEB6A-30C7-43F0-BFCE-974559D6CABF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{2B2FC573-4597-4F9E-8C46-6ED102EFA12A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2B2FC573-4597-4F9E-8C46-6ED102EFA12A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2B2FC573-4597-4F9E-8C46-6ED102EFA12A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67EEEB6A-30C7-43F0-BFCE-974559D6CABF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67EEEB6A-30C7-43F0-BFCE-974559D6CABF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67EEEB6A-30C7-43F0-BFCE-974559D6CABF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67EEEB6A-30C7-43F0-BFCE-974559D6CABF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AC6540EF-EDD0-4C47-9F29-3E919EFF6C62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AC6540EF-EDD0-4C47-9F29-3E919EFF6C62}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC6540EF-EDD0-4C47-9F29-3E919EFF6C62}.Release|Any CPU.ActiveCfg = Release|Any CPU

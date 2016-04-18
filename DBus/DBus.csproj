@@ -44,6 +44,8 @@
     <Compile Include="ToolStripItemProxy.cs" />
     <Compile Include="DBusBackgroundWorker.cs" />
     <Compile Include="IService2.cs" />
+    <Compile Include="IStatusNotifierItem.cs" />
+    <Compile Include="IStatusNotifierWatcher.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Windows.Forms" />
