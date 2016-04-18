@@ -98,6 +98,21 @@ namespace Keebuntu.DBus
       }
     }
 
+    public MenuStripDBusMenu(ContextMenuStrip menu, Form mainForm)
+    {
+      if (menu == null) {
+        throw new ArgumentNullException("menu");
+      }
+      lock (mLockObject) {
+        mMenuParentForm = mainForm;
+
+        mMenuItemList = new List<IMenuItemProxy>();
+
+        mMenuItemList.Insert(0, new ContextMenuStripProxy(menu));
+        AddItemsToMenuItemList(menu.Items);
+      }
+    }
+
     private void AddItemsToMenuItemList(ToolStripItemCollection items)
     {
       foreach (ToolStripItem item in items) {
@@ -269,13 +284,26 @@ namespace Keebuntu.DBus
       return errorList.ToArray();
     }
 
+    public event EventHandler Showing;
+    public event EventHandler Shown;
+
     public bool AboutToShow(int id)
     {
 #if DEBUG
       Console.WriteLine("AboutToShow - id:{0}", id);
 #endif
+      if (Showing != null) {
+        Showing(this, new EventArgs());
+      }
+
       var item = mMenuItemList[id];
-      return item.OnAboutToShow();
+      var didShow = item.OnAboutToShow();
+
+      if (didShow && Shown != null) {
+        Shown(this, new EventArgs());
+      }
+
+      return didShow;
     }
 
     public void AboutToShowGroup(int[] ids, out int[] updatesNeeded, out int[] idErrors)

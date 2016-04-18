@@ -5,90 +5,64 @@ using DBus;
 using Keebuntu.DBus;
 using KeePass.Plugins;
 using org.kde.StatusNotifierItem;
+using KeePassLib;
 
 namespace KeebuntuStatusNotifier
 {
-  public class KeePassStatusNotifierItem : IStatusNotifierItem
+  public class KeePassStatusNotifierItem : MenuStripDBusMenu, IStatusNotifierItem
   {
     IPluginHost pluginHost;
+    ObjectPath menuPath;
 
-    public KeePassStatusNotifierItem(IPluginHost pluginHost)
+    public KeePassStatusNotifierItem(IPluginHost pluginHost, ObjectPath menuPath)
+      : base (pluginHost.MainWindow.TrayContextMenu, pluginHost.MainWindow)
     {
       this.pluginHost = pluginHost;
+      this.menuPath = menuPath;
     }
 
-    // TODO - extract org.freedesktop.DBus.IProperties impementation to a base class
-    #region org.freedesktop.DBus.IProperties
 
-    public object Get(string @interface, string propname)
-    {
-      return GetPropertiesForInterface(@interface)[propname];
+
+    #region IStatusNotifierItem implementation
+
+    public string Category { get { return "ApplicationStatus"; } }
+
+    public string Id {
+      get { return PwDefs.ShortProductName; }
     }
 
-    public IDictionary<string, object> GetAll(string @interface)
-    {
-      return GetPropertiesForInterface(@interface);
-    }
-
-    public void Set(string @interface, string propname, object value)
-    {
-      if (GetPropertiesForInterface(@interface)[propname] != value) {
-        GetType().GetProperty(propname).SetValue(this, value, null);
-      }
-    }
-
-    private IDictionary<string, object> GetPropertiesForInterface(string interfaceName)
-    {
-      var properties = new Dictionary<string, object>();
-      foreach (var @interface in GetType().GetInterfaces()) {
-        var interfaceAttributes =
-          @interface.GetCustomAttributes(typeof(InterfaceAttribute), false);
-        // TODO need to check this for DBus.InterfaceAttribute too.
-        foreach (InterfaceAttribute attrib in interfaceAttributes) {
-          if (string.IsNullOrWhiteSpace(interfaceName) || attrib.Name == interfaceName) {
-            foreach (var property in @interface.GetProperties()) {
-              // TODO - do we need to handle indexed properties?
-              properties.Add(property.Name, property.GetValue(this, null));
-            }
-          }
-        }
-      }
-      return properties;
-    }
-
-    #endregion
-
-    public virtual string Category { get { return "ApplicationStatus"; } }
-
-    public virtual string Id {
-      get { return pluginHost.MainWindow.Name; }
-    }
-
-    public virtual string Title {
+    public string Title {
       get { return KeePass.Program.MainForm.Text; }
     }
 
-    public virtual string Status { get { return "Active"; } }
+    string IStatusNotifierItem.Status { get { return "Active"; } }
 
-    public virtual uint WindowId { get { return 0; } }
+    public uint WindowId { get { return 0; } }
 
-    public virtual bool ItemIsMenu { get { return false; } }
+    public bool ItemIsMenu { get { return false; } }
 
-    public virtual string IconName { get { return "keepass2-locked"; } }
+    public ObjectPath Menu { get { return menuPath; } }
 
-    //public virtual KDbusImageVector IconPixmap { get { return null; } }
+    public string IconName { get { return "keepass2-locked"; } }
 
-    //public virtual string OverlayIconName { get { return null; } }
+    //public KDbusImageVector IconPixmap { get { return null; } }
 
-    //public virtual KDbusImageVector OverlayIconPixmap { get { return null; } }
+    // TODO: This does not seem to work in KDE5
+    public string OverlayIconName {
+      get {
+        return "emblem-locked";
+      }
+    }
 
-    //public virtual string AttentionIconName { get { return null; } }
+    //public KDbusImageVector OverlayIconPixmap { get { return null; } }
 
-    //public virtual KDbusImageVector AttentionIconPixmap { get { return null; } }
+    //public string AttentionIconName { get { return null; } }
 
-    //public virtual string AttentionMovieName { get { return null; } }
+    //public KDbusImageVector AttentionIconPixmap { get { return null; } }
 
-//    public virtual Tooltip Tooltip {
+    //public string AttentionMovieName { get { return null; } }
+
+//    public Tooltip Tooltip {
 //      get {
 //        return new Tooltip() {
 //          IconName = "keepass2-locked",
@@ -99,13 +73,13 @@ namespace KeebuntuStatusNotifier
 //      }
 //    }
 
-    public virtual void ContextMenu(int x, int y)
+    public void ContextMenu(int x, int y)
     {
-      // TODO: show a menu here
+      // This is not called since we have implemented the Menu property
       throw new NotImplementedException();
     }
 
-    public virtual void Activate(int x, int y)
+    public void Activate(int x, int y)
     {
       DBusBackgroundWorker.InvokeWinformsThread(() => {
         if (pluginHost.MainWindow.Visible) {
@@ -116,27 +90,29 @@ namespace KeebuntuStatusNotifier
       });
     }
 
-    public virtual void SecondaryActivate(int x, int y)
+    public void SecondaryActivate(int x, int y)
     {
       throw new NotImplementedException();
     }
 
-    public virtual void Scroll(int delta, string orientation)
+    public void Scroll(int delta, string orientation)
     {
       throw new NotImplementedException();
     }
 
-    public virtual event Action NewTitle;
+    public event Action NewTitle;
 
-    public virtual event Action NewIcon;
+    public event Action NewIcon;
 
-    //public virtual event Action NewAttentionIcon;
+    //public event Action NewAttentionIcon;
 
-    //public virtual event Action NewOverlayIcon;
+    public event Action NewOverlayIcon;
 
-    //public virtual event Action NewToolTip;
+    //public event Action NewToolTip;
 
-    public virtual event Action<string> NewStatus;
+    public event Action<string> NewStatus;
+
+    #endregion
 
     protected void OnNewTitle()
     {
@@ -149,6 +125,13 @@ namespace KeebuntuStatusNotifier
     {
       if (NewIcon != null) {
         NewIcon.Invoke();
+      }
+    }
+
+    protected void OnNewOverlayIcon()
+    {
+      if (NewOverlayIcon != null) {
+        NewOverlayIcon.Invoke();
       }
     }
 

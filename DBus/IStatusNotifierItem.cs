@@ -130,6 +130,8 @@ namespace org.kde.StatusNotifierItem
 
     bool ItemIsMenu { get; }
 
+    ObjectPath Menu { get; }
+
     /// <summary>
     /// The StatusNotifierItem can carry an icon that can be used by the
     /// visualization to identify the item.
@@ -153,7 +155,7 @@ namespace org.kde.StatusNotifierItem
     /// The Freedesktop-compliant name of an icon. This can be used by the
     /// visualization to indicate extra state information, for instance as an overlay for the main icon.
     /// </summary>
-    //string OverlayIconName { get; }
+    string OverlayIconName { get; }
 
     /// <summary>
     /// ARGB32 binary representation of the overlay icon described in
@@ -267,7 +269,7 @@ namespace org.kde.StatusNotifierItem
     /// <remarks>
     /// The graphical representation should read it again immediately.
     /// </remarks>
-    //event Action NewOverlayIcon;
+    event Action NewOverlayIcon;
 
     /// <summary>
     /// The item has a new tooltip.

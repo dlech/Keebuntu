@@ -46,6 +46,7 @@
     <Compile Include="IService2.cs" />
     <Compile Include="IStatusNotifierItem.cs" />
     <Compile Include="IStatusNotifierWatcher.cs" />
+    <Compile Include="ContextMenuStripProxy.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Windows.Forms" />

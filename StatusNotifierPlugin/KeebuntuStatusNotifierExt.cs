@@ -82,13 +82,32 @@ namespace KeebuntuStatusNotifier
         Console.WriteLine(obj);
 #endif
 
-      var applicationPath = string.Format(applicationPathTemplate,
-        pluginHost.MainWindow.Handle);
-      statusNotifier = new KeePassStatusNotifierItem(pluginHost);
-      Bus.Session.Register(new ObjectPath(applicationPath), statusNotifier);
-      watcher.RegisterStatusNotifierItem(applicationPath);
+      var mainWindowType = pluginHost.MainWindow.GetType();
+      var cxtTrayField = mainWindowType.GetField("m_ctxTray",
+        BindingFlags.Instance | BindingFlags.NonPublic);
+      var ctxTray = cxtTrayField.GetValue(pluginHost.MainWindow);
+      var onOpening = ctxTray.GetType().GetMethod("OnOpening",
+        BindingFlags.Instance | BindingFlags.NonPublic);
+      var onOpened = ctxTray.GetType().GetMethod("OnOpened",
+        BindingFlags.Instance | BindingFlags.NonPublic);
 
-      // TODO: setup for context menu
+      var applicationPath = new ObjectPath(string.Format(applicationPathTemplate,
+        pluginHost.MainWindow.Handle));
+      statusNotifier = new KeePassStatusNotifierItem(pluginHost, applicationPath);
+
+      // Synthesize menu open events. These are expected by KeePass and
+      // other plugins
+      statusNotifier.Showing += (sender, e) => {
+        DBusBackgroundWorker.InvokeWinformsThread(() =>
+          onOpening.Invoke(ctxTray, new[] { new CancelEventArgs() }));
+      };
+      statusNotifier.Shown += (sender, e) => {
+        DBusBackgroundWorker.InvokeWinformsThread(() =>
+          onOpened.Invoke(ctxTray, new[] { new CancelEventArgs() }));
+      };
+
+      Bus.Session.Register(applicationPath, statusNotifier);
+      watcher.RegisterStatusNotifierItem(applicationPath.ToString());
     }
   }
 }
