@@ -78,12 +78,39 @@ icon and scrolling down with the scroll wheel will minimize KeePass to the
 tray. Scrolling up will restore KeePass from the tray.
 
 
+Status Notifier
+===============
+
+Provides a notification tray icon for KeePass on Plasma/KDE5.
+
+![Plasma status notifier screenshot](doc/images/plasma-status-notifier-screenshot.png)
+
+####Background
+
+The built-in notification tray icon for KeePass does not display in the panel.
+This is because notification tray support for WinForms applications is broken
+in Mono.
+
+####Package
+
+`keepass2-plugin-status-notifier` (currently only available for xenial in the beta ppa)
+
+**Note:** this package conflicts with `keepass2-plugin-application-indicator`
+and `keepass2-plugin-tray-icon` (you can only have one out of the three
+installed at the same time). Compare the usages to decide which package you
+want to install.
+
+####Usage
+
+Left-clicking the icon trays and untrays the KeePass application. Right-clicking
+the icon displays the menu.
+
 Classic Tray Icon
 =================
 
 Provides a notification tray icon for KeePass.
 
-![MATE launcher screenshot](doc/images/mate-tray-icon-screenshot.png)
+![MATE tray icon screenshot](doc/images/mate-tray-icon-screenshot.png)
 
 Tested with the following desktops:
 
