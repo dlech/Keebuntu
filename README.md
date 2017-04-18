@@ -18,18 +18,18 @@ Tested with the following desktops:
 * Pantheon (elementary OS)
 * Unity (Ubuntu)
 
-####Background
+#### Background
 
 The built-in notification tray icon for KeePass does not display in the panel.
 This is because the Ubuntu Unity Desktop only supports application indicator
 type tray icons. This plugin provides an alternative means of accessing the
 menu items of the tray icon.
 
-####Package
+#### Package
 
 `keepass2-plugin-launcher`
 
-####Usage
+#### Usage
 
 Right-click on the KeePass 2.x icon in the launcher. You will find menu items
 such as Lock/Unlock Workspace and Generate Password….
@@ -55,7 +55,7 @@ Tested with the following desktops:
 
 [appindicator plugin]: https://extensions.gnome.org/extension/615/appindicator-support/
 
-####Background
+#### Background
 
 The built-in notification tray icon for KeePass does not display in the panel.
 This is because notification tray support for WinForms applications is broken
@@ -63,7 +63,7 @@ in Mono. Additionally, even if it did work, it would still not be displayed in
 Ubuntu Unity Desktop because it only supports application indicator type tray
 icons.
 
-####Package
+#### Package
 
 `keepass2-plugin-application-indicator`
 
@@ -71,7 +71,7 @@ icons.
 have both installed at the same time). Compare the usages to decide which
 package you want to install.
 
-####Usage
+#### Usage
 
 Right or left-clicking the icon displays the menu. Hovering the mouse over the
 icon and scrolling down with the scroll wheel will minimize KeePass to the
@@ -85,13 +85,13 @@ Provides a notification tray icon for KeePass on Plasma/KDE5.
 
 ![Plasma status notifier screenshot](doc/images/plasma-status-notifier-screenshot.png)
 
-####Background
+#### Background
 
 The built-in notification tray icon for KeePass does not display in the panel.
 This is because notification tray support for WinForms applications is broken
 in Mono.
 
-####Package
+#### Package
 
 `keepass2-plugin-status-notifier` (currently only available for xenial in the beta ppa)
 
@@ -100,7 +100,7 @@ and `keepass2-plugin-tray-icon` (you can only have one out of the three
 installed at the same time). Compare the usages to decide which package you
 want to install.
 
-####Usage
+#### Usage
 
 Left-clicking the icon trays and untrays the KeePass application. Right-clicking
 the icon displays the menu.
@@ -121,13 +121,13 @@ Does not work with:
 
 * Ubuntu Unity
 
-####Background
+#### Background
 
 The built-in notification tray icon for KeePass does not display in the panel.
 This is because notification tray support for WinForms applications is broken
 in Mono.
 
-####Package
+#### Package
 
 `keepass2-plugin-tray-icon`
 
@@ -135,7 +135,7 @@ in Mono.
 (you cannot have both installed at the same time). Compare the usages to decide
 which package you want to install.
 
-####Usage
+#### Usage
 
 Left-clicking the icon will activate the KeePass window. Right-clicking the
 icon displays the menu.
@@ -149,16 +149,16 @@ window. **Note:** This only works on Unity - not other desktops.
 
 ![Ubuntu application indicator screenshot](doc/images/ubuntu-app-menu-screenshot.png)
 
-####Background
+#### Background
 
 Most applications, when used in the Ubuntu Unity desktop, have their menus
 shown in a common area in the panel rather than in the application window.
 
-####Package
+#### Package
 
 `keepass2-plugin-application-menu`
 
-####Usage
+#### Usage
 
 Setting the environment variable `APPMENU_DISPLAY_BOTH=1` before starting
 KeePass will show the menu both on the panel and in the KeePass application
