@@ -1,3 +1,9 @@
+keepass2-plugin-ubuntu (0.6.1) zesty; urgency=medium
+
+  * Update libMagickWand version for zesty
+
+ -- David Lechner <david@lechnology.com>  Thu, 20 Apr 2017 15:06:15 -0500
+
 keepass2-plugin-ubuntu (0.6.0) xenial; urgency=medium
 
   * Add StatusNotifier plugin for Plasma/KDE5
