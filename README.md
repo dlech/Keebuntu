@@ -131,7 +131,7 @@ in Mono.
 
 `keepass2-plugin-tray-icon`
 
-**Note:** this package conflicts with `keepas2-plugin-application-indicator`
+**Note:** this package conflicts with `keepass2-plugin-application-indicator`
 (you cannot have both installed at the same time). Compare the usages to decide
 which package you want to install.
 
