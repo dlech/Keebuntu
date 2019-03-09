@@ -1,12 +1,12 @@
 How to hack on Keebuntu
 =======================
 
-This assumes you are running Ubuntu 16.04.
+This assumes you are running Ubuntu 18.04.
 
 ## Installing Prerequisites
 
     sudo apt-add-repository ppa:dlech/keepass2-plugins-beta
-    sudo sed -i 's/#deb-src/deb-src/' /etc/apt/sources.list.d/dlech-ubuntu-keepass2-plugins-beta-xenial.list
+    sudo sed -i 's/#deb-src/deb-src/' /etc/apt/sources.list.d/dlech-ubuntu-keepass2-plugins-beta-bionic.list
     sudo apt-get update
     sudo apt-get build-dep keepass2-plugin-ubuntu
     sudo apt-get install git
@@ -22,5 +22,4 @@ This assumes you are running Ubuntu 16.04.
 
 ## IDE
 
-    sudo apt-get install monodevelop
-    monodevelop Keebuntu.sln
+    Open the folder in [Visual Studio Code](https://code.visualstudio.com/).
