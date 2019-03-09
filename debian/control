@@ -59,18 +59,6 @@ Replaces: keepass2-plugin-libunity (<< 0.1.1)
 Description: Shared library for DBus menus for several KeePass 2.x plugins
  Provides libdbusmenu-glib interop.
 
-Package: keepass2-plugin-application-indicator
-Architecture: all
-Depends: keepass2,
-         keepass2-plugin-libdbus (= ${libdbus:Version}),
-         keepass2-plugin-libimagemagick (= ${libimagemagick:Version}),
-         ${cli:Depends},
-         ${misc:Depends}
-Conflicts: keepass2-plugin-status-notifier, keepass2-plugin-tray-icon
-Description: Adds an Application Indicator to KeePass 2.x
- Adds an Applicaton Indicator that provides the same menu as the notification
- tray icon as the Windows version of KeePass.
-
 Package: keepass2-plugin-status-notifier
 Architecture: all
 Depends: keepass2,
@@ -79,6 +67,7 @@ Depends: keepass2,
          ${cli:Depends},
          ${misc:Depends}
 Conflicts: keepass2-plugin-application-indicator, keepass2-plugin-tray-icon
+Suggests: gnome-shell-extension-appindicator
 Description: Adds a Status Notifier to KeePass 2.x
  Adds a Status Notifier for Plasma/KDE5 that provides the same menu as the
  notification tray icon as the Windows version of KeePass.
@@ -95,17 +84,6 @@ Description: Adds a notification tray icon to KeePass 2.x
  Adds a notification tray icon (Gtk StatusIcon) that provides the same menu
  as the notification tray icon as the Windows version of KeePass.
 
-Package: keepass2-plugin-application-menu
-Architecture: all
-Depends: keepass2,
-         keepass2-plugin-libdbus (= ${libdbus:Version}),
-         keepass2-plugin-libimagemagick (= ${libimagemagick:Version}),
-         ${cli:Depends},
-         ${misc:Depends}
-Description: Adds Ubuntu-style application menu to KeePass 2.x
- Shows the KeePass menu in the panel instead of in the application (for use with
- Ubuntu Unity desktop).
-
 Package: keepass2-plugin-launcher
 Architecture: all
 Depends: keepass2,
@@ -113,5 +91,6 @@ Depends: keepass2,
          keepass2-plugin-libunity (= ${libunity:Version}),
          ${cli:Depends},
          ${misc:Depends}
+Suggests: gnome-shell-extension-ubuntu-dock
 Description: Adds Unity Launcher integration to KeePass 2.x
  Shows the KeePass notification menu items in the launcher quicklist.

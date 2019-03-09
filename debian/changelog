@@ -1,3 +1,10 @@
+keepass2-plugin-ubuntu (0.7.0) UNRELEASED; urgency=medium
+
+  * Drop Application Indicator plugin
+  * Drop Application Menu plugin
+
+ -- David Lechner <david@lechnology.com>  Sat, 09 Mar 2019 11:50:53 -0600
+
 keepass2-plugin-ubuntu (0.6.1) zesty; urgency=medium
 
   * Update libMagickWand version for zesty
