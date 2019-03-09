@@ -5,7 +5,6 @@ Maintainer: David Lechner <david@lechnology.com>
 Build-Depends: debhelper (>= 10.0.0)
 Build-Depends-Indep: cli-common-dev (>= 0.8),
                      keepass2,
-                     libappindicator0.1-cil-dev,
                      libdbus2.0-cil-dev,
                      libdbus-glib2.0-cil-dev,
                      libgtk2.0-cil-dev,
