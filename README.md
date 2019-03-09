@@ -32,8 +32,11 @@ package you want to install.
 
 #### Usage
 
-Left-clicking the icon trays and untrays the KeePass application. Right-clicking
-the icon displays the menu.
+In KDE, left-clicking the icon trays and untrays the KeePass application.
+Right-clicking the icon displays the menu.
+
+In GNOME Shell right-clicking and left-clicking both show the menu.
+Double-clicking will tray or untray the KeePass application.
 
 
 Classic Tray Icon
