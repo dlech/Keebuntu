@@ -1,23 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Threading;
-
-using ImageMagick.MagickCore;
-using ImageMagick.MagickWand;
 using KeePass.Plugins;
-using KeePassLib;
 using Keebuntu.DBus;
 using KeePassLib.Utility;
 using DBus;
 using org.kde;
-using org.freedesktop.DBus;
 
 namespace KeebuntuStatusNotifier
 {
