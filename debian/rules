@@ -9,7 +9,9 @@
 # Uncomment this to turn on verbose mode.
 export DH_VERBOSE=1
 
-VERSION_SUFFIX=$(shell dpkg-parsechangelog | sed -rne 's,^Version: (.*),+\1,p')
+include /usr/share/dpkg/pkg-info.mk
+
+VERSION_SUFFIX = "+$(DEB_VERSION)"
 
 trayicon_version := $(shell debian/scripts/get-proj-version.sh GtkStatusIcon/GtkStatusIconPlugin.csproj)$(VERSION_SUFFIX)
 launcher_version := $(shell debian/scripts/get-proj-version.sh UnityLauncherPlugin/UnityLauncherPlugin.csproj)$(VERSION_SUFFIX)
