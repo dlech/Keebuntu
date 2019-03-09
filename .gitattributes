@@ -8,3 +8,4 @@
 *.svg     text
 
 *.kdbx    binary
+*.png     binary
