@@ -76,11 +76,9 @@ Launcher Quicklist
 ==================
 
 Takes menu items from notification tray icon and displays them in the Unity
-Launcher menu. Works with GNOME desktop via [gnome-shell-extension-ubuntu-dock][2]
-(installed by default as a dependency of the `ubuntu-desktop` package). It also
-works with the [plank][3] dock (installed by default in elementary OS).
+Launcher menu. It also works with the [plank][3] dock (installed by default in
+elementary OS).
 
-[2]: https://packages.ubuntu.com/bionic/gnome-shell-extension-ubuntu-dock
 [3]: https://packages.ubuntu.com/bionic/plank
 
 ![Ubuntu launcher screenshot](doc/images/ubuntu-launcher-screenshot.png)
