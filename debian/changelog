@@ -1,3 +1,9 @@
+keepass2-plugin-ubuntu (0.8.0) cosmic; urgency=medium
+
+  * Update to libmagickwand-6.q16-6 for cosmic 
+
+ -- David Lechner <david@lechnology.com>  Sat, 09 Mar 2019 15:24:02 -0600
+
 keepass2-plugin-ubuntu (0.7.0) bionic; urgency=medium
 
   * Drop Application Indicator plugin
