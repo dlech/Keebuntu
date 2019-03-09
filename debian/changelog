@@ -1,9 +1,9 @@
-keepass2-plugin-ubuntu (0.7.0) UNRELEASED; urgency=medium
+keepass2-plugin-ubuntu (0.7.0) bionic; urgency=medium
 
   * Drop Application Indicator plugin
   * Drop Application Menu plugin
 
- -- David Lechner <david@lechnology.com>  Sat, 09 Mar 2019 11:50:53 -0600
+ -- David Lechner <david@lechnology.com>  Sat, 09 Mar 2019 15:16:52 -0600
 
 keepass2-plugin-ubuntu (0.6.1) zesty; urgency=medium
 
