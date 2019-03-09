@@ -13,6 +13,14 @@
             "preLaunchTask": "build-status-notifier"
         },
         {
+            "name": "Unity Launcher",
+            "type": "mono",
+            "request": "launch",
+            "program": "${workspaceRoot}/UnityLauncherPlugin/bin/Debug/KeePass.exe",
+            "cwd": "${workspaceRoot}",
+            "preLaunchTask": "build-unity-launcher"
+        },
+        {
             "name": "Attach",
             "type": "mono",
             "request": "attach",
