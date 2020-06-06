@@ -18,12 +18,12 @@ namespace com.canonical.dbusmenu
     /// The menu item properties.
     /// </summary>
     /// <remarks>
-    /// Availible Properties:
+    /// Availble Properties:
     /// 
     /// Name              Type        Default       Description
     /// ------------------------------------------------------------------------
     /// type              string      "standard"    One of ("standard", "separator")
-    /// label             string      ""            Text label of item, "_" preceeds access key
+    /// label             string      ""            Text label of item, "_" precedes access key
     /// enabled           bool        true          Item can be activated
     /// visible           bool        true          Item is visible
     /// icon-name         string      ""            Icon name (freedesktop.org spec)
@@ -31,7 +31,7 @@ namespace com.canonical.dbusmenu
     /// shortcut          string[][]  string[0][0]  Shortcuts for item, {{"Control", "Alt", "Shift", "Super", <key>}, {...}, ... }
     /// toggle-type       string      ""            If item can be toggled, "checkmark"|"radio"
     /// toggle-state      int         -1            0 = off, 1 = on, else = indeterminate
-    /// children-display  string      ""            If item has childeren, "submenu"
+    /// children-display  string      ""            If item has children, "submenu"
     /// disposition       string      "normal"      How item should be presented, "normal", "informative", "warning", "alert"
     /// 
     /// </remarks>
@@ -54,12 +54,12 @@ namespace com.canonical.dbusmenu
     public IDictionary<string, object> properties;
 
     /// <summary>
-    /// The childeren menu items of this menu item.
+    /// The children menu items of this menu item.
     /// </summary>
     /// <remarks>
     /// Type should be MenuItemLayout, but this causes stack overflow
     /// </remarks>
-    public object[] childeren;
+    public object[] children;
   }
 
   public struct MenuItemPropertyDescriptor
@@ -93,7 +93,7 @@ namespace com.canonical.dbusmenu
   /// ID of the menu that should be activated.
   /// </param>
   /// <param name="timestamp">
-  /// The time that the event occured
+  /// The time that the event occurred
   /// </param>
   public delegate void ItemActivationRequestedHandler(int id, uint timestamp);
 
@@ -121,7 +121,7 @@ namespace com.canonical.dbusmenu
 
     /// <summary>
     /// A list of directories that should be used for finding icons using
-    /// the icon naming spec.  Idealy there should only be one for the icon
+    /// the icon naming spec.  Ideally there should only be one for the icon
     /// theme, but additional ones are often added by applications for
     /// app specific icons.
     /// </summary>
@@ -216,13 +216,13 @@ namespace com.canonical.dbusmenu
     /// Event-specific data.
     /// </param>
     /// <param name='timestamp'>
-    /// The time that the event occured if available or the time the message was
+    /// The time that the event occurred if available or the time the message was
     /// sent if not.
     /// </param>
     void Event(int id, string eventId, object data, uint timestamp);
 
     /// <summary>
-    /// Used to pass a set of events as a single message for possibily several
+    /// Used to pass a set of events as a single message for possibly several
     /// different menuitems.  This is done to optimize DBus traffic.
     /// </summary>
     /// <returns>
@@ -250,7 +250,7 @@ namespace com.canonical.dbusmenu
 
     /// <summary>
     /// A function to tell several menus being shown that they are about to
-    /// be shown to the user.  This is likely only useful for programitc purposes
+    /// be shown to the user.  This is likely only useful for programmatic purposes
     /// so while the return values are returned, in general, the singular function
     /// should be used in most user interacation scenarios.
     /// </summary>

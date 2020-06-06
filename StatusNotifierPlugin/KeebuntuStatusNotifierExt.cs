@@ -54,7 +54,7 @@ namespace KeebuntuStatusNotifier
     }
 
     /// <summary>
-    /// Initalize Gtk and DBus stuff
+    /// Initialize Gtk and DBus stuff
     /// </summary>
     private void GtkDBusInit()
     {

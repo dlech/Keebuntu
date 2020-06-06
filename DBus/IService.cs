@@ -33,7 +33,7 @@ namespace com.canonical.Unity.Panel.Service
   {
     public int x;
     public int y;
-    public uint witdh;
+    public uint width;
     public uint height;
   }
 
@@ -44,7 +44,7 @@ namespace com.canonical.Unity.Panel.Service
 
   public delegate void EntryActivateRequestHandler(string entry_id);
 
-  public delegate void EntryShowNowChangedHaneler(string entry_id, byte show_now_state);
+  public delegate void EntryShowNowChangedHandler(string entry_id, byte show_now_state);
 
   [Interface("com.canonical.Unity.Panel.Service")]
   public interface IService
@@ -71,7 +71,7 @@ namespace com.canonical.Unity.Panel.Service
 
     event EntryActivateRequestHandler EntryActivateRequest;
 
-    event EntryShowNowChangedHaneler EntryShowNowChanged;
+    event EntryShowNowChangedHandler EntryShowNowChanged;
   }
 }
 

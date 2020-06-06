@@ -19,7 +19,7 @@ namespace Keebuntu.DBus
     private uint mRevision = 0;
     private object mLockObject = new object();
 
-    // TODO - extract org.freedesktop.DBus.IProperties impementation to a base class
+    // TODO - extract org.freedesktop.DBus.IProperties implementation to a base class
     #region org.freedesktop.DBus.IProperties
 
     public object Get(string @interface, string propname)
@@ -212,7 +212,7 @@ namespace Keebuntu.DBus
                                              maxDepth, propertyNames));
         }
       }
-      layout.childeren = childList.ToArray();
+      layout.children = childList.ToArray();
       return layout;
     }
 
@@ -343,7 +343,7 @@ namespace Keebuntu.DBus
     /// </summary>
     private void OnItemPropertiesChanged(string[] properties, IMenuItemProxy item)
     {
-      // TODO - cache property values so that we don't send unnessasary events
+      // TODO - cache property values so that we don't send unnecessary events
       var menuItem = new com.canonical.dbusmenu.MenuItem();
       menuItem.id = mMenuItemList.IndexOf(item);
       menuItem.properties = new Dictionary<string, object>();

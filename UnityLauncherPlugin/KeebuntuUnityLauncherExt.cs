@@ -84,7 +84,7 @@ namespace KeebuntuUnityLauncher
     }
 
     /// <summary>
-    /// Initalize Gtk stuff
+    /// Initialize Gtk stuff
     /// </summary>
     private void GtkDBusInit()
     {
