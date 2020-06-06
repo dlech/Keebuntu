@@ -155,7 +155,7 @@ namespace org.kde.StatusNotifierItem
     /// The Freedesktop-compliant name of an icon. This can be used by the
     /// visualization to indicate extra state information, for instance as an overlay for the main icon.
     /// </summary>
-    string OverlayIconName { get; }
+    // string OverlayIconName { get; }
 
     /// <summary>
     /// ARGB32 binary representation of the overlay icon described in

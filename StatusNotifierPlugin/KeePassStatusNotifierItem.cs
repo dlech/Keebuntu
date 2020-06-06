@@ -47,12 +47,7 @@ namespace KeebuntuStatusNotifier
 
     //public KDbusImageVector IconPixmap { get { return null; } }
 
-    // TODO: This does not seem to work in KDE5
-    public string OverlayIconName {
-      get {
-        return "emblem-locked";
-      }
-    }
+    // public string OverlayIconName { get { return null; } }
 
     //public KDbusImageVector OverlayIconPixmap { get { return null; } }
 
