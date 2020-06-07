@@ -10,7 +10,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>KeebuntuUnityLauncher</RootNamespace>
     <AssemblyName>KeebuntuUnityLauncher</AssemblyName>
-    <ReleaseVersion>0.1.2</ReleaseVersion>
+    <ReleaseVersion>0.1.3</ReleaseVersion>
     <SynchReleaseVersion>false</SynchReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
