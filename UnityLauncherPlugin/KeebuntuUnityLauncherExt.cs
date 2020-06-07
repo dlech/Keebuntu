@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
+using System.Timers;
 using KeePass.Plugins;
 using Keebuntu.DBus;
 using Unity;
@@ -12,16 +13,16 @@ namespace KeebuntuUnityLauncher
   {
     IPluginHost pluginHost;
     LauncherEntry launcher;
-    System.Windows.Forms.Timer updateUITimer;
-    System.Windows.Forms.Timer finishInitDelaytimer;
+    Timer updateUITimer;
+    Timer finishInitDelaytimer;
 
     public override bool Initialize(IPluginHost host)
     {
       pluginHost = host;
-      updateUITimer = new System.Windows.Forms.Timer();
+      updateUITimer = new Timer();
       updateUITimer.Interval = 500;
-      updateUITimer.Tick += On_updateUITimer_Tick;
-      finishInitDelaytimer = new System.Windows.Forms.Timer();
+      updateUITimer.Elapsed += On_updateUITimer_Elapsed;
+      finishInitDelaytimer = new Timer();
 
       var threadStarted = false;
       try {
@@ -56,7 +57,7 @@ namespace KeebuntuUnityLauncher
       updateUITimer.Start();
     }
 
-    void On_updateUITimer_Tick(object sender, System.EventArgs e)
+    void On_updateUITimer_Elapsed(object sender, System.EventArgs e)
     {
       try {
         var mainWindowType = pluginHost.MainWindow.GetType();
@@ -105,7 +106,7 @@ namespace KeebuntuUnityLauncher
       }
       // the launcher may not be listening yet, so we delay setting the properties
       // to give it extra time
-      finishInitDelaytimer.Tick += (sender, e) =>
+      finishInitDelaytimer.Elapsed += (sender, e) =>
       {
         finishInitDelaytimer.Stop();
         DBusBackgroundWorker.InvokeGtkThread(() =>
