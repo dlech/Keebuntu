@@ -2,7 +2,7 @@ Source: keepass2-plugin-ubuntu
 Section: utils
 Priority: optional
 Maintainer: David Lechner <david@lechnology.com>
-Build-Depends: debhelper (>= 10.0.0)
+Build-Depends: debhelper (>= 12.0.0)
 Build-Depends-Indep: cli-common-dev (>= 0.8),
                      keepass2,
                      libdbus2.0-cil-dev,
